@@ -1,14 +1,9 @@
 package ar.uba.fi.ingsoft1.football5.projects;
 
-import ar.uba.fi.ingsoft1.football5.tasks.Task;
-import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
-import jakarta.persistence.OneToMany;
-
-import java.util.List;
 
 @Entity
 public class Project {
@@ -23,10 +18,7 @@ public class Project {
     @Column
     private String description;
 
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "project")
-    private List<Task> tasks;
-
-    Project() {}
+    protected Project() {}
 
     Project(Long id, String name, String description) {
         this.id = id;
