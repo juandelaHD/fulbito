@@ -1,21 +1,29 @@
 import { useId } from "react";
-
 import { ErrorContainer } from "@/components/form-components/ErrorContainer/ErrorContainer";
 import { useFieldContext } from "@/config/form-context";
-
 import styles from "./InputFields.module.css";
 
-export const TextField = ({ label }: { label: string }) => {
-  return <FieldWithType type="text" label={label} />;
+type FieldProps = React.InputHTMLAttributes<HTMLInputElement> & {
+  label: string;
 };
 
-export const PasswordField = ({ label }: { label: string }) => {
-  return <FieldWithType type="password" label={label} />;
+export const TextField = (props: FieldProps) => {
+  return <FieldWithType {...props} type="text" />;
 };
 
-const FieldWithType = ({ label, type }: { label: string; type: string }) => {
+export const PasswordField = (props: FieldProps) => {
+  return <FieldWithType {...props} type="password" />;
+};
+
+const FieldWithType = ({
+  label,
+  type,
+  className = "",
+  ...rest
+}: FieldProps & { type: string }) => {
   const id = useId();
   const field = useFieldContext<string>();
+
   return (
     <>
       <label htmlFor={id} className={styles.label}>
@@ -26,10 +34,11 @@ const FieldWithType = ({ label, type }: { label: string; type: string }) => {
           id={id}
           name={field.name}
           value={field.state.value}
-          className={styles.input}
+          className={`${styles.input} ${className}`}
           type={type}
           onBlur={field.handleBlur}
           onChange={(e) => field.handleChange(e.target.value)}
+          {...rest}
         />
         <ErrorContainer errors={field.state.meta.errors} />
       </div>
