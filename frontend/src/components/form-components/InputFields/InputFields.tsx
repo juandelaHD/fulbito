@@ -17,7 +17,7 @@ export const PasswordField = (props: FieldProps) => {
 const FieldWithType = ({
                            label,
                            type,
-                           className = "",
+                           className,
                            ...rest
                        }: FieldProps & { type: string }) => {
     const id = useId();

@@ -42,56 +42,52 @@ export const SignupScreen = () => {
   return (
       <CommonLayout>
         <section>
-          <a>
-            Unite para jugar o organizar fútbol 5
-          </a>
           <div>
             <div>
-              <h1>
-                Crear cuenta
+              <h1 className="flex text-center justify-center">
+                Create an account
               </h1>
+              <div className="flex text-center justify-center">
+                <h2 className="text-sm font-light text-green-800 mb-20 text-center">
+                  Join the community and simplify your matchday!
+                </h2>
+              </div>
               <formData.AppForm>
                 <formData.FormContainer extraError={error} className="space-y-4 md:space-y-6">
                   <formData.AppField name="firstName">
                     {(field) => (
-                        <field.TextField
-                            label="Nombre"
-                        />
+                        <field.TextField label="First Name" />
                     )}
                   </formData.AppField>
                   <formData.AppField name="lastName">
                     {(field) => (
-                        <field.TextField
-                            label="Apellido"
-                        />
+                        <field.TextField label="Last Name" />
                     )}
                   </formData.AppField>
                   <formData.AppField name="email">
                     {(field) => (
-                        <field.TextField
-                            label="Email"
-                        />
+                        <field.TextField label="Email" />
                     )}
                   </formData.AppField>
                   <formData.AppField name="age">
                     {(field) => (
                         <field.TextField
-                            label="Edad"
+                            label="Age"
                         />
                     )}
                   </formData.AppField>
                   <formData.AppField name="gender">
                     {(field: any) => (
                         <div>
-                          <label className="block text-sm font-medium text-green-900 mb-1">Género</label>
+                          <label className="block text-sm font-medium text-green-900 mb-1">Gender</label>
                           <select
                               className="w-full px-4 py-2 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 text-black bg-white"
                               {...field}
                           >
-                            <option value="">Seleccionar...</option>
-                            <option value="Male">Masculino</option>
-                            <option value="Female">Femenino</option>
-                            <option value="Other">Otro</option>
+                            <option value="">Select...</option>
+                            <option value="Male">Masculine</option>
+                            <option value="Female">Feminime</option>
+                            <option value="Other">Other</option>
                           </select>
                         </div>
                     )}
@@ -99,21 +95,21 @@ export const SignupScreen = () => {
                   <formData.AppField name="location">
                     {(field) => (
                         <field.TextField
-                            label="Ubicación"
+                            label="Location"
                         />
                     )}
                   </formData.AppField>
                   <formData.AppField name="username">
                     {(field) => (
                         <field.TextField
-                            label="Usuario"
+                            label="Username"
                         />
                     )}
                   </formData.AppField>
                   <formData.AppField name="password">
                     {(field) => (
                         <field.PasswordField
-                            label="Contraseña"
+                            label="Password"
                         />
                     )}
                   </formData.AppField>
@@ -122,9 +118,9 @@ export const SignupScreen = () => {
             </div>
           </div>
           <div className="text-center text-sm font-light text-green-800 mt-4">
-            ¿Ya tenés una cuenta?{" "}
+            Already have an account?{" "}
             <a href="/login" className="font-medium text-green-700 hover:underline">
-              Iniciar sesión
+              Log in
             </a>
           </div>
         </section>

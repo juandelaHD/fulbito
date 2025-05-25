@@ -23,7 +23,7 @@ body {
   min-width: 100vw;
   min-height: 100vh;
   background-color: #0f1e11;
-  font-weight: 700;
+  font-weight: 100;
 }
 
 h1 {
@@ -48,7 +48,6 @@ button {
   border: 1px solid transparent;
   padding: 0.6em 1.2em;
   font-size: 1em;
-  font-weight: 500;
   background-color: #146c43;
   color: #f0f0f0;
   cursor: pointer;
