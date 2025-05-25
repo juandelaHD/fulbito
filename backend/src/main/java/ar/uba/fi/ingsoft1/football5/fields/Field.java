@@ -1,6 +1,10 @@
 package ar.uba.fi.ingsoft1.football5.fields;
 
+import ar.uba.fi.ingsoft1.football5.images.Image;
 import jakarta.persistence.*;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(
@@ -26,6 +30,9 @@ public class Field {
 
     @Embedded
     private Location location;
+
+    @OneToMany(mappedBy = "field", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Image> images = new ArrayList<>();
 
     protected Field() {}
 
@@ -55,5 +62,9 @@ public class Field {
 
     public Location getLocation() {
         return location;
+    }
+
+    public List<Image> getImages() {
+        return images;
     }
 }

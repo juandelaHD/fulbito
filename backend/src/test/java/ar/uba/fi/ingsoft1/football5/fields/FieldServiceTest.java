@@ -1,11 +1,14 @@
 package ar.uba.fi.ingsoft1.football5.fields;
 
+import ar.uba.fi.ingsoft1.football5.images.ImageService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.io.IOException;
+import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -19,6 +22,9 @@ class FieldServiceTest {
     @Mock
     private FieldRepository fieldRepository;
 
+    @Mock
+    private ImageService imageService;
+
     @InjectMocks
     private FieldService fieldService;
 
@@ -31,9 +37,9 @@ class FieldServiceTest {
                 .thenReturn(Optional.of(new Field(1L, "field 1", GrassType.NATURAL_GRASS, true,
                         new Location("zone b", "address 2"))));
 
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
-            fieldService.createField(fieldCreateDTO);
-        });
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () ->
+            fieldService.createField(fieldCreateDTO, List.of())
+        );
 
         assertEquals("Field with name 'field 1' already exists.", exception.getMessage());
     }
@@ -48,15 +54,15 @@ class FieldServiceTest {
                 .thenReturn(Optional.of(new Field(1L, "field 2", GrassType.NATURAL_GRASS, true,
                         new Location("zone a", "address 1"))));
 
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
-            fieldService.createField(fieldCreateDTO);
-        });
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () ->
+            fieldService.createField(fieldCreateDTO, List.of())
+        );
 
         assertEquals("Field with location 'zone a, address 1' already exists.", exception.getMessage());
     }
 
     @Test
-    void createField_whenValidationsPassed_returnsCreatedField() {
+    void createField_whenValidationsPassed_returnsCreatedField() throws IOException {
         FieldCreateDTO fieldCreateDTO = new FieldCreateDTO("field 1", GrassType.NATURAL_GRASS, true,
                 "zone a", "address 1");
         Field savedField = new Field(1L, fieldCreateDTO.name(), fieldCreateDTO.grassType(),
@@ -67,12 +73,13 @@ class FieldServiceTest {
                 .thenReturn(Optional.empty());
         when(fieldRepository.save(any(Field.class))).thenReturn(savedField);
 
-        FieldDTO fieldDTO = fieldService.createField(fieldCreateDTO);
+        FieldDTO fieldDTO = fieldService.createField(fieldCreateDTO, List.of());
 
         assertEquals(fieldCreateDTO.name(), fieldDTO.name());
         assertEquals(fieldCreateDTO.grassType(), fieldDTO.grassType());
         assertEquals(fieldCreateDTO.illuminated(), fieldDTO.illuminated());
         assertEquals(fieldCreateDTO.zone(), fieldDTO.location().zone());
         assertEquals(fieldCreateDTO.address(), fieldDTO.location().address());
+        assertEquals(List.of(), fieldDTO.imageIds());
     }
 }
