@@ -40,7 +40,6 @@ class FieldServiceTest {
     @InjectMocks
     private FieldService fieldService;
 
-
     @Test
     void createField_whenDuplicatedName_throwsIllegalArgumentException() {
         FieldCreateDTO fieldCreateDTO = new FieldCreateDTO("field 1", GrassType.NATURAL_GRASS, true,
