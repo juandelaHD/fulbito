@@ -27,19 +27,28 @@ class FieldService {
 
     FieldDTO createField(FieldCreateDTO fieldCreate, List<MultipartFile> images, JwtUserDetails userDetails)
             throws IllegalArgumentException, IOException {
-        fieldRepository.findByName(fieldCreate.name())
-                .ifPresent(field -> {
-                    throw new IllegalArgumentException(String.format("Field with name '%s' already exists.", fieldCreate.name()));
-                });
 
-        fieldRepository.findByLocationZoneAndLocationAddress(fieldCreate.zone(), fieldCreate.address())
-                .ifPresent(field -> {
-                    throw new IllegalArgumentException(String.format("Field with location '%s, %s' already exists.", fieldCreate.zone(), fieldCreate.address()));
-                });
+        validateUniqueName(fieldCreate);
+        validateUniqueLocation(fieldCreate);
 
         User owner = userService.getUser(userDetails.username());
         Field field = fieldRepository.save(fieldCreate.asField(owner));
         imageService.saveImages(field, images);
+
         return new FieldDTO(field);
+    }
+
+    private void validateUniqueName(FieldCreateDTO fieldCreate) {
+        fieldRepository.findByName(fieldCreate.name())
+                .ifPresent(field -> {
+                    throw new IllegalArgumentException(String.format("Field with name '%s' already exists.", fieldCreate.name()));
+                });
+    }
+
+    private void validateUniqueLocation(FieldCreateDTO fieldCreate) {
+        fieldRepository.findByLocationZoneAndLocationAddress(fieldCreate.zone(), fieldCreate.address())
+                .ifPresent(field -> {
+                    throw new IllegalArgumentException(String.format("Field with location '%s, %s' already exists.", fieldCreate.zone(), fieldCreate.address()));
+                });
     }
 }
