@@ -1,6 +1,9 @@
 package ar.uba.fi.ingsoft1.football5.fields;
 
+import ar.uba.fi.ingsoft1.football5.config.security.JwtUserDetails;
 import ar.uba.fi.ingsoft1.football5.images.ImageService;
+import ar.uba.fi.ingsoft1.football5.user.User;
+import ar.uba.fi.ingsoft1.football5.user.UserService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -25,8 +28,18 @@ class FieldServiceTest {
     @Mock
     private ImageService imageService;
 
+    @Mock
+    private UserService userService;
+
+    @Mock
+    private User owner;
+
+    @Mock
+    private JwtUserDetails userDetails;
+
     @InjectMocks
     private FieldService fieldService;
+
 
     @Test
     void createField_whenDuplicatedName_throwsIllegalArgumentException() {
@@ -35,10 +48,10 @@ class FieldServiceTest {
 
         when(fieldRepository.findByName(fieldCreateDTO.name()))
                 .thenReturn(Optional.of(new Field(1L, "field 1", GrassType.NATURAL_GRASS, true,
-                        new Location("zone b", "address 2"))));
+                        new Location("zone b", "address 2"), owner)));
 
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () ->
-            fieldService.createField(fieldCreateDTO, List.of())
+            fieldService.createField(fieldCreateDTO, List.of(), userDetails)
         );
 
         assertEquals("Field with name 'field 1' already exists.", exception.getMessage());
@@ -52,10 +65,10 @@ class FieldServiceTest {
         when(fieldRepository.findByName(fieldCreateDTO.name())).thenReturn(Optional.empty());
         when(fieldRepository.findByLocationZoneAndLocationAddress(fieldCreateDTO.zone(), fieldCreateDTO.address()))
                 .thenReturn(Optional.of(new Field(1L, "field 2", GrassType.NATURAL_GRASS, true,
-                        new Location("zone a", "address 1"))));
+                        new Location("zone a", "address 1"), owner)));
 
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () ->
-            fieldService.createField(fieldCreateDTO, List.of())
+            fieldService.createField(fieldCreateDTO, List.of(), userDetails)
         );
 
         assertEquals("Field with location 'zone a, address 1' already exists.", exception.getMessage());
@@ -66,14 +79,16 @@ class FieldServiceTest {
         FieldCreateDTO fieldCreateDTO = new FieldCreateDTO("field 1", GrassType.NATURAL_GRASS, true,
                 "zone a", "address 1");
         Field savedField = new Field(1L, fieldCreateDTO.name(), fieldCreateDTO.grassType(),
-                fieldCreateDTO.illuminated(), new Location(fieldCreateDTO.zone(), fieldCreateDTO.address()));
+                fieldCreateDTO.illuminated(), new Location(fieldCreateDTO.zone(), fieldCreateDTO.address()), owner);
 
         when(fieldRepository.findByName(fieldCreateDTO.name())).thenReturn(Optional.empty());
         when(fieldRepository.findByLocationZoneAndLocationAddress(fieldCreateDTO.zone(), fieldCreateDTO.address()))
                 .thenReturn(Optional.empty());
+
+        when(userService.getUser(any())).thenReturn(owner);
         when(fieldRepository.save(any(Field.class))).thenReturn(savedField);
 
-        FieldDTO fieldDTO = fieldService.createField(fieldCreateDTO, List.of());
+        FieldDTO fieldDTO = fieldService.createField(fieldCreateDTO, List.of(), userDetails);
 
         assertEquals(fieldCreateDTO.name(), fieldDTO.name());
         assertEquals(fieldCreateDTO.grassType(), fieldDTO.grassType());

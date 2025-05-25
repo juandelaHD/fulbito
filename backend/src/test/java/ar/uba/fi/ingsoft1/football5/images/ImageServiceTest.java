@@ -4,6 +4,7 @@ import ar.uba.fi.ingsoft1.football5.common.exception.ItemNotFoundException;
 import ar.uba.fi.ingsoft1.football5.fields.Field;
 import ar.uba.fi.ingsoft1.football5.fields.GrassType;
 import ar.uba.fi.ingsoft1.football5.fields.Location;
+import ar.uba.fi.ingsoft1.football5.user.User;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -26,13 +27,16 @@ class ImageServiceTest {
     @Mock
     private ImageRepository imageRepository;
 
+    @Mock
+    private User owner;
+
     @InjectMocks
     private ImageService imageService;
 
     @Test
     void saveImages_whenImagesIsNull_doNotSaveAnything() throws IOException {
         Field field = new Field(1L, "field 1", GrassType.NATURAL_GRASS, true,
-                new Location("zone b", "address 2"));
+                new Location("zone b", "address 2"), owner);
 
         imageService.saveImages(field, null);
 
@@ -42,7 +46,7 @@ class ImageServiceTest {
     @Test
     void saveImages_whenImagesIsEmpty_doNotSaveAnything() throws IOException {
         Field field = new Field(1L, "field 1", GrassType.NATURAL_GRASS, true,
-                new Location("zone b", "address 2"));
+                new Location("zone b", "address 2"), owner);
 
         imageService.saveImages(field, List.of());
 
@@ -52,7 +56,7 @@ class ImageServiceTest {
     @Test
     void saveImages_whenOneImage_saveImage() throws IOException {
         Field field = new Field(1L, "field 1", GrassType.NATURAL_GRASS, true,
-                new Location("zone b", "address 2"));
+                new Location("zone b", "address 2"), owner);
 
         byte[] imageData = new byte[]{1, 2, 3};
         MultipartFile file = new MockMultipartFile("file", imageData);
@@ -72,7 +76,7 @@ class ImageServiceTest {
     @Test
     void saveImages_whenManyImages_saveImages() throws IOException {
         Field field = new Field(1L, "field 1", GrassType.NATURAL_GRASS, true,
-                new Location("zone b", "address 2"));
+                new Location("zone b", "address 2"), owner);
 
         byte[] imageData1 = new byte[]{1, 2, 3};
         byte[] imageData2 = new byte[]{4, 5, 6};

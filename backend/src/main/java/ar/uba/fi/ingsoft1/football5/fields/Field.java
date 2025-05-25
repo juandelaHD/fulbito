@@ -1,6 +1,7 @@
 package ar.uba.fi.ingsoft1.football5.fields;
 
 import ar.uba.fi.ingsoft1.football5.images.Image;
+import ar.uba.fi.ingsoft1.football5.user.User;
 import jakarta.persistence.*;
 
 import java.util.ArrayList;
@@ -34,14 +35,19 @@ public class Field {
     @OneToMany(mappedBy = "field", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Image> images = new ArrayList<>();
 
+    @ManyToOne
+    @JoinColumn(name = "owner_id")
+    private User owner;
+
     protected Field() {}
 
-    public Field(Long id, String name, GrassType grassType, Boolean illuminated, Location location) {
+    public Field(Long id, String name, GrassType grassType, Boolean illuminated, Location location, User owner) {
         this.id = id;
         this.name = name.toLowerCase();
         this.grassType = grassType;
         this.illuminated = illuminated;
         this.location = location;
+        this.owner = owner;
     }
 
     public Long getId() {
@@ -66,5 +72,9 @@ public class Field {
 
     public List<Image> getImages() {
         return images;
+    }
+
+    public User getOwner() {
+        return owner;
     }
 }
