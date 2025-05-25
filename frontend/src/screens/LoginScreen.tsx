@@ -26,6 +26,12 @@ export const LoginScreen = () => {
           <formData.AppField name="password" children={(field) => <field.PasswordField label="Password" />} />
         </formData.FormContainer>
       </formData.AppForm>
+      <div className="text-sm font-light text-green-800 mt-4">
+        ¿No tienes una cuenta?{" "}
+        <a href="/singup" className="font-medium text-green-700 hover:underline">
+          Regístrate
+        </a>
+      </div>
     </CommonLayout>
   );
 };

@@ -4,26 +4,26 @@ import { SubmitButton } from "@/components/form-components/SubmitButton/SubmitBu
 import { useFormContext } from "@/config/form-context";
 
 type Props = {
-  extraError: Error | null;
-  className?: string;
-  children?: React.ReactNode;
+    extraError: Error | null;
+    className?: string;
+    children?: React.ReactNode;
 };
 
 export const FormContainer = ({ extraError, className = "", children }: Props) => {
-  const form = useFormContext();
+    const form = useFormContext();
 
-  return (
-    <form
-      className={className}
-      onSubmit={(e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        form.handleSubmit();
-      }}
-    >
-      {children}
-      {extraError && <ErrorContainer errors={[extraError]} />}
-      <SubmitButton />
-    </form>
-  );
+    return (
+        <form
+            className={`flex flex-col ${className}`}
+            onSubmit={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                form.handleSubmit();
+            }}
+        >
+            {children}
+            {extraError && <ErrorContainer errors={[extraError]} />}
+            <SubmitButton />
+        </form>
+    );
 };
