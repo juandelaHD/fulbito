@@ -1,5 +1,6 @@
 package ar.uba.fi.ingsoft1.football5.fields;
 
+import ar.uba.fi.ingsoft1.football5.common.exception.ItemNotFoundException;
 import ar.uba.fi.ingsoft1.football5.config.security.JwtUserDetails;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.swagger.v3.oas.annotations.Operation;
@@ -34,10 +35,10 @@ class FieldRestController {
     @ResponseStatus(HttpStatus.CREATED)
     @ApiResponse(responseCode = "201", description = "Field created successfully")
     @ApiResponse(responseCode = "400", description = "Invalid field data supplied", content = @Content)
-
-    // Currently, this endpoint is not secured. Uncomment the line
-    // below to secure it when users authentication is implemented.
-    // @PreAuthorize("hasRole('ROLE_ADMIN')")
+    // TODO: Currently, this endpoint is not secured for admin usage.
+    //  Uncomment the line below to secure it when users authentication
+    //  is implemented.
+    //  @PreAuthorize("hasRole('ROLE_ADMIN')")
     FieldDTO createField(
             @RequestParam("field")
             @Parameter(
@@ -51,6 +52,23 @@ class FieldRestController {
         ObjectMapper objectMapper = new ObjectMapper();
         FieldCreateDTO fieldCreate = objectMapper.readValue(fieldJson, FieldCreateDTO.class);
         return fieldService.createField(fieldCreate, images, userDetails);
+    }
+
+    @DeleteMapping(value = "/{id}", produces = "application/json")
+    @Operation(summary = "Delete a field by ID")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @ApiResponse(responseCode = "204", description = "Field deleted successfully")
+    @ApiResponse(responseCode = "404", description = "Field not found", content = @Content)
+    @ApiResponse(responseCode = "400", description = "Invalid field ID supplied", content = @Content)
+    // TODO: Currently, this endpoint is not secured for admin usage.
+    //  Uncomment the line below to secure it when users authentication
+    //  is implemented.
+    //  @PreAuthorize("hasRole('ROLE_ADMIN')")
+    void deleteField(
+            @PathVariable("id") @Parameter(description = "ID of the field to delete") Long id,
+            @AuthenticationPrincipal JwtUserDetails userDetails
+    ) throws ItemNotFoundException {
+        fieldService.deleteField(id, userDetails);
     }
 }
 
