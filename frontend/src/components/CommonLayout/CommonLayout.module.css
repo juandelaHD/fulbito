@@ -1,26 +1,43 @@
 .mainLayout {
   display: flex;
   flex-direction: column;
+  min-height: 100vh;
+  background-color: #0f1e11;
+  color: #f0f0f0;
 }
 
-.topBar {
+.navbar {
+  width: 100%;
+  padding: 1rem 2rem;
+  background-color: #1c2b1a;
   display: flex;
-  flex-direction: row;
-  list-style: none;
-
-  align-items: center;
-  justify-content: end;
+  justify-content: flex-end;
+  box-shadow: 0 4px 6px rgba(0, 255, 136, 0.1);
 }
 
-.topBar > * {
-  margin: 1rem;
+.navLinks {
+  display: flex;
+  gap: 1.5rem;
+  align-items: center;
+}
+
+.navLink {
+  color: #00ff88;
+  text-decoration: none;
+  font-weight: 500;
+  font-size: 1rem;
+  transition: color 0.3s;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.navLink:hover {
+  color: #1be17e;
 }
 
 .body {
-  flex: 1 0 0;
-
-  display: flex;
-  flex-direction: column;
-  align-items: start;
-  padding: 0 2rem;
+  flex: 1;
+  padding: 2rem;
 }

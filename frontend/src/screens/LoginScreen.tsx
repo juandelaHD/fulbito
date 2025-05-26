@@ -19,13 +19,24 @@ export const LoginScreen = () => {
 
   return (
     <CommonLayout>
-      <h1>Log In</h1>
+      <h1 className="text-center text-2xl font-bold mb-4">Welcome back!</h1>
       <formData.AppForm>
         <formData.FormContainer extraError={error}>
           <formData.AppField name="username" children={(field) => <field.TextField label="Username" />} />
           <formData.AppField name="password" children={(field) => <field.PasswordField label="Password" />} />
+            <div className="text-sm text-green-700 text-left -mt-2">
+                <a href="/forgot-password" className="hover:underline">
+                    Forgot your password?
+                </a>
+            </div>
         </formData.FormContainer>
       </formData.AppForm>
+      <div className="text-center text-sm font-light text-green-800 mt-4">
+        Don't have an account?{" "}
+        <a href="/singup" className="font-medium text-green-700 hover:underline">
+            Sign Up
+        </a>
+      </div>
     </CommonLayout>
   );
 };
