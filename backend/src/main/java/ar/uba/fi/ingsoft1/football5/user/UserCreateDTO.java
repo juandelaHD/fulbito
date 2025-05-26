@@ -9,58 +9,24 @@ public record UserCreateDTO(
         @NotBlank String firstName,
         @NotBlank String lastName,
         @NotBlank String email,
-        @NotBlank String username,
         @NotBlank String password,
-        @NotBlank String avatar,
         @NotBlank String area,
         @NotBlank String dateBirth,
         @NotBlank String gender,
         @NotNull Role role
 ) implements UserCredentials {
     public User asUser(Function<String, String> encryptPassword) {
-        return new User(username, firstName, lastName, email, gender, avatar, area, dateBirth, encryptPassword.apply(password), role);
+        return new User(firstName, lastName, email, gender, area, dateBirth, encryptPassword.apply(password), role);
     }
 
     @Override
     public String getUsername(){
-        return username;
+        return email;
     }
 
     @Override
     public String getPassword() {
         return password;
-    }
-
-    public String getFirstName() {
-        return this.firstName;
-    }
-
-    public String getLastName() {
-        return this.lastName;
-    }
-
-    public String getEmail() {
-        return this.email;
-    }
-
-    public String getAvatar() {
-        return this.avatar;
-    }
-
-    public String getArea() {
-        return this.area;
-    }
-
-    public String getDateBirth() {
-        return this.dateBirth;
-    }
-
-    public String getGender() {
-        return this.gender;
-    }
-
-    public Role getRole() {
-        return this.role;
     }
 }
 

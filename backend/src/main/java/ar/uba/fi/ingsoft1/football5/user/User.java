@@ -16,9 +16,6 @@ public class User implements UserDetails, UserCredentials {
     @GeneratedValue
     private Long id;
 
-    @Column(unique = true, nullable = false)
-    private String username;
-
     @Column(nullable = false)
     private String firstName;
 
@@ -55,13 +52,11 @@ public class User implements UserDetails, UserCredentials {
 
     protected User() {}
 
-    public User(String username, String firstName, String lastName, String email, String gender, Image avatar, String area, String dateBirth, String password, Role role) {
-        this.username = username;
+    public User(String firstName, String lastName, String email, String gender, String area, String dateBirth, String password, Role role) {
         this.firstName = firstName;
         this.lastName = lastName;
         this.email = email;
         this.gender = gender;
-        this.avatar = avatar;
         this.area = area;
         this.dateBirth = dateBirth;
         this.password = password;
@@ -71,7 +66,7 @@ public class User implements UserDetails, UserCredentials {
 
     @Override
     public String getUsername() {
-        return username;
+        return email;
     }
 
     @Override
@@ -96,40 +91,16 @@ public class User implements UserDetails, UserCredentials {
         this.emailConfirmed = emailConfirmed;
     }
 
-    public void setPassword(String password) {
-        this.password = password;
-    }
-
     public String getFirstName() {
         return firstName;
-    }
-
-    public void setFirstName(String firstName) {
-        this.firstName = firstName;
     }
 
     public String getLastName() {
         return lastName;
     }
 
-    public void setLastName(String lastName) {
-        this.lastName = lastName;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
     public String getGender() {
         return gender;
-    }
-
-    public void setGender(String gender) {
-        this.gender = gender;
     }
 
     public Image getAvatar() {
@@ -144,23 +115,11 @@ public class User implements UserDetails, UserCredentials {
         return area;
     }
 
-    public void setArea(String area) {
-        this.area = area;
-    }
-
     public String getDateBirth() {
         return dateBirth;
     }
 
-    public void setDateBirth(String dateBirth) {
-        this.dateBirth = dateBirth;
-    }
-
     public Role getRole() {
         return role;
-    }
-
-    public void setRole(Role role) {
-        this.role = role;
     }
 }
