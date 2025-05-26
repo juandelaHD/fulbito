@@ -10,7 +10,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.lang.NonNull;
 import org.springframework.security.core.Authentication;
-import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -30,34 +29,33 @@ class SessionRestController {
     @Operation(summary = "Create a new user")
     @ResponseStatus(HttpStatus.CREATED)
     ResponseEntity<TokenDTO> signUp(
-            @Valid @NonNull @RequestBody UserCreateDTO data,
-            Authentication authPrincipal) {
+            @Valid @NonNull @RequestBody UserCreateDTO data) {
         return userService
-            .createUser(data, authPrincipal)
+            .createUser(data)
             .map(user -> ResponseEntity.status(HttpStatus.CREATED).body(user))
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "User creation failed"));
     }
 
-    @PostMapping(produces = "application/json")
+    @PostMapping(path = "/login", produces = "application/json")
     @Operation(summary = "Log in, creating a new session")
     @ResponseStatus(HttpStatus.CREATED)
     @ApiResponse(responseCode = "200", description = "Successful login", content = @Content)
     @ApiResponse(responseCode = "401", description = "Invalid username or password supplied", content = @Content)
     public TokenDTO login(
             @Valid @NonNull @RequestBody UserLoginDTO data
-    ) throws MethodArgumentNotValidException {
+    ) {
         return userService
                 .loginUser(data)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid username or password supplied"));
     }
 
-    @PutMapping(produces = "application/json")
+    @PutMapping(path = "/refresh", produces = "application/json")
     @Operation(summary = "Refresh a session")
     @ResponseStatus(HttpStatus.OK)
     @ApiResponse(responseCode = "401", description = "Invalid refresh token supplied", content = @Content)
     public TokenDTO refresh(
             @Valid @NonNull @RequestBody RefreshDTO data
-    ) throws MethodArgumentNotValidException {
+    ) {
         return userService
                 .refresh(data)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED));

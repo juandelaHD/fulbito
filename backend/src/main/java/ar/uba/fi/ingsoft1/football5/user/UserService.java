@@ -7,9 +7,7 @@ import ar.uba.fi.ingsoft1.football5.user.refresh_token.RefreshToken;
 import ar.uba.fi.ingsoft1.football5.user.refresh_token.RefreshTokenService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -74,7 +72,7 @@ class UserService implements UserDetailsService {
         return new UserDTO(user);
     }
 
-    Optional<TokenDTO> createUser(UserCreateDTO data, Authentication authPrincipal) {
+    Optional<TokenDTO> createUser(UserCreateDTO data) {
 
         if (userRepository.findByUsername(data.username()).isPresent()) {
             throw new IllegalArgumentException("Username already taken");

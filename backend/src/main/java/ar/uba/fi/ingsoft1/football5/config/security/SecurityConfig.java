@@ -24,10 +24,7 @@ import java.util.List;
 @EnableMethodSecurity(prePostEnabled = true)
 public class SecurityConfig {
 
-    private static final String userRole = "USER";
-    private static final String adminRole = "ADMIN";
-
-    public static final String[] PUBLIC_ENDPOINTS = {};
+    public static final String[] PUBLIC_ENDPOINTS = {"/sessions/sign-up", "/sessions/login", "/sessions/refresh"};
 
     private final JwtAuthFilter authFilter;
 
@@ -49,15 +46,8 @@ public class SecurityConfig {
                         .requestMatchers("/error").permitAll()
                         .requestMatchers("/swagger-ui/**").permitAll()
                         .requestMatchers("/v3/api-docs/**").permitAll()
-
-                        // SESSIONS
-                        .requestMatchers("/sessions/sign-up").permitAll()
-                        .requestMatchers("/sessions/login").permitAll()
-                        .requestMatchers("/sessions/refresh").permitAll()
                         .requestMatchers(PUBLIC_ENDPOINTS).permitAll()
-
-                        // USERS
-                        .requestMatchers("/users/**").hasAnyRole(adminRole, userRole)
+                        .anyRequest().authenticated()
                 )
                 .sessionManagement(sessionManager ->
                         sessionManager.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
