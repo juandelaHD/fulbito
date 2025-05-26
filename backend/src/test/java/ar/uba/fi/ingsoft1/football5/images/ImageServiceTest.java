@@ -123,6 +123,6 @@ class ImageServiceTest {
             imageService.getImageData(1L)
         );
 
-        assertEquals("Failed to find image with id 1", exception.getMessage());
+        assertEquals("Failed to find image with id '1'", exception.getMessage());
     }
 }

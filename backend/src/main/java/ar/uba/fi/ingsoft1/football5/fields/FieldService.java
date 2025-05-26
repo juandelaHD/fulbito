@@ -1,9 +1,11 @@
 package ar.uba.fi.ingsoft1.football5.fields;
 
+import ar.uba.fi.ingsoft1.football5.common.exception.ItemNotFoundException;
 import ar.uba.fi.ingsoft1.football5.config.security.JwtUserDetails;
 import ar.uba.fi.ingsoft1.football5.images.ImageService;
 import ar.uba.fi.ingsoft1.football5.user.User;
 import ar.uba.fi.ingsoft1.football5.user.UserService;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -50,5 +52,23 @@ class FieldService {
                 .ifPresent(field -> {
                     throw new IllegalArgumentException(String.format("Field with location '%s, %s' already exists.", fieldCreate.zone(), fieldCreate.address()));
                 });
+    }
+
+    public void deleteField(Long id, JwtUserDetails userDetails)
+            throws ItemNotFoundException, IllegalArgumentException {
+        Field field = fieldRepository.findById(id)
+                .orElseThrow(() -> new ItemNotFoundException("field", id));
+
+        validateOwnership(field, userDetails);
+
+        // TODO: Here we must add active reservations restriction when implemented.
+
+        fieldRepository.delete(field);
+    }
+
+    private void validateOwnership(Field field, JwtUserDetails userDetails) {
+        if (!field.getOwner().getUsername().equals(userDetails.username())) {
+            throw new AccessDeniedException(String.format("User does not have permission to delete field with id '%s'.", field.getId()));
+        }
     }
 }
