@@ -28,7 +28,7 @@ class SessionRestController {
         this.userService = userService;
     }
 
-    @PostMapping(path = "/sign-up", produces = "application/json")
+    @PostMapping(path = "/sign-up", produces = "application/json", consumes = "multipart/form-data")
     @Operation(summary = "Create a new user")
     @ResponseStatus(HttpStatus.CREATED)
     @ApiResponse(responseCode = "201", description = "User created successfully", content = @Content)
@@ -42,7 +42,7 @@ class SessionRestController {
             @RequestPart(value = "avatar") MultipartFile avatar) throws IOException {
 
         ObjectMapper objectMapper = new ObjectMapper();
-        UserCreateDTO data = objectMapper.convertValue(userJson, UserCreateDTO.class);
+        UserCreateDTO data = objectMapper.readValue(userJson, UserCreateDTO.class);
 
         return userService
             .createUser(data, avatar)

@@ -66,11 +66,7 @@ public class UserService implements UserDetailsService {
     Optional<TokenDTO> createUser(UserCreateDTO data, MultipartFile avatar) throws IOException {
 
         if (userRepository.findByUsername(data.getUsername()).isPresent()) {
-            throw new IllegalArgumentException("Username already taken");
-        }
-
-        if (userRepository.findByEmail(data.email()).isPresent()) {
-            throw new IllegalArgumentException("Email already registered");
+            throw new IllegalArgumentException("Email or username already exists");
         }
 
         var user = data.asUser(passwordEncoder::encode);

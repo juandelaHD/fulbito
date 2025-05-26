@@ -8,7 +8,7 @@ import java.util.function.Function;
 public record UserCreateDTO(
         @NotBlank String firstName,
         @NotBlank String lastName,
-        @NotBlank String email,
+        @NotBlank String username,
         @NotBlank String password,
         @NotBlank String area,
         @NotBlank String dateBirth,
@@ -16,12 +16,12 @@ public record UserCreateDTO(
         @NotNull Role role
 ) implements UserCredentials {
     public User asUser(Function<String, String> encryptPassword) {
-        return new User(firstName, lastName, email, gender, area, dateBirth, encryptPassword.apply(password), role);
+        return new User(firstName, lastName, username, gender, area, dateBirth, encryptPassword.apply(password), role);
     }
 
     @Override
     public String getUsername(){
-        return email;
+        return username;
     }
 
     @Override

@@ -9,7 +9,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import java.util.Collection;
 import java.util.List;
 
-@Entity
+@Entity(name = "users")
 public class User implements UserDetails, UserCredentials {
 
     @Id
@@ -23,7 +23,7 @@ public class User implements UserDetails, UserCredentials {
     private String lastName;
 
     @Column(nullable = false, unique = true)
-    private String email;
+    private String username;
 
     @Column(nullable = false)
     private String gender;
@@ -52,10 +52,10 @@ public class User implements UserDetails, UserCredentials {
 
     protected User() {}
 
-    public User(String firstName, String lastName, String email, String gender, String area, String dateBirth, String password, Role role) {
+    public User(String firstName, String lastName, String username, String gender, String area, String dateBirth, String password, Role role) {
         this.firstName = firstName;
         this.lastName = lastName;
-        this.email = email;
+        this.username = username;
         this.gender = gender;
         this.area = area;
         this.dateBirth = dateBirth;
@@ -66,7 +66,7 @@ public class User implements UserDetails, UserCredentials {
 
     @Override
     public String getUsername() {
-        return email;
+        return username;
     }
 
     @Override

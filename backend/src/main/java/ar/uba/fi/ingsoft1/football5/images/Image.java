@@ -24,18 +24,6 @@ public class Image {
 
     protected Image() {}
 
-    protected Image(Long id, byte[] data, Field field) {
-        this.id = id;
-        this.data = data;
-        this.field = field;
-    }
-
-    protected Image(Long id, byte[] data, User user) {
-        this.id = id;
-        this.data = data;
-        this.user = user;
-    }
-
     public Image(byte[] data, Field field) {
         this.data = data;
         this.field = field;
@@ -47,6 +35,7 @@ public class Image {
     }
 
     public Long getId() { return id; }
+    protected void setId(Long id) { this.id = id; }
     public byte[] getData() { return data; }
     public Field getField() { return field; }
     public User getUser() { return user; }
