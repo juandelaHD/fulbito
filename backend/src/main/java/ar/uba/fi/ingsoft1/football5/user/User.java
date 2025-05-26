@@ -1,18 +1,15 @@
 package ar.uba.fi.ingsoft1.football5.user;
 
+import ar.uba.fi.ingsoft1.football5.images.Image;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotBlank;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
-import java.util.Date;
 import java.util.List;
 
-@Entity()
-@Table(name = "users")
+@Entity
 public class User implements UserDetails, UserCredentials {
 
     @Id
@@ -28,15 +25,14 @@ public class User implements UserDetails, UserCredentials {
     @Column(nullable = false)
     private String lastName;
 
-    @NotBlank
     @Column(nullable = false, unique = true)
     private String email;
 
     @Column(nullable = false)
     private String gender;
 
-    @Column(nullable = false)
-    private String avatar; // TODO: Change to URL type or byte[] for image storage
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Image avatar;
 
     @Column(nullable = false)
     private String area;
@@ -54,12 +50,12 @@ public class User implements UserDetails, UserCredentials {
     @Column(nullable = false)
     private boolean emailConfirmed = false;
 
-    @Column(nullable = true)
+    @Column
     private String emailConfirmationToken;
 
-    public User() {}
+    protected User() {}
 
-    public User(String username, String firstName, String lastName, String email, String gender, String avatar, String area, String dateBirth, String password, Role role) {
+    public User(String username, String firstName, String lastName, String email, String gender, Image avatar, String area, String dateBirth, String password, Role role) {
         this.username = username;
         this.firstName = firstName;
         this.lastName = lastName;
@@ -73,6 +69,21 @@ public class User implements UserDetails, UserCredentials {
         this.emailConfirmed = false;
     }
 
+    @Override
+    public String getUsername() {
+        return username;
+    }
+
+    @Override
+    public String getPassword() {
+        return password;
+    }
+
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return List.of(new SimpleGrantedAuthority(role.name()));
+    }
+
     public Long getId() {
         return id;
     }
@@ -83,16 +94,6 @@ public class User implements UserDetails, UserCredentials {
 
     public void setEmailConfirmed(boolean emailConfirmed) {
         this.emailConfirmed = emailConfirmed;
-    }
-
-    @Override
-    public String getUsername() {
-        return username;
-    }
-
-    @Override
-    public String getPassword() {
-        return password;
     }
 
     public void setPassword(String password) {
@@ -131,11 +132,11 @@ public class User implements UserDetails, UserCredentials {
         this.gender = gender;
     }
 
-    public String getAvatar() {
+    public Image getAvatar() {
         return avatar;
     }
 
-    public void setAvatar(String avatar) {
+    public void setAvatar(Image avatar) {
         this.avatar = avatar;
     }
 
@@ -161,10 +162,5 @@ public class User implements UserDetails, UserCredentials {
 
     public void setRole(Role role) {
         this.role = role;
-    }
-
-    @Override
-    public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of(new SimpleGrantedAuthority(role.name()));
     }
 }

@@ -1,6 +1,7 @@
 package ar.uba.fi.ingsoft1.football5.images;
 
 import ar.uba.fi.ingsoft1.football5.fields.Field;
+import ar.uba.fi.ingsoft1.football5.user.User;
 import jakarta.persistence.*;
 
 @Entity
@@ -17,6 +18,10 @@ public class Image {
     @JoinColumn(name = "field_id")
     private Field field;
 
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id")
+    private User user;
+
     protected Image() {}
 
     protected Image(Long id, byte[] data, Field field) {
@@ -25,12 +30,24 @@ public class Image {
         this.field = field;
     }
 
+    protected Image(Long id, byte[] data, User user) {
+        this.id = id;
+        this.data = data;
+        this.user = user;
+    }
+
     public Image(byte[] data, Field field) {
         this.data = data;
         this.field = field;
     }
 
+    public Image(byte[] data, User user) {
+        this.data = data;
+        this.user = user;
+    }
+
     public Long getId() { return id; }
     public byte[] getData() { return data; }
     public Field getField() { return field; }
+    public User getUser() { return user; }
 }

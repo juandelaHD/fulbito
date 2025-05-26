@@ -11,6 +11,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -35,10 +36,7 @@ class FieldRestController {
     @ResponseStatus(HttpStatus.CREATED)
     @ApiResponse(responseCode = "201", description = "Field created successfully")
     @ApiResponse(responseCode = "400", description = "Invalid field data supplied", content = @Content)
-    // TODO: Currently, this endpoint is not secured for admin usage.
-    //  Uncomment the line below to secure it when users authentication
-    //  is implemented.
-    //  @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     FieldDTO createField(
             @RequestParam("field")
             @Parameter(
@@ -54,16 +52,13 @@ class FieldRestController {
         return fieldService.createField(fieldCreate, images, userDetails);
     }
 
-    @DeleteMapping(value = "/{id}", produces = "application/json")
+    @DeleteMapping(path = "/{id}", produces = "application/json")
     @Operation(summary = "Delete a field by ID")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @ApiResponse(responseCode = "204", description = "Field deleted successfully")
     @ApiResponse(responseCode = "404", description = "Field not found", content = @Content)
     @ApiResponse(responseCode = "400", description = "Invalid field ID supplied", content = @Content)
-    // TODO: Currently, this endpoint is not secured for admin usage.
-    //  Uncomment the line below to secure it when users authentication
-    //  is implemented.
-    //  @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     void deleteField(
             @PathVariable("id") @Parameter(description = "ID of the field to delete") Long id,
             @AuthenticationPrincipal JwtUserDetails userDetails

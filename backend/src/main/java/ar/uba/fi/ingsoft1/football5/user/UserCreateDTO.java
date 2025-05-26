@@ -1,10 +1,8 @@
 package ar.uba.fi.ingsoft1.football5.user;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
-import java.util.Date;
 import java.util.function.Function;
 
 public record UserCreateDTO(

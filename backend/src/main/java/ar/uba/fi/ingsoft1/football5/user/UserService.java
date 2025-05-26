@@ -3,16 +3,17 @@ package ar.uba.fi.ingsoft1.football5.user;
 import ar.uba.fi.ingsoft1.football5.common.exception.UserNotFoundException;
 import ar.uba.fi.ingsoft1.football5.config.security.JwtService;
 import ar.uba.fi.ingsoft1.football5.config.security.JwtUserDetails;
+import ar.uba.fi.ingsoft1.football5.images.ImageService;
 import ar.uba.fi.ingsoft1.football5.user.refresh_token.RefreshToken;
 import ar.uba.fi.ingsoft1.football5.user.refresh_token.RefreshTokenService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.Optional;
 
 @Service
@@ -23,6 +24,7 @@ public class UserService implements UserDetailsService {
     private final PasswordEncoder passwordEncoder;
     private final UserRepository userRepository;
     private final RefreshTokenService refreshTokenService;
+    private final ImageService imageService;
     // private final EmailVerificationTokenRepository emailTokenRepo, TODO: Uncomment when email service is implemented
     // private final EmailService emailService // TODO: Uncomment when email service is implemented
 
@@ -35,7 +37,8 @@ public class UserService implements UserDetailsService {
             JwtService jwtService,
             PasswordEncoder passwordEncoder,
             UserRepository userRepository,
-            RefreshTokenService refreshTokenService
+            RefreshTokenService refreshTokenService,
+            ImageService imageService
             // EmailVerificationTokenRepository emailTokenRepo,  // TODO: Uncomment when email service is implemented
             // EmailService emailService  // TODO: Uncomment when email service is implemented
     ) {
@@ -43,22 +46,9 @@ public class UserService implements UserDetailsService {
         this.passwordEncoder = passwordEncoder;
         this.userRepository = userRepository;
         this.refreshTokenService = refreshTokenService;
+        this.imageService = imageService;
         // this.emailTokenRepo = emailTokenRepo; // Uncomment when email service is implemented
         // this.emailService = emailService; // Uncomment when email service is implemented
-    }
-
-    public boolean isAdminUser(String username) {
-        return userRepository.findByUsername(username)
-                .map(u -> u.getRole().equals("ADMIN"))
-                .orElse(false);
-    }
-
-    private String getRole(Authentication authPrincipal) {
-        return authPrincipal.getAuthorities().stream()
-                .filter(a -> a.getAuthority().equals(ROLE_ADMIN))
-                .findFirst()
-                .map(a -> ROLE_ADMIN)
-                .orElse(ROLE_USER);
     }
 
     @Override
@@ -68,19 +58,12 @@ public class UserService implements UserDetailsService {
                 .orElseThrow(() -> new UserNotFoundException(USER_NOT_FOUND, username));
     }
 
-    public UserDTO getUserByUsername(String username) throws UserNotFoundException {
+    public UserDTO getUser(String username) throws UserNotFoundException {
         User user = loadUserByUsername(username);
         return new UserDTO(user);
     }
 
-    public User getUser(String username) {
-        return userRepository.findByUsername(username).orElseThrow(() -> {
-            var msg = String.format("Username '%s' not found", username);
-            return new UsernameNotFoundException(msg);
-        });
-    }
-
-    Optional<TokenDTO> createUser(UserCreateDTO data) {
+    Optional<TokenDTO> createUser(UserCreateDTO data, MultipartFile avatar) throws IOException {
 
         if (userRepository.findByUsername(data.username()).isPresent()) {
             throw new IllegalArgumentException("Username already taken");
@@ -92,7 +75,9 @@ public class UserService implements UserDetailsService {
 
         var user = data.asUser(passwordEncoder::encode);
         user.setEmailConfirmed(false);
-        userRepository.save(user);
+
+        User savedUser = userRepository.save(user);
+        imageService.saveImage(savedUser, avatar);
 
         /*
         String token = UUID.randomUUID().toString();
