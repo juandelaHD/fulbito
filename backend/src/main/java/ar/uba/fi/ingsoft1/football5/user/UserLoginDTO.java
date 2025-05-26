@@ -5,4 +5,14 @@ import jakarta.validation.constraints.NotBlank;
 public record UserLoginDTO(
         @NotBlank String username,
         @NotBlank String password
-) implements UserCredentials {}
+) implements UserCredentials {
+    @Override
+    public String getUsername() {
+        return username;
+    }
+
+    @Override
+    public String getPassword() {
+        return password;
+    }
+}

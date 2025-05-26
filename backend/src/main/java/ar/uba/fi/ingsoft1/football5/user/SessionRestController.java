@@ -7,19 +7,16 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.lang.NonNull;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.MethodArgumentNotValidException;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseStatus;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
 @RestController
 @RequestMapping("/sessions")
-@Tag(name = "2 - Sessions")
+@Tag(name = "1 - Sessions")
 class SessionRestController {
 
     private final UserService userService;
@@ -27,6 +24,18 @@ class SessionRestController {
     @Autowired
     SessionRestController(UserService userService) {
         this.userService = userService;
+    }
+
+    @PostMapping(path = "/sign-up", produces = "application/json")
+    @Operation(summary = "Create a new user")
+    @ResponseStatus(HttpStatus.CREATED)
+    ResponseEntity<TokenDTO> signUp(
+            @Valid @NonNull @RequestBody UserCreateDTO data,
+            Authentication authPrincipal) {
+        return userService
+                .createUser(data, authPrincipal)
+                .map(user -> ResponseEntity.status(HttpStatus.CREATED).body(user))
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "User creation failed"));
     }
 
     @PostMapping(produces = "application/json")
