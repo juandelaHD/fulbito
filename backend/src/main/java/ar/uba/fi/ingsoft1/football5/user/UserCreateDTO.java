@@ -2,6 +2,7 @@ package ar.uba.fi.ingsoft1.football5.user;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 
 import java.util.Date;
 import java.util.function.Function;
@@ -16,7 +17,7 @@ public record UserCreateDTO(
         @NotBlank String area,
         @NotBlank String dateBirth,
         @NotBlank String gender,
-        @NotBlank String role
+        @NotNull Role role
 ) implements UserCredentials {
     public User asUser(Function<String, String> encryptPassword) {
         return new User(username, firstName, lastName, email, gender, avatar, area, dateBirth, encryptPassword.apply(password), role);
@@ -60,7 +61,7 @@ public record UserCreateDTO(
         return this.gender;
     }
 
-    public String getRole() {
+    public Role getRole() {
         return this.role;
     }
 }

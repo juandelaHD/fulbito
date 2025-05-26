@@ -47,8 +47,9 @@ public class User implements UserDetails, UserCredentials {
     @Column(nullable = false)
     private String password;
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private String role;
+    private Role role;
 
     @Column(nullable = false)
     private boolean emailConfirmed = false;
@@ -58,7 +59,7 @@ public class User implements UserDetails, UserCredentials {
 
     public User() {}
 
-    public User(String username, String firstName, String lastName, String email, String gender, String avatar, String area, String dateBirth, String password, String role) {
+    public User(String username, String firstName, String lastName, String email, String gender, String avatar, String area, String dateBirth, String password, Role role) {
         this.username = username;
         this.firstName = firstName;
         this.lastName = lastName;
@@ -154,13 +155,16 @@ public class User implements UserDetails, UserCredentials {
         this.dateBirth = dateBirth;
     }
 
-    public String getRole() {
+    public Role getRole() {
         return role;
     }
 
+    public void setRole(Role role) {
+        this.role = role;
+    }
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of(new SimpleGrantedAuthority(role));
+        return List.of(new SimpleGrantedAuthority(role.name()));
     }
 }

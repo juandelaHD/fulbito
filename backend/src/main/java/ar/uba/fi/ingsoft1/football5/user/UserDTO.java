@@ -1,6 +1,7 @@
 package ar.uba.fi.ingsoft1.football5.user;
 
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 
 public record UserDTO(
         @NotBlank Long id,
@@ -12,7 +13,7 @@ public record UserDTO(
         @NotBlank String area,
         @NotBlank String dateBirth,
         @NotBlank String gender,
-        @NotBlank String role
+        @NotNull Role role
 ) {
     UserDTO(User user) {
         this(
