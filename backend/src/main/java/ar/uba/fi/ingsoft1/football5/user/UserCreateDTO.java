@@ -15,9 +15,10 @@ public record UserCreateDTO(
         @NotBlank String avatar,
         @NotBlank String area,
         @NotBlank String dateBirth,
-        @NotBlank String gender
+        @NotBlank String gender,
+        @NotBlank String role
 ) implements UserCredentials {
-    public User asUser(Function<String, String> encryptPassword, String role) {
+    public User asUser(Function<String, String> encryptPassword) {
         return new User(username, firstName, lastName, email, gender, avatar, area, dateBirth, encryptPassword.apply(password), role);
     }
 
@@ -57,6 +58,10 @@ public record UserCreateDTO(
 
     public String getGender() {
         return this.gender;
+    }
+
+    public String getRole() {
+        return this.role;
     }
 }
 

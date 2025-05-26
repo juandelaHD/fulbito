@@ -33,21 +33,22 @@ class SessionRestController {
             @Valid @NonNull @RequestBody UserCreateDTO data,
             Authentication authPrincipal) {
         return userService
-                .createUser(data, authPrincipal)
-                .map(user -> ResponseEntity.status(HttpStatus.CREATED).body(user))
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "User creation failed"));
+            .createUser(data, authPrincipal)
+            .map(user -> ResponseEntity.status(HttpStatus.CREATED).body(user))
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "User creation failed"));
     }
 
     @PostMapping(produces = "application/json")
     @Operation(summary = "Log in, creating a new session")
     @ResponseStatus(HttpStatus.CREATED)
+    @ApiResponse(responseCode = "200", description = "Successful login", content = @Content)
     @ApiResponse(responseCode = "401", description = "Invalid username or password supplied", content = @Content)
     public TokenDTO login(
             @Valid @NonNull @RequestBody UserLoginDTO data
     ) throws MethodArgumentNotValidException {
         return userService
                 .loginUser(data)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid username or password supplied"));
     }
 
     @PutMapping(produces = "application/json")

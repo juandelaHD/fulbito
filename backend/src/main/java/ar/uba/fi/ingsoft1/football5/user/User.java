@@ -12,12 +12,13 @@ import java.util.Date;
 import java.util.List;
 
 @Entity()
-@Table(name = "users", uniqueConstraints = {
-        @UniqueConstraint(columnNames = "email")
-})
+@Table(name = "users")
 public class User implements UserDetails, UserCredentials {
 
     @Id
+    @GeneratedValue
+    private Long id;
+
     @Column(unique = true, nullable = false)
     private String username;
 
@@ -27,7 +28,6 @@ public class User implements UserDetails, UserCredentials {
     @Column(nullable = false)
     private String lastName;
 
-    @Email
     @NotBlank
     @Column(nullable = false, unique = true)
     private String email;
@@ -53,7 +53,7 @@ public class User implements UserDetails, UserCredentials {
     @Column(nullable = false)
     private boolean emailConfirmed = false;
 
-    @Column
+    @Column(nullable = true)
     private String emailConfirmationToken;
 
     public User() {}
@@ -70,6 +70,10 @@ public class User implements UserDetails, UserCredentials {
         this.password = password;
         this.role = role;
         this.emailConfirmed = false;
+    }
+
+    public Long getId() {
+        return id;
     }
 
     public boolean isEmailConfirmed() {

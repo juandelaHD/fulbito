@@ -32,17 +32,9 @@ class UserRestController {
     @GetMapping(path = "/{username}", produces = "application/json")
     @Operation(summary = "Get user profile")
     @ResponseStatus(HttpStatus.OK)
-    @PreAuthorize("(hasRole('USER'))")
+    //@PreAuthorize("hasRole('USER') and principal.emailConfirmed")
     ResponseEntity<UserDTO> getUserByUsername(@NonNull @PathVariable String username) {
-        try {
-            UserDTO user = userService.getUserByUsername(username);
-            return ResponseEntity.status(HttpStatus.OK).body(user);
-        } catch (UserNotFoundException ex) {
-            String messages = format(NOT_FOUND_TEMPLATE, username);
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, messages);
-        }
+        UserDTO user = userService.getUserByUsername(username);
+        return ResponseEntity.status(HttpStatus.OK).body(user);
     }
-
-
-
 }

@@ -54,11 +54,7 @@ class UserService implements UserDetailsService {
                 .orElse(false);
     }
 
-
     private String getRole(Authentication authPrincipal) {
-        if (authPrincipal == null) {
-            return ROLE_USER;
-        }
         return authPrincipal.getAuthorities().stream()
                 .filter(a -> a.getAuthority().equals(ROLE_ADMIN))
                 .findFirst()
@@ -79,7 +75,6 @@ class UserService implements UserDetailsService {
     }
 
     Optional<TokenDTO> createUser(UserCreateDTO data, Authentication authPrincipal) {
-        String role = getRole(authPrincipal);
 
         if (userRepository.findByUsername(data.username()).isPresent()) {
             throw new IllegalArgumentException("Username already taken");
@@ -89,7 +84,7 @@ class UserService implements UserDetailsService {
             throw new IllegalArgumentException("Email already registered");
         }
 
-        var user = data.asUser(passwordEncoder::encode, role);
+        var user = data.asUser(passwordEncoder::encode);
         user.setEmailConfirmed(false);
         userRepository.save(user);
 
