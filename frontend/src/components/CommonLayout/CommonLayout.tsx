@@ -1,51 +1,56 @@
 import React from "react";
-import { Link } from "wouter";
-
+import { Link, useLocation } from "wouter";
 import { useToken } from "@/services/TokenContext";
-
 import styles from "./CommonLayout.module.css";
 
 export const CommonLayout = ({ children }: React.PropsWithChildren) => {
-  const [tokenState] = useToken();
+    const [tokenState] = useToken();
+    const [location] = useLocation();
 
-  return (
-    <div className={styles.mainLayout}>
-      <ul className={styles.topBar}>{tokenState.state === "LOGGED_OUT" ? <LoggedOutLinks /> : <LoggedInLinks />}</ul>
-      <div className={styles.body}>{children}</div>
-    </div>
-  );
+    const hideNav = location === "/login" || location === "/signup";
+
+    return (
+        <div className={styles.mainLayout}>
+            {!hideNav && (
+                <nav className={styles.navbar}>
+                    <div className={styles.navLinks}>
+                        {tokenState.state === "LOGGED_OUT" ? <LoggedOutLinks /> : <LoggedInLinks />}
+                    </div>
+                </nav>
+            )}
+            <div className={styles.body}>{children}</div>
+        </div>
+    );
 };
 
-const LoggedOutLinks = () => {
-  return (
+const LoggedOutLinks = () => (
     <>
-      <li>
-        <Link href="/login">Log in</Link>
-      </li>
-      <li>
-        <Link href="/signup">Sign Up</Link>
-      </li>
+        <Link className={styles.navLink} href="/login">
+            Log in
+        </Link>
+        <Link className={styles.navLink} href="/signup">
+            Sign Up
+        </Link>
     </>
-  );
-};
+);
 
 const LoggedInLinks = () => {
-  const [, setTokenState] = useToken();
+    const [, setTokenState] = useToken();
 
-  const logOut = () => {
-    setTokenState({ state: "LOGGED_OUT" });
-  };
+    const logOut = () => {
+        setTokenState({ state: "LOGGED_OUT" });
+    };
 
-  return (
-    <>
-      <li>
-        <Link href="/under-construction">Main Page</Link>
-      </li>
-      <li>Projects</li>
-      <li>Tasks</li>
-      <li>
-        <button onClick={logOut}>Log out</button>
-      </li>
-    </>
-  );
+    return (
+        <>
+            <Link className={styles.navLink} href="/under-construction">
+                Main Page
+            </Link>
+            <span className={styles.navLink}>Projects</span>
+            <span className={styles.navLink}>Tasks</span>
+            <button onClick={logOut} className={styles.navLink}>
+                Log out
+            </button>
+        </>
+    );
 };
