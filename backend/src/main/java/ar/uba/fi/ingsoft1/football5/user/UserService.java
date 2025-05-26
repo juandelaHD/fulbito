@@ -16,7 +16,7 @@ import java.util.Optional;
 
 @Service
 @Transactional
-class UserService implements UserDetailsService {
+public class UserService implements UserDetailsService {
 
     private final JwtService jwtService;
     private final PasswordEncoder passwordEncoder;
@@ -70,6 +70,13 @@ class UserService implements UserDetailsService {
     public UserDTO getUserByUsername(String username) throws UserNotFoundException {
         User user = loadUserByUsername(username);
         return new UserDTO(user);
+    }
+
+    public User getUser(String username) {
+        return userRepository.findByUsername(username).orElseThrow(() -> {
+            var msg = String.format("Username '%s' not found", username);
+            return new UsernameNotFoundException(msg);
+        });
     }
 
     Optional<TokenDTO> createUser(UserCreateDTO data) {
