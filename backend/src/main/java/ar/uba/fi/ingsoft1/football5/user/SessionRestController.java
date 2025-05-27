@@ -60,4 +60,13 @@ class SessionRestController {
                 .refresh(data)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED));
     }
+
+    @GetMapping("/verify-email")
+    public ResponseEntity<String> verifyEmail(@RequestParam String token) {
+        return userService.verifyEmail(token)
+                .map(user -> ResponseEntity.ok("Email verified successfully!"))
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid verification token"));
+    }
+
+
 }
