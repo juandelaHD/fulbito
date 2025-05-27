@@ -24,7 +24,7 @@ import java.util.List;
 @EnableMethodSecurity(prePostEnabled = true)
 public class SecurityConfig {
 
-    public static final String[] PUBLIC_ENDPOINTS = {"/sessions/sign-up", "/sessions/login", "/sessions/refresh"};
+    public static final String[] PUBLIC_ENDPOINTS = {"/sessions/sign-up", "/sessions/login", "/sessions/refresh",  "/sessions/verify-email"};
 
     private final JwtAuthFilter authFilter;
 

@@ -85,6 +85,14 @@ public class User implements UserDetails, UserCredentials {
         this.emailConfirmed = emailConfirmed;
     }
 
+    public String getEmailConfirmationToken() {
+        return emailConfirmationToken;
+    }
+
+    public void setEmailConfirmationToken(String emailConfirmationToken) {
+        this.emailConfirmationToken = emailConfirmationToken;
+    }
+
     @Override
     public String getUsername() {
         return username;
