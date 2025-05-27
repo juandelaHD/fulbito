@@ -10,13 +10,13 @@ public record UserCreateDTO(
         @NotBlank String lastName,
         @NotBlank String username,
         @NotBlank String password,
-        @NotBlank String area,
+        @NotBlank String zone,
         @NotBlank String dateBirth,
         @NotBlank String gender,
         @NotNull Role role
 ) implements UserCredentials {
     public User asUser(Function<String, String> encryptPassword) {
-        return new User(firstName, lastName, username, gender, area, dateBirth, encryptPassword.apply(password), role);
+        return new User(firstName, lastName, username, gender, zone, dateBirth, encryptPassword.apply(password), role);
     }
 
     @Override

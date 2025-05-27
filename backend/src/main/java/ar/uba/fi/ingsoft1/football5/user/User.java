@@ -32,7 +32,7 @@ public class User implements UserDetails, UserCredentials {
     private Image avatar;
 
     @Column(nullable = false)
-    private String area;
+    private String zone;
 
     @Column(nullable = false)
     private String dateBirth;
@@ -52,12 +52,12 @@ public class User implements UserDetails, UserCredentials {
 
     protected User() {}
 
-    public User(String firstName, String lastName, String username, String gender, String area, String dateBirth, String password, Role role) {
+    public User(String firstName, String lastName, String username, String gender, String zone, String dateBirth, String password, Role role) {
         this.firstName = firstName;
         this.lastName = lastName;
         this.username = username;
         this.gender = gender;
-        this.area = area;
+        this.zone = zone;
         this.dateBirth = dateBirth;
         this.password = password;
         this.role = role;
@@ -111,8 +111,8 @@ public class User implements UserDetails, UserCredentials {
         this.avatar = avatar;
     }
 
-    public String getArea() {
-        return area;
+    public String getZone() {
+        return zone;
     }
 
     public String getDateBirth() {

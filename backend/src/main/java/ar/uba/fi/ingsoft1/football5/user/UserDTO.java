@@ -9,7 +9,7 @@ public record UserDTO(
         @NotBlank String lastName,
         @NotBlank String username,
         Long avatarId,
-        @NotBlank String area,
+        @NotBlank String zone,
         @NotBlank String dateBirth,
         @NotBlank String gender,
         @NotNull Role role
@@ -21,7 +21,7 @@ public record UserDTO(
                 user.getLastName(),
                 user.getUsername(),
                 user.getAvatar().getId(),
-                user.getArea(),
+                user.getZone(),
                 user.getDateBirth(),
                 user.getGender(),
                 user.getRole()
