@@ -1,6 +1,5 @@
 import React from "react";
 import { ErrorContainer } from "@/components/form-components/ErrorContainer/ErrorContainer";
-import { SubmitButton } from "@/components/form-components/SubmitButton/SubmitButton";
 import { useFormContext } from "@/config/form-context";
 
 type Props = {
@@ -23,7 +22,6 @@ export const FormContainer = ({ extraError, className = "", children }: Props) =
         >
             {children}
             {extraError && <ErrorContainer errors={[extraError]} />}
-            <SubmitButton />
         </form>
     );
 };

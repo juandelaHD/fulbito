@@ -42,7 +42,7 @@ export const CreateFieldScreen = () => {
     onSubmit: async ({ value }) => {
       console.log("Create field data:", value);
       toast.success("Field created!");
-      // Llamar a tu servicio para guardar la cancha
+      // Llamada añ servicio que cree la canchita realmente --- ACA ---
     },
   });
 
@@ -87,13 +87,16 @@ export const CreateFieldScreen = () => {
             </formData.AppField>
             <formData.AppField name="photos">
               {(field) => (
-                <input
-                  type="file"
-                  accept="image/*"
-                  multiple
-                  onChange={(e) => field.handleChange(e.target.files)}
-                  className="..." // <- acá falta el estilo
-                />
+                <div className="flex flex-col gap-1 mt-4 mb-4">
+                  <label className="text-sm font-medium text-green-900">Field Picture (optional)</label>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    onChange={(e) => field.handleChange(e.target.files)}
+                    className="w-full px-4 py-[0.6rem] rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 text-black bg-white"
+                  />
+                </div>
               )}
             </formData.AppField>
             <CreateButton>Create Field</CreateButton>
