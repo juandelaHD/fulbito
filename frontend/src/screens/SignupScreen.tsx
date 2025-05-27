@@ -34,6 +34,8 @@ export const SignupScreen = () => {
     validators: {
       onSubmit: () => {
         const values = formData.store.state.values;
+        
+        console.log("Valores actuales:", values);
 
         const result = SignupRequestSchema.safeParse(values);
         if (!result.success) {
@@ -91,19 +93,16 @@ export const SignupScreen = () => {
                     )}
                   </formData.AppField>
                   <formData.AppField name="gender">
-                    {(field: any) => (
-                        <div>
-                          <label className="block text-sm font-medium text-green-900">Gender</label>
-                          <select
-                              className="w-full px-4 py-2 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 text-black bg-white"
-                              {...field}
-                          >
-                            <option value="">Select...</option>
-                            <option value="Male">Masculine</option>
-                            <option value="Female">Feminine</option>
-                            <option value="Other">Other</option>
-                          </select>
-                        </div>
+                    {(field) => (
+                      <field.SelectField
+                        label="Gender"
+                        options={[
+                          { label: "Select...", value: "" },
+                          { label: "Male", value: "Male" },
+                          { label: "Female", value: "Female" },
+                          { label: "Other", value: "Other" },
+                        ]}
+                      />
                     )}
                   </formData.AppField>
                   <formData.AppField name="location">
@@ -128,18 +127,15 @@ export const SignupScreen = () => {
                     )}
                   </formData.AppField>
                   <formData.AppField name="userType">
-                    {(field: any) => (
-                      <div>
-                        <label className="block text-sm font-medium text-green-900">Role</label>
-                        <select
-                          className="w-full px-4 py-2 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 text-black bg-white"
-                          {...field}
-                        >
-                          <option value="">Select Role...</option>
-                          <option value="Player">Player</option>
-                          <option value="Field Admin">Field Manager</option>
-                        </select>
-                      </div>
+                    {(field) => (
+                      <field.SelectField
+                        label="Role"
+                        options={[
+                          { label: "Select Role...", value: "" },
+                          { label: "Player", value: "Player" },
+                          { label: "Field Admin", value: "Field Admin" },
+                        ]}
+                      />
                     )}
                   </formData.AppField>
                 </formData.FormContainer>
