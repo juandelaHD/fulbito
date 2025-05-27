@@ -9,7 +9,7 @@ export const SignupRequestSchema = z.object({
   age: z.coerce.number().min(13),
   gender: z.enum(["Male", "Female", "Other"]),
   location: z.string().min(2),
-  photo: z.any().optional(), // We'll handle this differently if backend needs it
+  photo: z.any().optional(),
 });
 
 export type SignupRequest = z.infer<typeof SignupRequestSchema>;

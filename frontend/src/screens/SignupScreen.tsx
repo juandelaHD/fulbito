@@ -2,6 +2,18 @@ import { CommonLayout } from "@/components/CommonLayout/CommonLayout";
 import { useAppForm } from "@/config/use-app-form";
 import { useSignup } from "@/services/UserServices";
 import { SignupRequestSchema } from "@/models/Signup";
+import { toast } from "react-hot-toast";
+
+const fieldLabels: Record<string, string> = {
+  username: "Username",
+  password: "Password",
+  firstName: "First Name",
+  lastName: "Last Name",
+  email: "Email",
+  age: "Age",
+  gender: "Gender",
+  location: "Location",
+};
 
 export const SignupScreen = () => {
   const { mutate, error } = useSignup();
@@ -18,18 +30,40 @@ export const SignupScreen = () => {
       location: "",
     },
     validators: {
-      onChange: (values) => {
+      onSubmit: (values) => {
         const result = SignupRequestSchema.safeParse(values);
+
         if (!result.success) {
-          const error = result.error.format();
+          const formatted = result.error.format();
+
+          const firstFieldWithError = Object.entries(formatted)
+            .find(([key, val]) => key !== "_errors" && (
+              (Array.isArray(val) && val.length > 0) ||
+              (typeof val === "object" && "_errors" in val && Array.isArray(val._errors) && val._errors.length > 0)
+            ));
+
+          if (firstFieldWithError) {
+            const [field, errorObj] = firstFieldWithError;
+            const label = fieldLabels[field] ?? field;
+            let message = "";
+
+            if (Array.isArray(errorObj)) {
+              message = errorObj[0];
+            } else if ("_errors" in errorObj && Array.isArray(errorObj._errors)) {
+              message = errorObj._errors[0];
+            }
+
+            if (message) {
+              toast.error(`${label}: ${message}`, { duration: 5000 });
+            }
+          }
+
           return {
             isValid: false,
-            error: Object.values(error)
-              .map((e: any) => e?._errors?.[0])
-              .filter(Boolean)
-              .join(", "),
+            error: "Validation failed",
           };
         }
+
         return { isValid: true };
       },
     },
