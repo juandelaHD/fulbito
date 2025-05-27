@@ -35,7 +35,7 @@ public class User implements UserDetails, UserCredentials {
     private String zone;
 
     @Column(nullable = false)
-    private String dateBirth;
+    private Integer age;
 
     @Column(nullable = false)
     private String password;
@@ -52,13 +52,13 @@ public class User implements UserDetails, UserCredentials {
 
     protected User() {}
 
-    public User(String firstName, String lastName, String username, String gender, String zone, String dateBirth, String password, Role role) {
+    public User(String firstName, String lastName, String username, String gender, String zone, Integer age, String password, Role role) {
         this.firstName = firstName;
         this.lastName = lastName;
         this.username = username;
         this.gender = gender;
         this.zone = zone;
-        this.dateBirth = dateBirth;
+        this.age = age;
         this.password = password;
         this.role = role;
         this.emailConfirmed = false;
@@ -123,10 +123,9 @@ public class User implements UserDetails, UserCredentials {
         return zone;
     }
 
-    public String getDateBirth() {
-        return dateBirth;
+    public Integer getAge() {
+        return age;
     }
-
     public Role getRole() {
         return role;
     }

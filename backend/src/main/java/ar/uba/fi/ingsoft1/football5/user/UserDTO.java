@@ -10,7 +10,7 @@ public record UserDTO(
         @NotBlank String username,
         Long avatarId,
         @NotBlank String zone,
-        @NotBlank String dateBirth,
+        @NotBlank Integer age,
         @NotBlank String gender,
         @NotNull Role role,
         @NotBlank boolean emailConfirmed
@@ -23,7 +23,7 @@ public record UserDTO(
                 user.getUsername(),
                 user.getAvatar().getId(),
                 user.getZone(),
-                user.getDateBirth(),
+                user.getAge(),
                 user.getGender(),
                 user.getRole(),
                 user.isEmailConfirmed()
