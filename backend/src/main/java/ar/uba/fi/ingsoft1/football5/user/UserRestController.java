@@ -20,8 +20,7 @@ class UserRestController {
     @GetMapping(path = "/{username}", produces = "application/json")
     @Operation(summary = "Get user profile")
     @ResponseStatus(HttpStatus.OK)
-    //@PreAuthorize("hasRole('USER')")
-    // TODO: When are we using this service? Is it for the user profile page? Check PreAuthorize annotation.
+    // TODO: When are we using this service? Is it for the user or admin profile page? Decide PreAuthorize annotation.
     UserDTO getUser(@NonNull @PathVariable String username) {
         return userService.getUser(username);
     }

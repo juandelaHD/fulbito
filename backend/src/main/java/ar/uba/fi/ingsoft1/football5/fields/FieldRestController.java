@@ -36,7 +36,7 @@ class FieldRestController {
     @ResponseStatus(HttpStatus.CREATED)
     @ApiResponse(responseCode = "201", description = "Field created successfully")
     @ApiResponse(responseCode = "400", description = "Invalid field data supplied", content = @Content)
-    //@PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     FieldDTO createField(
             @RequestParam("field")
             @Parameter(
@@ -58,7 +58,7 @@ class FieldRestController {
     @ApiResponse(responseCode = "204", description = "Field deleted successfully")
     @ApiResponse(responseCode = "404", description = "Field not found", content = @Content)
     @ApiResponse(responseCode = "400", description = "Invalid field ID supplied", content = @Content)
-    //@PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     void deleteField(
             @PathVariable("id") @Parameter(description = "ID of the field to delete") Long id,
             @AuthenticationPrincipal JwtUserDetails userDetails
