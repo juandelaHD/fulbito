@@ -12,7 +12,8 @@ public record UserDTO(
         @NotBlank String zone,
         @NotBlank String dateBirth,
         @NotBlank String gender,
-        @NotNull Role role
+        @NotNull Role role,
+        @NotBlank boolean emailConfirmed
 ) {
     UserDTO(User user) {
         this(
@@ -24,7 +25,8 @@ public record UserDTO(
                 user.getZone(),
                 user.getDateBirth(),
                 user.getGender(),
-                user.getRole()
+                user.getRole(),
+                user.isEmailConfirmed()
         );
     }
 }

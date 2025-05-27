@@ -4,10 +4,12 @@ import ar.uba.fi.ingsoft1.football5.common.exception.UserNotFoundException;
 import ar.uba.fi.ingsoft1.football5.config.security.JwtService;
 import ar.uba.fi.ingsoft1.football5.config.security.JwtUserDetails;
 import ar.uba.fi.ingsoft1.football5.images.ImageService;
+import ar.uba.fi.ingsoft1.football5.user.email.EmailSenderService;
 import ar.uba.fi.ingsoft1.football5.user.refresh_token.RefreshToken;
 import ar.uba.fi.ingsoft1.football5.user.refresh_token.RefreshTokenService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -15,22 +17,20 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
 @Transactional
 public class UserService implements UserDetailsService {
+
+    private static final String USER_NOT_FOUND = "user";
 
     private final JwtService jwtService;
     private final PasswordEncoder passwordEncoder;
     private final UserRepository userRepository;
     private final RefreshTokenService refreshTokenService;
     private final ImageService imageService;
-    // private final EmailVerificationTokenRepository emailTokenRepo, TODO: Uncomment when email service is implemented
-    // private final EmailService emailService // TODO: Uncomment when email service is implemented
-
-    private static final String USER_NOT_FOUND = "user";
-    private static final String ROLE_ADMIN = "ROLE_ADMIN";
-    private static final String ROLE_USER = "ROLE_USER";
+    private final EmailSenderService emailService;
 
     @Autowired
     UserService(
@@ -38,17 +38,15 @@ public class UserService implements UserDetailsService {
             PasswordEncoder passwordEncoder,
             UserRepository userRepository,
             RefreshTokenService refreshTokenService,
-            ImageService imageService
-            // EmailVerificationTokenRepository emailTokenRepo,  // TODO: Uncomment when email service is implemented
-            // EmailService emailService  // TODO: Uncomment when email service is implemented
+            ImageService imageService,
+            EmailSenderService emailService
     ) {
         this.jwtService = jwtService;
         this.passwordEncoder = passwordEncoder;
         this.userRepository = userRepository;
         this.refreshTokenService = refreshTokenService;
         this.imageService = imageService;
-        // this.emailTokenRepo = emailTokenRepo; // Uncomment when email service is implemented
-        // this.emailService = emailService; // Uncomment when email service is implemented
+        this.emailService = emailService;
     }
 
     @Override
@@ -65,8 +63,8 @@ public class UserService implements UserDetailsService {
 
     Optional<TokenDTO> createUser(UserCreateDTO data, MultipartFile avatar) throws IOException {
 
-        if (userRepository.findByUsername(data.getUsername()).isPresent()) {
-            throw new IllegalArgumentException("Email or username already exists");
+        if (userRepository.findByUsername(data.username()).isPresent()) {
+            throw new IllegalArgumentException("Username already taken");
         }
 
         var user = data.asUser(passwordEncoder::encode);
@@ -75,20 +73,12 @@ public class UserService implements UserDetailsService {
         User savedUser = userRepository.save(user);
         imageService.saveImage(savedUser, avatar);
 
-        /*
         String token = UUID.randomUUID().toString();
-        EmailVerificationToken verificationToken = new EmailVerificationToken();
-        verificationToken.setToken(token);
-        verificationToken.setUser(user);
-        verificationToken.setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 24)); // 24hs
+        user.setEmailConfirmationToken(token);
 
-        emailTokenRepo.save(verificationToken);
+        userRepository.save(user);
 
-        String link = baseUrl + "/users/confirm?token=" + token;
-        String emailText = "Confirmá tu cuenta haciendo clic en el siguiente enlace: " + link;
-
-        emailService.sendEmail(user.getEmail(), "Confirmación de cuenta", emailText);
-        */
+        emailService.sendMailToVerifyAccount(user.getUsername(), token);
         return Optional.of(generateTokens(user));
     }
 
@@ -104,6 +94,19 @@ public class UserService implements UserDetailsService {
                 .map(RefreshToken::user)
                 .map(this::generateTokens);
     }
+
+    Optional<User> verifyEmail(String token) {
+        Optional<User> maybeUser = userRepository.findByEmailConfirmationToken(token);
+        if (maybeUser.isEmpty()) {
+            return Optional.empty();
+        }
+        User user = maybeUser.get();
+        user.setEmailConfirmed(true);
+        user.setEmailConfirmationToken(null);
+        userRepository.save(user);
+        return Optional.of(user);
+    }
+
 
     private TokenDTO generateTokens(User user) {
         String accessToken = jwtService.createToken(new JwtUserDetails(
