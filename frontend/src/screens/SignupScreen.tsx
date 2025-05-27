@@ -5,14 +5,15 @@ import { SignupRequestSchema } from "@/models/Signup";
 import { toast } from "react-hot-toast";
 
 const fieldLabels: Record<string, string> = {
-  username: "Username",
-  password: "Password",
   firstName: "First Name",
   lastName: "Last Name",
   email: "Email",
   age: "Age",
   gender: "Gender",
   location: "Location",
+  username: "Username",
+  password: "Password",
+  userType: "Role",
 };
 
 export const SignupScreen = () => {
@@ -20,50 +21,31 @@ export const SignupScreen = () => {
 
   const formData = useAppForm({
     defaultValues: {
-      username: "",
-      password: "",
       firstName: "",
       lastName: "",
       email: "",
       age: "",
       gender: "",
       location: "",
+      username: "",
+      password: "",
+      userType: "",
     },
     validators: {
-      onSubmit: (values) => {
+      onSubmit: () => {
+        const values = formData.store.state.values;
+
         const result = SignupRequestSchema.safeParse(values);
-
         if (!result.success) {
-          const formatted = result.error.format();
-
-          const firstFieldWithError = Object.entries(formatted)
-            .find(([key, val]) => key !== "_errors" && (
-              (Array.isArray(val) && val.length > 0) ||
-              (typeof val === "object" && "_errors" in val && Array.isArray(val._errors) && val._errors.length > 0)
-            ));
-
-          if (firstFieldWithError) {
-            const [field, errorObj] = firstFieldWithError;
-            const label = fieldLabels[field] ?? field;
-            let message = "";
-
-            if (Array.isArray(errorObj)) {
-              message = errorObj[0];
-            } else if ("_errors" in errorObj && Array.isArray(errorObj._errors)) {
-              message = errorObj._errors[0];
-            }
-
-            if (message) {
-              toast.error(`${label}: ${message}`, { duration: 5000 });
-            }
+          const errors = result.error.flatten().fieldErrors as Record<string, string[]>;
+          const firstErrorKey = Object.keys(errors)[0];
+          const message = errors[firstErrorKey]?.[0];
+          if (message) {
+            const label = fieldLabels[firstErrorKey] ?? firstErrorKey;
+            toast.error(`${label}: ${message}`, { duration: 5000 });
           }
-
-          return {
-            isValid: false,
-            error: "Validation failed",
-          };
+          return { isValid: false, error: "Validation failed" };
         }
-
         return { isValid: true };
       },
     },
@@ -143,6 +125,21 @@ export const SignupScreen = () => {
                         <field.PasswordField
                             label="Password"
                         />
+                    )}
+                  </formData.AppField>
+                  <formData.AppField name="userType">
+                    {(field: any) => (
+                      <div>
+                        <label className="block text-sm font-medium text-green-900">Role</label>
+                        <select
+                          className="w-full px-4 py-2 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 text-black bg-white"
+                          {...field}
+                        >
+                          <option value="">Select Role...</option>
+                          <option value="Player">Player</option>
+                          <option value="Field Admin">Field Manager</option>
+                        </select>
+                      </div>
                     )}
                   </formData.AppField>
                 </formData.FormContainer>

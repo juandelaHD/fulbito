@@ -31,13 +31,13 @@ const FieldWithType = ({
             </label>
             <input
                 id={id}
-                {...rest}
                 className={`${className}`}
                 name={field.name}
                 value={field.state.value}
                 type={type}
                 onBlur={field.handleBlur}
                 onChange={(e) => field.handleChange(e.target.value)}
+                {...rest}
             />
             <ErrorContainer errors={field.state.meta.errors} />
         </div>
