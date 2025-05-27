@@ -3,6 +3,7 @@ import { Redirect, Route, Switch } from "wouter";
 import { LoginScreen } from "@/screens/LoginScreen";
 import { MainScreen } from "@/screens/MainScreen";
 import { SignupScreen } from "@/screens/SignupScreen";
+import { CreateFieldScreen } from "@/screens/CreateFieldScreen"; 
 import { useToken } from "@/services/TokenContext";
 
 export const Navigation = () => {
@@ -27,6 +28,9 @@ export const Navigation = () => {
           </Route>
           <Route path="/signup">
             <SignupScreen />
+          </Route>
+          <Route path="/create-field">
+            <CreateFieldScreen />
           </Route>
           <Route>
             <Redirect href="/signup" />
