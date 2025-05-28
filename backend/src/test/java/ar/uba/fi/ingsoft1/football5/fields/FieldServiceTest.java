@@ -87,7 +87,7 @@ class FieldServiceTest {
         when(fieldRepository.findByLocationZoneAndLocationAddress(fieldCreateDTO.zone(), fieldCreateDTO.address()))
                 .thenReturn(Optional.empty());
 
-        when(userService.getUser(any())).thenReturn(owner);
+        when(userService.loadUserByUsername(any())).thenReturn(owner);
         when(fieldRepository.save(any(Field.class))).thenReturn(savedField);
 
         FieldDTO fieldDTO = fieldService.createField(fieldCreateDTO, List.of(), userDetails);

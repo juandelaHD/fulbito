@@ -1,5 +1,6 @@
 package ar.uba.fi.ingsoft1.football5.user.email;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
@@ -9,10 +10,11 @@ public class EmailSenderService {
 
     private final JavaMailSender mailSender;
 
-    private final String senderEmailAddress = "appfulbito.manager@gmail.com";
+    private final String senderEmailAddress;
 
-    public EmailSenderService(JavaMailSender mailSender) {
+    public EmailSenderService(JavaMailSender mailSender, @Value("${spring.mail.username}") String senderEmailAddress) {
         this.mailSender = mailSender;
+        this.senderEmailAddress = senderEmailAddress;
     }
 
     public void sendMail(String recipientEmailAddress, EmailWriter mailType) {

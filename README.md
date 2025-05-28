@@ -36,3 +36,26 @@ docker compose down
 - **Frontend:** React + Vite
 - **Base de datos:** PostgreSQL
 - **Contenedores:** Docker y Docker Compose
+
+## Levantar la aplicacion en modo debug
+
+1. Configurar las variables de entorno necesarias en Intellij IDEA:
+
+- SPRING_DATASOURCE_DRIVER_CLASS_NAME
+- SPRING_DATASOURCE_URL
+- SPRING_DATASOURCE_PASSWORD
+- SPRING_DATASOURCE_USERNAME
+
+2. Levantar únicamente la base de datos con Docker Compose:
+
+```sh
+docker compose up db
+```
+
+3. Ejecutar la aplicación desde Intellij IDEA en modo debug.
+
+4. Para acceder a la API, utiliza el siguiente endpoint:
+
+```sh
+http://localhost:8080/swagger-ui/index.html#
+```

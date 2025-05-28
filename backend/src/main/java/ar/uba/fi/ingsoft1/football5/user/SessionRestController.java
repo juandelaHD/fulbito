@@ -1,19 +1,23 @@
 package ar.uba.fi.ingsoft1.football5.user;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.lang.NonNull;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Map;
+
+import java.io.IOException;
 
 @RestController
 @RequestMapping("/sessions")
@@ -22,7 +26,6 @@ class SessionRestController {
 
     private final UserService userService;
 
-    @Autowired
     SessionRestController(UserService userService) {
         this.userService = userService;
     }
@@ -58,9 +61,18 @@ class SessionRestController {
             }
     )
     ResponseEntity<TokenDTO> signUp(
-            @Valid @NonNull @RequestBody UserCreateDTO data) {
+            @RequestParam("user")
+            @Parameter(
+                    description = "UserCreateDTO JSON payload",
+                    schema = @Schema(type = "string", format = "json", implementation = UserCreateDTO.class)
+            ) String userJson,
+            @RequestPart(value = "avatar") MultipartFile avatar) throws IOException {
+
+        ObjectMapper objectMapper = new ObjectMapper();
+        UserCreateDTO data = objectMapper.readValue(userJson, UserCreateDTO.class);
+
         return userService
-                .createUser(data)
+                .createUser(data, avatar)
                 .map(user -> ResponseEntity.status(HttpStatus.CREATED).body(user))
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "User creation failed"));
     }
