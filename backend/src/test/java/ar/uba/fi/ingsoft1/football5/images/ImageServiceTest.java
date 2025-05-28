@@ -61,7 +61,8 @@ class ImageServiceTest {
         byte[] imageData = new byte[]{1, 2, 3};
         MultipartFile file = new MockMultipartFile("file", imageData);
 
-        Image image = new Image(1L, imageData, field);
+        Image image = new Image(imageData, field);
+        image.setId(1L);
         when(imageRepository.save(any())).thenReturn(image);
 
         imageService.saveImages(field, List.of(file));
@@ -84,9 +85,15 @@ class ImageServiceTest {
         MultipartFile file1 = new MockMultipartFile("file1", imageData1);
         MultipartFile file2 = new MockMultipartFile("file2", imageData2);
 
+        Image image1 = new Image(imageData1, field);
+        image1.setId(1L);
+
+        Image image2 = new Image(imageData2, field);
+        image2.setId(2L);
+
         when(imageRepository.save(any(Image.class)))
-                .thenReturn(new Image(1L, imageData1, field))
-                .thenReturn(new Image(2L, imageData2, field));
+                .thenReturn(image1)
+                .thenReturn(image2);
 
         imageService.saveImages(field, List.of(file1, file2));
 
@@ -106,7 +113,8 @@ class ImageServiceTest {
     @Test
     void getImageData_whenImageExists_returnsImageData() throws ItemNotFoundException {
         byte[] imageData = new byte[]{1, 2, 3};
-        Image image = new Image(1L, imageData, null);
+        Image image = new Image(imageData, owner);
+        image.setId(1L);
 
         when(imageRepository.findById(anyLong())).thenReturn(Optional.of(image));
 

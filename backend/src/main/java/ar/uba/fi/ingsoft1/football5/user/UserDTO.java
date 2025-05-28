@@ -18,25 +18,21 @@ public record UserDTO(
         @Schema(description = "User's last name", example = "Doe")
         String lastName,
 
-        @NotBlank(message = "Email must not be blank")
-        @Schema(description = "User's email address", example = "john.doe@example.com")
-        String email,
-
         @NotBlank(message = "Username must not be blank")
         @Schema(description = "User's chosen username", example = "john_doe")
         String username,
 
-        @NotBlank(message = "Avatar URL must not be blank")
-        @Schema(description = "URL to the user's avatar image", example = "https://example.com/avatar.jpg")
-        String avatar,
+        @NotBlank(message = "AvatarId must not be blank")
+        @Schema(description = "Avatar's image Id", example = "1")
+        Long avatarId,
 
-        @NotBlank(message = "Area must not be blank")
-        @Schema(description = "Geographical or organizational area of the user", example = "Buenos Aires")
-        String area,
+        @NotBlank(message = "Zone must not be blank")
+        @Schema(description = "Geographical or organizational zone of the user", example = "Buenos Aires")
+        String zone,
 
-        @NotBlank(message = "Date of birth must not be blank")
-        @Schema(description = "User's date of birth", example = "1990-01-01")
-        String dateBirth,
+        @NotBlank(message = "Age must not be blank")
+        @Schema(description = "User's age", example = "22")
+        Integer age,
 
         @NotBlank(message = "Gender must not be blank")
         @Schema(description = "User's gender", example = "Male")
@@ -54,11 +50,10 @@ public record UserDTO(
                 user.getId(),
                 user.getFirstName(),
                 user.getLastName(),
-                user.getEmail(),
                 user.getUsername(),
-                user.getAvatar(),
-                user.getArea(),
-                user.getDateBirth(),
+                user.getAvatar().getId(),
+                user.getZone(),
+                user.getAge(),
                 user.getGender(),
                 user.getRole(),
                 user.isEmailConfirmed()

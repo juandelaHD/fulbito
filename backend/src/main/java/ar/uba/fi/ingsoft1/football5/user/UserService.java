@@ -3,6 +3,7 @@ package ar.uba.fi.ingsoft1.football5.user;
 import ar.uba.fi.ingsoft1.football5.common.exception.UserNotFoundException;
 import ar.uba.fi.ingsoft1.football5.config.security.JwtService;
 import ar.uba.fi.ingsoft1.football5.config.security.JwtUserDetails;
+import ar.uba.fi.ingsoft1.football5.images.ImageService;
 import ar.uba.fi.ingsoft1.football5.user.email.EmailSenderService;
 import ar.uba.fi.ingsoft1.football5.user.refresh_token.RefreshToken;
 import ar.uba.fi.ingsoft1.football5.user.refresh_token.RefreshTokenService;
@@ -15,7 +16,9 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -23,15 +26,14 @@ import java.util.UUID;
 @Transactional
 public class UserService implements UserDetailsService {
 
+    private static final String USER_NOT_FOUND = "user";
+
     private final JwtService jwtService;
     private final PasswordEncoder passwordEncoder;
     private final UserRepository userRepository;
     private final RefreshTokenService refreshTokenService;
+    private final ImageService imageService;
     private final EmailSenderService emailService;
-
-    private static final String USER_NOT_FOUND = "user";
-    private static final String ROLE_ADMIN = "ROLE_ADMIN";
-    private static final String ROLE_USER = "ROLE_USER";
 
     @Autowired
     UserService(
@@ -39,27 +41,15 @@ public class UserService implements UserDetailsService {
             PasswordEncoder passwordEncoder,
             UserRepository userRepository,
             RefreshTokenService refreshTokenService,
+            ImageService imageService,
             EmailSenderService emailService
     ) {
         this.jwtService = jwtService;
         this.passwordEncoder = passwordEncoder;
         this.userRepository = userRepository;
         this.refreshTokenService = refreshTokenService;
+        this.imageService = imageService;
         this.emailService = emailService;
-    }
-
-    public boolean isAdminUser(String username) {
-        return userRepository.findByUsername(username)
-                .map(u -> u.getRole().equals("ADMIN"))
-                .orElse(false);
-    }
-
-    private String getRole(Authentication authPrincipal) {
-        return authPrincipal.getAuthorities().stream()
-                .filter(a -> a.getAuthority().equals(ROLE_ADMIN))
-                .findFirst()
-                .map(a -> ROLE_ADMIN)
-                .orElse(ROLE_USER);
     }
 
     @Override
@@ -69,36 +59,29 @@ public class UserService implements UserDetailsService {
                 .orElseThrow(() -> new UserNotFoundException(USER_NOT_FOUND, username));
     }
 
-    public UserDTO getUserByUsername(String username) throws UserNotFoundException {
+    public UserDTO getUser(String username) throws UserNotFoundException {
         User user = loadUserByUsername(username);
         return new UserDTO(user);
     }
 
-    public User getUser(String username) {
-        return userRepository.findByUsername(username).orElseThrow(() -> {
-            var msg = String.format("Username '%s' not found", username);
-            return new UsernameNotFoundException(msg);
-        });
-    }
+    Optional<TokenDTO> createUser(UserCreateDTO data, MultipartFile avatar) throws IOException {
 
-    Optional<TokenDTO> createUser(UserCreateDTO data) {
         if (userRepository.findByUsername(data.username()).isPresent()) {
             throw new IllegalArgumentException("Username already taken");
         }
 
-        if (userRepository.findByEmail(data.email()).isPresent()) {
-            throw new IllegalArgumentException("Email already registered");
-        }
-
         var user = data.asUser(passwordEncoder::encode);
         user.setEmailConfirmed(false);
+
+        User savedUser = userRepository.save(user);
+        imageService.saveImage(savedUser, avatar);
 
         String token = UUID.randomUUID().toString();
         user.setEmailConfirmationToken(token);
 
         userRepository.save(user);
 
-        emailService.sendMailToVerifyAccount(user.getEmail(), token);
+        emailService.sendMailToVerifyAccount(user.getUsername(), token);
         return Optional.of(generateTokens(user));
     }
 

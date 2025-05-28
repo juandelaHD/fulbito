@@ -16,5 +16,4 @@ public class EmailWriter {
         message.setSubject(this.getSubject());
         message.setText(this.getTextContent());
     }
-
 }

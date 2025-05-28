@@ -18,29 +18,21 @@ public record UserCreateDTO(
         String lastName,
 
         @Email(message = "Invalid email format")
-        @NotBlank(message = "Email is required")
-        @Schema(description = "Valid email address for the user", example = "john.doe@example.com")
-        String email,
-
-        @NotBlank(message = "Username is required")
-        @Schema(description = "Unique username used to log in", example = "john_doe")
+        @NotBlank(message = "Username (email) is required")
+        @Schema(description = "Valid username (email) address for the user", example = "john.doe@example.com")
         String username,
 
         @NotBlank(message = "Password is required")
         @Schema(description = "Password for the user's account", example = "securePassword123")
         String password,
 
-        @NotBlank(message = "Avatar is required")
-        @Schema(description = "URL of the user's profile picture", example = "https://example.com/avatar.jpg")
-        String avatar,
+        @NotBlank(message = "Zone is required")
+        @Schema(description = "User's geographical or organizational zone", example = "Buenos Aires")
+        String zone,
 
-        @NotBlank(message = "Area is required")
-        @Schema(description = "User's geographical or organizational area", example = "Buenos Aires")
-        String area,
-
-        @NotBlank(message = "Date of birth is required")
-        @Schema(description = "User's date of birth in ISO format (yyyy-MM-dd)", example = "1995-04-20")
-        String dateBirth,
+        @NotBlank(message = "Age is required")
+        @Schema(description = "User's age", example = "22")
+        Integer age,
 
         @NotBlank(message = "Gender is required")
         @Schema(description = "User's gender identity", example = "Male")
@@ -56,11 +48,9 @@ public record UserCreateDTO(
                 username,
                 firstName,
                 lastName,
-                email,
                 gender,
-                avatar,
-                area,
-                dateBirth,
+                zone,
+                age,
                 encryptPassword.apply(password),
                 role
         );
@@ -74,37 +64,5 @@ public record UserCreateDTO(
     @Override
     public String getPassword() {
         return password;
-    }
-
-    public String getFirstName() {
-        return this.firstName;
-    }
-
-    public String getLastName() {
-        return this.lastName;
-    }
-
-    public String getEmail() {
-        return this.email;
-    }
-
-    public String getAvatar() {
-        return this.avatar;
-    }
-
-    public String getArea() {
-        return this.area;
-    }
-
-    public String getDateBirth() {
-        return this.dateBirth;
-    }
-
-    public String getGender() {
-        return this.gender;
-    }
-
-    public Role getRole() {
-        return this.role;
     }
 }
