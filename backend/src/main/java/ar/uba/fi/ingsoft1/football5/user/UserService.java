@@ -8,11 +8,14 @@ import ar.uba.fi.ingsoft1.football5.user.email.EmailSenderService;
 import ar.uba.fi.ingsoft1.football5.user.refresh_token.RefreshToken;
 import ar.uba.fi.ingsoft1.football5.user.refresh_token.RefreshTokenService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -84,9 +87,22 @@ public class UserService implements UserDetailsService {
 
     Optional<TokenDTO> loginUser(UserCredentials data) {
         Optional<User> maybeUser = userRepository.findByUsername(data.getUsername());
-        return maybeUser
-                .filter(user -> passwordEncoder.matches(data.getPassword(), user.getPassword()))
-                .map(this::generateTokens);
+        if (maybeUser.isEmpty()) {
+            return Optional.empty();
+        }
+
+        User existingUser = maybeUser.get();
+
+        if (!passwordEncoder.matches(data.getPassword(), existingUser.getPassword())) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid password");
+        }
+
+        if (!existingUser.isEmailConfirmed()) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Email is not confirmed");
+        }
+
+        TokenDTO tokens = generateTokens(existingUser);
+        return Optional.of(tokens);
     }
 
     Optional<TokenDTO> refresh(RefreshDTO data) {
