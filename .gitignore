@@ -34,3 +34,7 @@ build/
 
 ### DB ###
 data
+
+### Node.js ###
+node_modules/
+

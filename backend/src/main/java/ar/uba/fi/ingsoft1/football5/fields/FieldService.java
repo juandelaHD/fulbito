@@ -33,7 +33,7 @@ class FieldService {
         validateUniqueName(fieldCreate);
         validateUniqueLocation(fieldCreate);
 
-        User owner = userService.getUser(userDetails.username());
+        User owner = userService.loadUserByUsername(userDetails.username());
         Field field = fieldRepository.save(fieldCreate.asField(owner));
         imageService.saveImages(field, images);
 

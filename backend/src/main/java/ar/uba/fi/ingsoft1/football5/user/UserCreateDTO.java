@@ -1,26 +1,59 @@
 package ar.uba.fi.ingsoft1.football5.user;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
+import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
-import java.util.Date;
 import java.util.function.Function;
 
+@Schema(description = "Data Transfer Object used when creating a new user account.")
 public record UserCreateDTO(
-        @NotBlank String firstName,
-        @NotBlank String lastName,
-        @NotBlank String email,
-        @NotBlank String username,
-        @NotBlank String password,
-        @NotBlank String avatar,
-        @NotBlank String area,
-        @NotBlank String dateBirth,
-        @NotBlank String gender,
-        @NotNull Role role
+        @NotBlank(message = "First name is required")
+        @Schema(description = "User's first name", example = "John")
+        String firstName,
+
+        @NotBlank(message = "Last name is required")
+        @Schema(description = "User's last name", example = "Doe")
+        String lastName,
+
+        @Email(message = "Invalid email format")
+        @NotBlank(message = "Username (email) is required")
+        @Schema(description = "Valid username (email) address for the user", example = "john.doe@example.com")
+        String username,
+
+        @NotBlank(message = "Password is required")
+        @Schema(description = "Password for the user's account", example = "securePassword123")
+        String password,
+
+        @NotBlank(message = "Zone is required")
+        @Schema(description = "User's geographical or organizational zone", example = "Buenos Aires")
+        String zone,
+
+        @NotBlank(message = "Age is required")
+        @Schema(description = "User's age", example = "22")
+        Integer age,
+
+        @NotBlank(message = "Gender is required")
+        @Schema(description = "User's gender identity", example = "Male")
+        String gender,
+
+        @NotNull(message = "Role is required")
+        @Schema(description = "Role assigned to the user within the system", example = "USER")
+        Role role
 ) implements UserCredentials {
+
     public User asUser(Function<String, String> encryptPassword) {
-        return new User(username, firstName, lastName, email, gender, avatar, area, dateBirth, encryptPassword.apply(password), role);
+        return new User(
+                username,
+                firstName,
+                lastName,
+                gender,
+                zone,
+                age,
+                encryptPassword.apply(password),
+                role
+        );
     }
 
     @Override
@@ -32,37 +65,4 @@ public record UserCreateDTO(
     public String getPassword() {
         return password;
     }
-
-    public String getFirstName() {
-        return this.firstName;
-    }
-
-    public String getLastName() {
-        return this.lastName;
-    }
-
-    public String getEmail() {
-        return this.email;
-    }
-
-    public String getAvatar() {
-        return this.avatar;
-    }
-
-    public String getArea() {
-        return this.area;
-    }
-
-    public String getDateBirth() {
-        return this.dateBirth;
-    }
-
-    public String getGender() {
-        return this.gender;
-    }
-
-    public Role getRole() {
-        return this.role;
-    }
 }
-
