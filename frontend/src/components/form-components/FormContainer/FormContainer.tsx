@@ -1,6 +1,7 @@
 import React from "react";
 import { ErrorContainer } from "@/components/form-components/ErrorContainer/ErrorContainer";
 import { useFormContext } from "@/config/form-context";
+import styles from "./FormContainer.module.css";
 
 type Props = {
     extraError: Error | null;
@@ -30,11 +31,11 @@ export const FormContainer = ({
             {children}
             {extraError && <ErrorContainer errors={[extraError]} />}
         <button
-            type="submit"
-            className="mt-4 bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded"
+        type="submit"
+        className={`${styles.submitButton} w-full bg-green-700 hover:bg-green-800 text-white py-2 px-4 rounded transition`}
         >
-            {submitLabel}
-        </button>            
+        {submitLabel}
+        </button>  
         </form>
     );
 };

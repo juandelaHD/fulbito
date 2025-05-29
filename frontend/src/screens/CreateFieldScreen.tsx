@@ -39,9 +39,44 @@ export const CreateFieldScreen = () => {
       },
     },
     onSubmit: async ({ value }) => {
-      console.log("Create field data:", value);
-      toast.success("Field created!");
-      // Llamada añ servicio que cree la canchita realmente --- ACA ---
+      const formPayload = new FormData();
+
+      const fieldJson = {
+        name: value.name,
+        grassType: value.grassType === "Synthetic" ? "SYNTHETIC" : "NATURAL_GRASS",
+        illuminated: value.lighting === "Yes",
+        location: {
+          zone: value.zone,
+          address: value.address,
+        },
+      };
+
+      formPayload.append("field", JSON.stringify(fieldJson));
+
+      if (value.photos && value.photos.length > 0) {
+        Array.from(value.photos).forEach((file: File) => {
+          formPayload.append("images", file);
+        });
+      }
+
+      try {
+        const response = await fetch("/fields", {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token") ?? ""}`,
+          },
+          body: formPayload,
+        });
+
+        if (!response.ok) {
+          const errText = await response.text();
+          throw new Error(errText || "Unknown error");
+        }
+
+        toast.success("Field created successfully!");
+      } catch (error: any) {
+        toast.error("Error creating field: " + error.message);
+      }
     },
   });
 

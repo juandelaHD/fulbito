@@ -15,6 +15,9 @@ export const Navigation = () => {
           <Route path="/">
             <MainScreen />
           </Route>
+         <Route path="/create-field">
+            <CreateFieldScreen />
+          </Route>
           <Route>
             <Redirect href="/" />
           </Route>
@@ -28,9 +31,6 @@ export const Navigation = () => {
           </Route>
           <Route path="/signup">
             <SignupScreen />
-          </Route>
-          <Route path="/create-field">
-            <CreateFieldScreen />
           </Route>
           <Route>
             <Redirect href="/signup" />
