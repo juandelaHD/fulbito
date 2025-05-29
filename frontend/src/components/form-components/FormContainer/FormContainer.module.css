@@ -1,0 +1,10 @@
+.form {
+  display: grid;
+  justify-content: center;
+  grid-template-columns: auto auto;
+  gap: 1rem;
+}
+
+.submitButton {
+  margin-top: 2rem;
+}
