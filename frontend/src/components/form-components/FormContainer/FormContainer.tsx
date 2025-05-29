@@ -1,15 +1,21 @@
 import React from "react";
 import { ErrorContainer } from "@/components/form-components/ErrorContainer/ErrorContainer";
-import { SubmitButton } from "@/components/form-components/SubmitButton/SubmitButton";
 import { useFormContext } from "@/config/form-context";
+import styles from "./FormContainer.module.css";
 
 type Props = {
     extraError: Error | null;
     className?: string;
     children?: React.ReactNode;
+    submitLabel?: string;    
 };
 
-export const FormContainer = ({ extraError, className = "", children }: Props) => {
+export const FormContainer = ({
+    extraError, 
+    className = "", 
+    children, 
+    submitLabel = "Submit",
+}: Props) => {
     const form = useFormContext();
 
     return (
@@ -19,11 +25,17 @@ export const FormContainer = ({ extraError, className = "", children }: Props) =
                 e.preventDefault();
                 e.stopPropagation();
                 form.handleSubmit();
+
             }}
         >
             {children}
             {extraError && <ErrorContainer errors={[extraError]} />}
-            <SubmitButton />
+        <button
+        type="submit"
+        className={`${styles.submitButton} w-full bg-green-700 hover:bg-green-800 text-white py-2 px-4 rounded transition`}
+        >
+        {submitLabel}
+        </button>  
         </form>
     );
 };
