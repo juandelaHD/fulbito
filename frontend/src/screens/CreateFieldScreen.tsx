@@ -2,7 +2,6 @@ import { useAppForm } from "@/config/use-app-form";
 import { CommonLayout } from "@/components/CommonLayout/CommonLayout";
 import { CreateFieldSchema } from "@/models/CreateField";
 import { toast } from "react-hot-toast";
-import { CreateButton } from "@/components/form-components/CreateButton/CreateButton.tsx";
 
 const fieldLabels: Record<string, string> = {
   name: "Name",
@@ -51,7 +50,7 @@ export const CreateFieldScreen = () => {
       <section>
         <h1 className="text-center text-2xl font-semibold mb-4">Create a New Field</h1>
         <formData.AppForm>
-          <formData.FormContainer extraError={null} className="space-y-4">
+          <formData.FormContainer extraError={null} className="space-y-4" submitLabel="Create Field">
             <formData.AppField name="name">
               {(field) => <field.TextField label="Name" />}
             </formData.AppField>
@@ -99,7 +98,6 @@ export const CreateFieldScreen = () => {
                 </div>
               )}
             </formData.AppField>
-            <CreateButton>Create Field</CreateButton>
           </formData.FormContainer>
         </formData.AppForm>
       </section>
