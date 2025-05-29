@@ -8,11 +8,10 @@ const fieldLabels: Record<string, string> = {
   firstName: "First Name",
   lastName: "Last Name",
   email: "Email",
+  password: "Password",
   age: "Age",
   gender: "Gender",
   location: "Location",
-  username: "Username",
-  password: "Password",
   userType: "Role",
 };
 
@@ -24,11 +23,10 @@ export const SignupScreen = () => {
       firstName: "",
       lastName: "",
       email: "",
+      password: "",
       age: "",
       gender: "",
       location: "",
-      username: "",
-      password: "",
       userType: "",
     },
     validators: {
@@ -77,12 +75,19 @@ export const SignupScreen = () => {
                   </formData.AppField>
                   <formData.AppField name="lastName">
                     {(field) => (
-                        <field.TextField label="Last Name" />
+                        <field.TextField label="Last Name"/>
                     )}
                   </formData.AppField>
                   <formData.AppField name="email">
                     {(field) => (
-                        <field.TextField label="Email" />
+                        <field.TextField label="Email"/>
+                    )}
+                  </formData.AppField>
+                  <formData.AppField name="password">
+                    {(field) => (
+                        <field.PasswordField
+                            label="Password"
+                        />
                     )}
                   </formData.AppField>
                   <formData.AppField name="age">
@@ -94,15 +99,15 @@ export const SignupScreen = () => {
                   </formData.AppField>
                   <formData.AppField name="gender">
                     {(field) => (
-                      <field.SelectField
-                        label="Gender"
-                        options={[
-                          { label: "Select...", value: "" },
-                          { label: "Male", value: "Male" },
-                          { label: "Female", value: "Female" },
-                          { label: "Other", value: "Other" },
-                        ]}
-                      />
+                        <field.SelectField
+                            label="Gender"
+                            options={[
+                              {label: "Select...", value: ""},
+                              {label: "Male", value: "Male"},
+                              {label: "Female", value: "Female"},
+                              {label: "Other", value: "Other"},
+                            ]}
+                        />
                     )}
                   </formData.AppField>
                   <formData.AppField name="location">
@@ -112,30 +117,16 @@ export const SignupScreen = () => {
                         />
                     )}
                   </formData.AppField>
-                  <formData.AppField name="username">
-                    {(field) => (
-                        <field.TextField
-                            label="Username"
-                        />
-                    )}
-                  </formData.AppField>
-                  <formData.AppField name="password">
-                    {(field) => (
-                        <field.PasswordField
-                            label="Password"
-                        />
-                    )}
-                  </formData.AppField>
                   <formData.AppField name="userType">
                     {(field) => (
-                      <field.SelectField
-                        label="Role"
-                        options={[
-                          { label: "Select Role...", value: "" },
-                          { label: "Player", value: "Player" },
-                          { label: "Field Admin", value: "Field Admin" },
-                        ]}
-                      />
+                        <field.SelectField
+                            label="Role"
+                            options={[
+                              {label: "Select Role...", value: ""},
+                              {label: "Player", value: "Player"},
+                              {label: "Field Admin", value: "Field Admin"},
+                            ]}
+                        />
                     )}
                   </formData.AppField>
                 </formData.FormContainer>
