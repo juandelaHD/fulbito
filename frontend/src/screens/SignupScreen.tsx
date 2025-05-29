@@ -28,6 +28,7 @@ export const SignupScreen = () => {
       gender: "",
       location: "",
       userType: "",
+      avatar: null as File | null
     },
     validators: {
       onSubmit: () => {
@@ -127,6 +128,19 @@ export const SignupScreen = () => {
                               {label: "Field Admin", value: "Field Admin"},
                             ]}
                         />
+                    )}
+                  </formData.AppField>
+                  <formData.AppField name="avatar">
+                    {(field) => (
+                      <div className="flex flex-col gap-1 mt-4 mb-4">
+                        <label className="text-sm font-medium text-green-900">Avatar (optional)</label>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={(e) => field.handleChange(() => e.target.files?.[0] ?? null)}
+                          className="w-full px-4 py-[0.6rem] rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 text-black bg-white"
+                        />
+                      </div>
                     )}
                   </formData.AppField>
                 </formData.FormContainer>
