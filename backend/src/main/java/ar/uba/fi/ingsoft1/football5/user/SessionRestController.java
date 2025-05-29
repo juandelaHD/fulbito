@@ -30,7 +30,7 @@ class SessionRestController {
         this.userService = userService;
     }
 
-    @PostMapping(path = "/sign-up", produces = "application/json")
+    @PostMapping(path = "/sign-up", produces = "application/json", consumes = "multipart/form-data")
     @Operation(
             summary = "Create a new user",
             responses = {
