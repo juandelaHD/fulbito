@@ -13,18 +13,18 @@ public class MatchController {
     @Autowired
     private MatchService matchService;
 
-    @GetMapping("/disponibles")
-    public List<MatchSummaryDTO> listarPartidosDisponibles() {
-        return matchService.obtenerPartidosDisponibles();
+    @GetMapping("/available")
+    public List<MatchSummaryDTO> listAvailableMatches() {
+        return matchService.getAvailableMatches();
     }
 
-    @PostMapping("/{id}/inscribirse")
-    public ResponseEntity<?> inscribirse(
+    @PostMapping("/{id}/register")
+    public ResponseEntity<?> register(
             @PathVariable Long id,
             @RequestBody InscripcionRequest request) {
         try {
-            InscripcionResponse respuesta = matchService.inscribirse(id, request.getUserId());
-            return ResponseEntity.ok(respuesta);
+            InscripcionResponse answer = matchService.register(id, request.getUserId());
+            return ResponseEntity.ok(answer);
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }

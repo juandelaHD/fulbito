@@ -14,52 +14,52 @@ import static org.mockito.Mockito.*;
 public class MatchTest {
 
     @Test
-    void testEstaLleno_TrueCuandoSeLleno() {
+    void test_isFull() {
         Match match = new Match();
-        match.setMaxJugadores(1);
-        match.getJugadores().add(crearUsuarioDePrueba());
-        mockCancha(match);
+        match.setMaxPlayers(1);
+        match.getPlayers().add(create_test_user());
+        mockField(match);
 
-        assertTrue(match.estaLleno());
+        assertTrue(match.isFull());
     }
 
     @Test
-    void testYaEmpezo_TrueSiEsDeAyer() {
+    void test_isStarted() {
         Match match = new Match();
-        match.setFecha(LocalDate.now().minusDays(1));
-        match.setHora(LocalTime.now());
-        mockCancha(match);
+        match.setDate(LocalDate.now().minusDays(1));
+        match.setHour(LocalTime.now());
+        mockField(match);
 
-        assertTrue(match.yaEmpezo());
+        assertTrue(match.started());
     }
 
     @Test
-    void testJugadoresFaltantes() {
+    void test_missing_players() {
         Match match = new Match();
-        match.setMaxJugadores(5);
-        match.getJugadores().add(crearUsuarioDePrueba());
-        mockCancha(match);
+        match.setMaxPlayers(5);
+        match.getPlayers().add(create_test_user());
+        mockField(match);
 
-        assertEquals(4, match.getJugadoresFaltantes());
+        assertEquals(4, match.getMissingPlayers());
     }
 
-    private User crearUsuarioDePrueba() {
+    private User create_test_user() {
         return new User(
-            "juanperez",         // username
-            "Juan",              // firstName
-            "Pérez",             // lastName
-            "Masculino",         // gender
-            "Centro",            // zone
-            30,                  // age
-            "password123",       // password
-            Role.USER          // role
+            "juanperez",
+            "Juan",            
+            "Pérez",            
+            "Masculino",       
+            "Centro",        
+            30,      
+            "password123", 
+            Role.USER 
         );
     }
 
-    private void mockCancha(Match match) {
+    private void mockField(Match match) {
         Field canchaMock = mock(Field.class);
         when(canchaMock.getName()).thenReturn("Cancha Test");
-        match.setCancha(canchaMock);
+        match.setField(canchaMock);
     }
 }
 

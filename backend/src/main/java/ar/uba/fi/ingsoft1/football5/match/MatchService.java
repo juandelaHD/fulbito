@@ -21,29 +21,29 @@ public class MatchService {
     @Autowired
     private UserRepository userRepo;
 
-    public List<MatchSummaryDTO> obtenerPartidosDisponibles() {
-        return matchRepo.findByCerradoFalse().stream()
-            .filter(match -> !match.yaEmpezo() && !match.estaLleno())
+    public List<MatchSummaryDTO> getAvailableMatches() {
+        return matchRepo.findByCloseFalse().stream()
+            .filter(match -> !match.started() && !match.isFull())
             .map(match -> new MatchSummaryDTO(
                 match.getId(),
-                match.getCancha().getName(),
-                match.getFecha(),
-                match.getHora(),
-                match.getJugadoresFaltantes()))
+                match.getField(),
+                match.getDate(),
+                match.getHour(),
+                match.getMissingPlayers()))
             .collect(Collectors.toList());
     }
 
-    public InscripcionResponse inscribirse(Long matchId, Long userId) {
+    public InscripcionResponse register(Long matchId, Long userId) {
         Match match = matchRepo.findById(matchId)
                 .orElseThrow(() -> new RuntimeException("Partido no encontrado"));
         User user = userRepo.findById(userId)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
-        if (match.yaEmpezo()) throw new RuntimeException("El partido ya comenzó");
-        if (match.estaLleno()) throw new RuntimeException("El partido ya está lleno");
-        if (match.getJugadores().contains(user)) throw new RuntimeException("Ya estás inscrito");
+        if (match.started()) throw new RuntimeException("El partido ya comenzó");
+        if (match.isFull()) throw new RuntimeException("El partido ya está lleno");
+        if (match.getPlayers().contains(user)) throw new RuntimeException("Ya estás inscrito");
 
-        match.getJugadores().add(user);
+        match.getPlayers().add(user);
         matchRepo.save(match);
 
         return new InscripcionResponse("Inscripción exitosa", match);

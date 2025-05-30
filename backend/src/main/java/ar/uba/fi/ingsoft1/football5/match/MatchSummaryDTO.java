@@ -1,21 +1,22 @@
 package ar.uba.fi.ingsoft1.football5.match;
 
+import ar.uba.fi.ingsoft1.football5.fields.Field;
 import java.time.LocalDate;
 import java.time.LocalTime;
 
 public class MatchSummaryDTO {
     private Long id;
-    private String cancha;
-    private LocalDate fecha;
-    private LocalTime hora;
-    private int jugadoresFaltantes;
+    private Field field;
+    private LocalDate date;
+    private LocalTime hour;
+    private int missingPlayers;
 
-    public MatchSummaryDTO(Long id, String cancha, LocalDate fecha, LocalTime hora, int jugadoresFaltantes) {
+    public MatchSummaryDTO(Long id, Field field, LocalDate date, LocalTime hour, int missingPlayers) {
         this.id = id;
-        this.cancha = cancha;
-        this.fecha = fecha;
-        this.hora = hora;
-        this.jugadoresFaltantes = jugadoresFaltantes;
+        this.field = field;
+        this.date = date;
+        this.hour = hour;
+        this.missingPlayers = missingPlayers;
     }
 
     public Long getId() {
@@ -26,35 +27,35 @@ public class MatchSummaryDTO {
         this.id = id;
     }
 
-    public String getCancha() {
-        return cancha;
+    public Field getField() {
+        return field;
     }
 
-    public void setCancha(String cancha) {
-        this.cancha = cancha;
+    public void setField(Field field) {
+        this.field = field;
     }
 
-    public LocalDate getFecha() {
-        return fecha;
+    public LocalDate getDate() {
+        return date;
     }
 
-    public void setFecha(LocalDate fecha) {
-        this.fecha = fecha;
+    public void setDate(LocalDate date) {
+        this.date = date;
     }
 
-    public LocalTime getHora() {
-        return hora;
+    public LocalTime getHour() {
+        return hour;
     }
 
-    public void setHora(LocalTime hora) {
-        this.hora = hora;
+    public void setHour(LocalTime hour) {
+        this.hour = hour;
     }
 
-    public int getJugadoresFaltantes() {
-        return jugadoresFaltantes;
+    public int getMissingPlayerss() {
+        return missingPlayers;
     }
 
-    public void setJugadoresFaltantes(int jugadoresFaltantes) {
-        this.jugadoresFaltantes = jugadoresFaltantes;
+    public void setMissingPlayers(int missingPlayers) {
+        this.missingPlayers = missingPlayers;
     }
 }

@@ -1,29 +1,30 @@
 package ar.uba.fi.ingsoft1.football5.match;
 
+import ar.uba.fi.ingsoft1.football5.fields.Field;
 import java.time.LocalDate;
 import java.time.LocalTime;
 
 public class InscripcionResponse {
-    private String mensaje;
+    private String message;
     private Long matchId;
-    private String cancha;
-    private LocalDate fecha;
-    private LocalTime hora;
+    private Field field;
+    private LocalDate date;
+    private LocalTime hour;
 
-    public InscripcionResponse(String mensaje, Match match) {
-        this.mensaje = mensaje;
+    public InscripcionResponse(String message, Match match) {
+        this.message = message;
         this.matchId = match.getId();
-        this.cancha =  match.getCancha().getName();
-        this.fecha = match.getFecha();
-        this.hora = match.getHora();
+        this.field =  match.getField();
+        this.date = match.getDate();
+        this.hour = match.getHour();
     }
 
-     public String getMensaje() {
-        return mensaje;
+     public String getMessage() {
+        return message;
     }
 
-    public void setMensaje(String mensaje) {
-        this.mensaje = mensaje;
+    public void setMessage(String message) {
+        this.message = message;
     }
 
     public Long getMatchId() {
@@ -34,27 +35,27 @@ public class InscripcionResponse {
         this.matchId = matchId;
     }
 
-    public String getCancha() {
-        return cancha;
+    public Field getField() {
+        return field;
     }
 
-    public void setCancha(String cancha) {
-        this.cancha = cancha;
+    public void setField(Field field) {
+        this.field = field;
     }
 
-    public LocalDate getFecha() {
-        return fecha;
+    public LocalDate getDate() {
+        return date;
     }
 
-    public void setFecha(LocalDate fecha) {
-        this.fecha = fecha;
+    public void setDate(LocalDate date) {
+        this.date = date;
     }
 
-    public LocalTime getHora() {
-        return hora;
+    public LocalTime getHour() {
+        return hour;
     }
 
-    public void setHora(LocalTime hora) {
-        this.hora = hora;
+    public void setHour(LocalTime hour) {
+        this.hour = hour;
     }
 }

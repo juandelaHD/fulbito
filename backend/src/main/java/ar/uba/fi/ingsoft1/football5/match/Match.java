@@ -18,11 +18,11 @@ public class Match {
 
     @ManyToOne
     @JoinColumn(name = "field_id", nullable = false)
-    private Field cancha;
-    private LocalDate fecha;
-    private LocalTime hora;
-    private int maxJugadores;
-    private boolean cerrado;
+    private Field field;
+    private LocalDate date;
+    private LocalTime hour;
+    private int maxPlayers;
+    private boolean close;
 
     @ManyToMany
     @JoinTable(
@@ -30,60 +30,58 @@ public class Match {
         joinColumns = @JoinColumn(name = "match_id"),
         inverseJoinColumns = @JoinColumn(name = "user_id")
     )
-    private Set<User> jugadores = new HashSet<>();
+    private Set<User> players = new HashSet<>();
 
-    public int getJugadoresFaltantes() {
-        return maxJugadores - jugadores.size();
+    public int getMissingPlayers() {
+        return maxPlayers - players.size();
     }
 
-    public boolean estaLleno() {
-        return jugadores.size() >= maxJugadores;
+    public boolean isFull() {
+        return players.size() >= maxPlayers;
     }
 
-    public boolean yaEmpezo() {
-        return LocalDate.now().isAfter(fecha)
-                || (LocalDate.now().isEqual(fecha) && LocalTime.now().isAfter(hora));
+    public boolean started() {
+        return LocalDate.now().isAfter(date)
+                || (LocalDate.now().isEqual(date) && LocalTime.now().isAfter(hour));
     }
 
-    public Field getCancha() {
-        return cancha;
+    public Field getField() {
+        return field;
     }
 
-    public void setCancha(Field cancha) {
-        this.cancha = cancha;
+    public void setField(Field field) {
+        this.field = field;
     }
 
-    public LocalDate getFecha() {
-        return fecha;
+    public LocalDate getDate() {
+        return date;
     }
 
-    public LocalTime getHora() {
-        return hora;
+    public void setDate(LocalDate date) {
+        this.date = date;
     }
 
-    public Set<User> getJugadores() {
-        return jugadores;
+    public LocalTime getHour() {
+        return hour;
+    }
+
+    public void setHour(LocalTime hour) {
+        this.hour = hour;
+    }
+
+    public Set<User> getPlayers() {
+        return players;
+    }
+
+    public void setMaxPlayers(int maxPlayers) {
+        this.maxPlayers = maxPlayers;
     }
 
     public Long getId() {
         return id;
     }
 
-    public void setMaxJugadores(int maxJugadores) {
-    this.maxJugadores = maxJugadores;
-    }
-
-    public void setFecha(LocalDate fecha) {
-        this.fecha = fecha;
-    }
-
-    public void setHora(LocalTime hora) {
-        this.hora = hora;
-    }
-
-    public void setCerrado(boolean cerrado) {
-        this.cerrado = cerrado;
-    }
-
-    
+    public void setClose(boolean close) {
+        this.close = close;
+    } 
 }
