@@ -1,5 +1,6 @@
 package ar.uba.fi.ingsoft1.football5.match;
 
+import ar.uba.fi.ingsoft1.football5.fields.FieldDTO;
 import ar.uba.fi.ingsoft1.football5.user.User;
 import ar.uba.fi.ingsoft1.football5.user.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,7 +27,7 @@ public class MatchService {
             .filter(match -> !match.started() && !match.isFull())
             .map(match -> new MatchSummaryDTO(
                 match.getId(),
-                match.getField(),
+                new FieldDTO(match.getField()),
                 match.getDate(),
                 match.getHour(),
                 match.getMissingPlayers()))
