@@ -38,18 +38,18 @@ public class MatchService {
 
     public InscripcionResponse register(Long matchId, Long userId) {
         Match match = matchRepo.findById(matchId)
-                .orElseThrow(() -> new RuntimeException("Partido no encontrado"));
+                .orElseThrow(() -> new RuntimeException("Match not found"));
         User user = userRepo.findById(userId)
-                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+                .orElseThrow(() -> new RuntimeException("User not found"));
 
-        if (match.started()) throw new RuntimeException("El partido ya comenzó");
-        if (match.isFull()) throw new RuntimeException("El partido ya está lleno");
-        if (match.getPlayers().contains(user)) throw new RuntimeException("Ya estás inscrito");
+        if (match.started()) throw new RuntimeException("The game has already started");
+        if (match.isFull()) throw new RuntimeException("The match is full");
+        if (match.getPlayers().contains(user)) throw new RuntimeException("You are already registered");
 
         match.getPlayers().add(user);
         matchRepo.save(match);
 
-        return new InscripcionResponse("Inscripción exitosa", match);
+        return new InscripcionResponse("Successful registration", match);
     }
 //TODO: Mejorar el trato de los errores
 }
