@@ -84,4 +84,8 @@ public class Match {
     public void setClose(boolean close) {
         this.close = close;
     } 
+
+    public Boolean getClose() {
+        return close;
+    } 
 }
