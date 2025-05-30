@@ -38,7 +38,7 @@ public class MatchServiceTest {
 
         InscripcionResponse response = matchService.register(1L, 1L);
 
-        assertEquals("Inscripción exitosa", response.getMessage());
+        assertEquals("Successful registration", response.getMessage());
         assertTrue(match.getPlayers().contains(user));
     }
 
@@ -53,7 +53,7 @@ public class MatchServiceTest {
 
         RuntimeException ex = assertThrows(RuntimeException.class,
             () -> matchService.register(1L, 1L));
-        assertEquals("Ya estás inscrito", ex.getMessage());
+        assertEquals("You are already registered", ex.getMessage());
     }
 
     @Test
@@ -67,7 +67,7 @@ public class MatchServiceTest {
 
         RuntimeException ex = assertThrows(RuntimeException.class,
             () -> matchService.register(1L, 1L));
-        assertEquals("El partido ya está lleno", ex.getMessage());
+        assertEquals("The match is full", ex.getMessage());
     }
 
     @Test
@@ -80,7 +80,7 @@ public class MatchServiceTest {
 
         RuntimeException ex = assertThrows(RuntimeException.class,
             () -> matchService.register(1L, 1L));
-        assertEquals("El partido ya comenzó", ex.getMessage());
+        assertEquals("The game has already started", ex.getMessage());
     }
 
     @Test
