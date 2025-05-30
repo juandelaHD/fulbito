@@ -27,12 +27,6 @@ public class MatchServiceTest {
         matchService = new MatchService(matchRepo, userRepo);
     }
 
-    private Field createField(String fieldName) {
-        Field field = mock(Field.class);
-        when(field.getName()).thenReturn(fieldName);
-        return field;
-    }
-
     @Test
     void successful_registration_test() {
         Match match = createMatch(5, false, LocalDate.now().plusDays(1), LocalTime.of(15, 0));
@@ -96,7 +90,7 @@ public class MatchServiceTest {
         Match partido3 = createMatch(1, false, LocalDate.now().plusDays(1), LocalTime.of(15, 0)); // lleno
         partido3.getPlayers().add(createUser(2L));
 
-        when(matchRepo.findByCloseFalse()).thenReturn(List.of(partido1, partido2, partido3));
+        when(matchRepo.findBycloseMatchFalse()).thenReturn(List.of(partido1, partido2, partido3));
 
         List<MatchSummaryDTO> disponibles = matchService.getAvailableMatches();
 
@@ -107,7 +101,6 @@ public class MatchServiceTest {
     private Match createMatch(int maxJugadores, boolean cerrado, LocalDate fecha, LocalTime hora) {
         Match match = new Match();
         match.setMaxPlayers(maxJugadores);
-        match.setClose(cerrado);
         match.setDate(fecha);
         match.setHour(hora);
         match.setField(createField("Cancha Test")); 
@@ -118,5 +111,11 @@ public class MatchServiceTest {
         User user = mock(User.class);
         when(user.getId()).thenReturn(id);
         return user;
+    }
+    
+    private Field createField(String fieldName) {
+        Field field = mock(Field.class);
+        when(field.getName()).thenReturn(fieldName);
+        return field;
     }
 }

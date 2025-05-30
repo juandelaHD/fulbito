@@ -19,7 +19,7 @@ public class InscripcionResponse {
         this.hour = match.getHour();
     }
 
-     public String getMessage() {
+    public String getMessage() {
         return message;
     }
 
@@ -31,31 +31,15 @@ public class InscripcionResponse {
         return matchId;
     }
 
-    public void setMatchId(Long matchId) {
-        this.matchId = matchId;
-    }
-
     public Field getField() {
         return field;
-    }
-
-    public void setField(Field field) {
-        this.field = field;
     }
 
     public LocalDate getDate() {
         return date;
     }
 
-    public void setDate(LocalDate date) {
-        this.date = date;
-    }
-
     public LocalTime getHour() {
         return hour;
-    }
-
-    public void setHour(LocalTime hour) {
-        this.hour = hour;
     }
 }

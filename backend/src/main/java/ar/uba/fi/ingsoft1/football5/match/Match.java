@@ -22,7 +22,8 @@ public class Match {
     private LocalDate date;
     private LocalTime hour;
     private int maxPlayers;
-    private boolean close;
+    // TODO:: Esta variable como tal esta para marcar si es partido cerrado o abierto, deberia hacerse mejor con un struct
+    private boolean closeMatch;
 
     @ManyToMany
     @JoinTable(
@@ -80,12 +81,4 @@ public class Match {
     public Long getId() {
         return id;
     }
-
-    public void setClose(boolean close) {
-        this.close = close;
-    } 
-
-    public Boolean getClose() {
-        return close;
-    } 
 }

@@ -11,6 +11,8 @@ import java.util.stream.Collectors;
 @Service
 public class MatchService {
     //para testear
+    //TODO: deberia mejorar los test en vees de tener esto
+
     public MatchService(MatchRepository matchRepo, UserRepository userRepo) {
         this.matchRepo = matchRepo;
         this.userRepo = userRepo;
@@ -23,7 +25,7 @@ public class MatchService {
     private UserRepository userRepo;
 
     public List<MatchSummaryDTO> getAvailableMatches() {
-        return matchRepo.findByCloseFalse().stream()
+        return matchRepo.findBycloseMatchFalse().stream()
             .filter(match -> !match.started() && !match.isFull())
             .map(match -> new MatchSummaryDTO(
                 match.getId(),
@@ -49,5 +51,5 @@ public class MatchService {
 
         return new InscripcionResponse("Inscripción exitosa", match);
     }
-
+//TODO: Mejorar el trato de los errores
 }
