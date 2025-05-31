@@ -1,8 +1,10 @@
 import { useMutation } from "@tanstack/react-query";
+import { toast } from "react-hot-toast";
 import { BASE_API_URL } from "@/config/app-query-client";
 import { useToken } from "@/services/TokenContext";
 import { LoginRequest, LoginResponseSchema } from "@/models/Login";
 import { SignupRequest, SignupResponseSchema } from "@/models/Signup";
+import {handleErrorResponse} from "@/services/apiUtils.tsx";
 
 export function useLogin() {
   const [, setToken] = useToken();
@@ -37,9 +39,11 @@ export async function loginService(req: LoginRequest) {
   });
 
   if (response.ok) {
-    return LoginResponseSchema.parse(await response.json());
+    const json = await response.json();
+    toast.success("Login successful!");
+    return LoginResponseSchema.parse(json);
   } else {
-    throw new Error(`Failed with status ${response.status}: ${await response.text()}`);
+    return await handleErrorResponse(response, "in login")
   }
 }
 
@@ -67,8 +71,10 @@ export async function signupService(req: SignupRequest) {
   });
 
   if (response.ok) {
-    return SignupResponseSchema.parse(await response.json());
+    const json = await response.json();
+    toast.success("User created successfully!");
+    return SignupResponseSchema.parse(json);
   } else {
-    throw new Error(`Failed with status ${response.status}: ${await response.text()}`);
+    return await handleErrorResponse(response, "in sign up")
   }
 }
