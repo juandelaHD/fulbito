@@ -27,11 +27,20 @@ public class MatchRestController {
         return matchService.getMatchById(matchId);
     }
 
-    @PostMapping(path = "/create-open", consumes = "application/json", produces = "application/json")
+    @PostMapping(path = "/create", consumes = "application/json", produces = "application/json")
     @Operation(summary = "Create a new match")
     @ResponseStatus(HttpStatus.CREATED)
     MatchDTO createMatch(@NonNull @RequestBody MatchCreateDTO matchCreate) throws IllegalArgumentException, ItemNotFoundException, UserNotFoundException {
         {
+            if (matchCreate.matchType() == MatchType.OPEN) {
+                // Validate that the match type is OPEN
+                return matchService.createOpenMatch(matchCreate);
+            } else if (matchCreate.matchType() == MatchType.CLOSED) {
+                // Handle private match creation logic here
+                // For now, it thows an exception if the match type is CLOSED
+                throw new IllegalArgumentException("Match type CLOSED is not supported yet.");
+                // return matchService.createClosedMatch(matchCreate);
+            }
             return matchService.createOpenMatch(matchCreate);
         }
     }
