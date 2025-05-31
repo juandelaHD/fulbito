@@ -3,6 +3,7 @@ import { useAppForm } from "@/config/use-app-form";
 import { useSignup } from "@/services/UserServices";
 import { SignupRequestSchema } from "@/models/Signup";
 import { toast } from "react-hot-toast";
+import { FileInput } from "@/components/form-components/FileInput/FileInput";
 
 const fieldLabels: Record<string, string> = {
   firstName: "First Name",
@@ -28,6 +29,7 @@ export const SignupScreen = () => {
       gender: "",
       location: "",
       userType: "",
+      avatar: null as File | null
     },
     validators: {
       onSubmit: () => {
@@ -127,6 +129,15 @@ export const SignupScreen = () => {
                               {label: "Field Admin", value: "Field Admin"},
                             ]}
                         />
+                    )}
+                  </formData.AppField>
+                  <formData.AppField name="avatar">
+                    {(field) => (
+                      <FileInput
+                        label="Avatar (optional)"
+                        accept="image/*"
+                        onChange={(file) => field.handleChange(() => file)}
+                      />
                     )}
                   </formData.AppField>
                 </formData.FormContainer>

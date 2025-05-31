@@ -13,7 +13,8 @@ export const SignupRequestSchema = z.object({
   photo: z.any().optional(),
   userType: z.enum(["Player", "Field"], {
     errorMap: () => ({ message: "Must select Account Role!" }),
-  })
+  }),
+  avatar: z.any().optional(),
 });
 
 export type SignupRequest = z.infer<typeof SignupRequestSchema>;
