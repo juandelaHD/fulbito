@@ -57,6 +57,11 @@ public class UserService implements UserDetailsService {
                 .orElseThrow(() -> new UserNotFoundException(USER_NOT_FOUND, username));
     }
 
+    public User loadUserById(Long id) throws UserNotFoundException {
+        return userRepository.findById(id)
+                    .orElseThrow(() -> new UserNotFoundException(USER_NOT_FOUND, id));
+    }
+
     public UserDTO getUserById(Long id) throws UserNotFoundException {
         return userRepository.findById(id)
                 .map(UserDTO::new)

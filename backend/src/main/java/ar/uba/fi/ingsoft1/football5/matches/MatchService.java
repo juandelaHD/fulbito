@@ -12,6 +12,7 @@ import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Service
 @Transactional
@@ -100,6 +101,34 @@ public class MatchService {
         // Retornar el DTO del partido guardado
         return new MatchDTO(savedMatch);
     }
+
+    public MatchDTO joinOpenMatch(Long matchId, Long userId) throws ItemNotFoundException, IllegalArgumentException {
+        Match match = loadMatchById(matchId);
+
+        if (match.getType() != MatchType.OPEN) {
+            throw new IllegalArgumentException("Cannot join a closed match");
+        }
+
+        if (match.getStartTime().isBefore(LocalDateTime.now())) {
+            throw new IllegalArgumentException("Match has already started");
+        }
+
+        if (match.getPlayers().size() >= match.getMaxPlayers()) {
+            throw new IllegalArgumentException("Match is full");
+        }
+
+        User user = userService.loadUserById(userId);
+
+        if (match.getPlayers().contains(user)) {
+            throw new IllegalArgumentException("User is already registered in the match");
+        }
+
+        match.addPlayer(user);
+
+        Match updatedMatch = matchRepository.save(match);
+        return new MatchDTO(updatedMatch);
+    }
+
 
 
 }
