@@ -17,7 +17,7 @@ const fieldLabels: Record<string, string> = {
 };
 
 export const SignupScreen = () => {
-  const { mutate, error } = useSignup();
+  const { mutate } = useSignup();
 
   const formData = useAppForm({
     defaultValues: {
@@ -34,8 +34,6 @@ export const SignupScreen = () => {
     validators: {
       onSubmit: () => {
         const values = formData.store.state.values;
-        
-        console.log("Valores actuales:", values);
 
         const result = SignupRequestSchema.safeParse(values);
         if (!result.success) {
@@ -85,7 +83,7 @@ export const SignupScreen = () => {
                 Join the community and simplify your matchday!
               </h2>
               <formData.AppForm>
-                <formData.FormContainer extraError={error} className="space-y-4 md:space-y-6">
+                <formData.FormContainer extraError={null} className="space-y-4 md:space-y-6">
                   <formData.AppField name="firstName">
                     {(field) => (
                         <field.TextField label="First Name"/>
