@@ -17,7 +17,7 @@ const fieldLabels: Record<string, string> = {
 };
 
 export const SignupScreen = () => {
-  const { mutate, error } = useSignup();
+  const { mutate } = useSignup();
 
   const formData = useAppForm({
     defaultValues: {
@@ -34,8 +34,6 @@ export const SignupScreen = () => {
     validators: {
       onSubmit: () => {
         const values = formData.store.state.values;
-        
-        console.log("Valores actuales:", values);
 
         const result = SignupRequestSchema.safeParse(values);
         if (!result.success) {
@@ -52,42 +50,23 @@ export const SignupScreen = () => {
       },
     },
     onSubmit: async ({ value }) => {
-      // Por qué me obliga a hacer esta transformacion manual?
-      const ageNum = Number(value.age);
-      if (isNaN(ageNum)) {
-        toast.error("Age: Debe ser un número válido", {duration: 5000});
-        console.log("Error: Age debe ser un número válido");
-        return;
-      }
-
-      let role: "USER" | "ADMIN";
-      if (value.role === "USER") {
-        role = "USER";
-      } else if (value.role === "ADMIN") {
-        role = "ADMIN";
-      } else {
-        toast.error("Role: Selecciona un rol válido", { duration: 5000 });
-        console.log("Error: Role debe ser 'Player' o 'Field Admin'");
-        return;
-      }
-
-      let gender: "Male" | "Female" | "Other";
-      if (["Male", "Female", "Other"].includes(value.gender)) {
-        gender = value.gender as any;
-      } else {
-        toast.error("Gender: Selecciona un género válido", { duration: 5000 });
-        console.log("Error: Gender debe ser 'Male', 'Female' o 'Other'");
+      const result = SignupRequestSchema.safeParse(value);
+      if (!result.success) {
         return;
       }
 
       const payload = {
-        ...value,
-        age: ageNum,
-        role,
-        gender
+        firstName: result.data.firstName,
+        lastName: result.data.lastName,
+        username: result.data.username,
+        password: result.data.password,
+        age: result.data.age,
+        gender: result.data.gender,
+        zone: result.data.zone,
+        role: result.data.role,
+        avatar: result.data.avatar instanceof File ? result.data.avatar : null,
       };
 
-      console.log("Signup data:", payload);
       mutate(payload);
     },
   });
@@ -104,7 +83,7 @@ export const SignupScreen = () => {
                 Join the community and simplify your matchday!
               </h2>
               <formData.AppForm>
-                <formData.FormContainer extraError={error} className="space-y-4 md:space-y-6">
+                <formData.FormContainer extraError={null} className="space-y-4 md:space-y-6">
                   <formData.AppField name="firstName">
                     {(field) => (
                         <field.TextField label="First Name"/>
