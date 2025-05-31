@@ -4,7 +4,7 @@ import ar.uba.fi.ingsoft1.football5.images.Image;
 
 import java.util.List;
 
-record FieldDTO(
+public record FieldDTO(
         long id,
         String name,
         GrassType grassType,
@@ -12,7 +12,7 @@ record FieldDTO(
         Location location,
         List<Long> imageIds
 ) {
-    FieldDTO(Field field) {
+    public FieldDTO(Field field) {
         this(
                 field.getId(),
                 field.getName(),

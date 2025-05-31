@@ -1,0 +1,105 @@
+package ar.uba.fi.ingsoft1.football5.matches;
+
+import ar.uba.fi.ingsoft1.football5.common.exception.ItemNotFoundException;
+import ar.uba.fi.ingsoft1.football5.common.exception.UserNotFoundException;
+import ar.uba.fi.ingsoft1.football5.fields.Field;
+import ar.uba.fi.ingsoft1.football5.fields.FieldService;
+import ar.uba.fi.ingsoft1.football5.user.User;
+import ar.uba.fi.ingsoft1.football5.user.UserDTO;
+import ar.uba.fi.ingsoft1.football5.user.UserService;
+
+import jakarta.transaction.Transactional;
+import org.springframework.stereotype.Service;
+
+import java.time.LocalDate;
+
+@Service
+@Transactional
+public class MatchService {
+
+    private final MatchRepository matchRepository;
+    private final UserService userService;
+    private final FieldService fieldService;
+
+    public MatchService(
+            MatchRepository matchRepository,
+            UserService userService,
+            FieldService fieldService
+    ) {
+        this.matchRepository = matchRepository;
+        this.userService = userService;
+        this.fieldService = fieldService;
+    }
+
+    public Match loadMatchById(Long id) throws ItemNotFoundException {
+        return matchRepository.findById(id)
+                .orElseThrow(() -> new ItemNotFoundException("match", id));
+    }
+
+    public MatchDTO getMatchById(Long id) throws ItemNotFoundException {
+        return matchRepository.findById(id)
+                .map(MatchDTO::new)
+                .orElseThrow(() -> new ItemNotFoundException("match", id));
+    }
+
+    public MatchDTO createOpenMatch(MatchCreateDTO match) throws IllegalArgumentException, ItemNotFoundException, UserNotFoundException {
+        // Validar que el tipo de partido es OPEN
+        if (match.matchType() != MatchType.OPEN) {
+            throw new IllegalArgumentException("Match type must be OPEN");
+        }
+
+        // Validar tiempo de inicio y fin
+        if (match.startTime().isAfter(match.endTime())) {
+            throw new IllegalArgumentException("Start time must be before end time");
+        }
+
+        // Validar fecha
+        LocalDate today = LocalDate.now();
+        if (!match.date().isAfter(today)) {
+            throw new IllegalArgumentException("Match date must be in the future");
+        }
+
+        // Validar que el fieldID existe
+        Field field = fieldService.loadFieldById(match.fieldId());
+
+        // Validar cancha y horario
+        if (!fieldService.validateFieldAvailability(
+                field.getId(),
+                match.date(),
+                match.startTime(),
+                match.endTime()
+        )) {
+            throw new IllegalArgumentException("Field is not available at the specified date and time");
+        }
+
+        // Validar que el usuario existe
+        UserDTO organizer = userService.getUserById(match.organizerId());
+        User organizerUser = userService.loadUserByUsername(organizer.username());
+
+        // Crear el partido
+        Match newMatch = new Match(
+                field,
+                organizerUser,
+                MatchStatus.SCHEDULED,
+                match.matchType(),
+                match.date(),
+                match.startTime(),
+                match.endTime()
+        );
+
+        // Agregar el organizador a los jugadores del partido
+        newMatch.addPlayer(organizerUser);
+
+        // Enviar notificación al organizador y crear el UUID (token) de confirmación por email
+        // emailService.sendMatchCreatedNotification(organizerUser, newMatch);
+        // newMatch.setEmailConfirmationToken(UUID.randomUUID().toString());
+        // newMatch.setConfirmationSent(true);
+
+        Match savedMatch = matchRepository.save(newMatch); // Guardar de nuevo para asegurar que se actualiza la lista de jugadores
+
+        // Retornar el DTO del partido guardado
+        return new MatchDTO(savedMatch);
+    }
+
+
+}
