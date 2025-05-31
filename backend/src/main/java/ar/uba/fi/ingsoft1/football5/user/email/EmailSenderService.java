@@ -1,5 +1,8 @@
 package ar.uba.fi.ingsoft1.football5.user.email;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -33,5 +36,9 @@ public class EmailSenderService {
 
     public void sendMailToVerifyAccount(String recipientEmailAddress, String token) {
         this.sendMail(recipientEmailAddress, new AccountVerificationMailWriter(token));
+    }
+
+    public void sendMailToVerifyMatch(String recipientEmailAddress, String token, LocalDate date, LocalDateTime startDate, LocalDateTime endDate){
+        this.sendMail(recipientEmailAddress, new MatchVerificationMailWriter(token,date,startDate,endDate));
     }
 }
