@@ -66,7 +66,7 @@ public class UserService implements UserDetailsService {
 
     Optional<TokenDTO> createUser(UserCreateDTO data, MultipartFile avatar) throws IOException {
 
-        if (userRepository.findByUsername(data.username()).isPresent()) {
+        if (userRepository.findByUsername(data.username().toLowerCase()).isPresent()) {
             throw new IllegalArgumentException("Username already taken");
         }
 
@@ -86,7 +86,7 @@ public class UserService implements UserDetailsService {
     }
 
     Optional<TokenDTO> loginUser(UserCredentials data) {
-        Optional<User> maybeUser = userRepository.findByUsername(data.getUsername());
+        Optional<User> maybeUser = userRepository.findByUsername(data.getUsername().toLowerCase());
         if (maybeUser.isEmpty()) {
             return Optional.empty();
         }
