@@ -1,0 +1,52 @@
+package ar.uba.fi.ingsoft1.football5.matches;
+
+import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.*;
+
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.List;
+
+@Schema(description = "Data Transfer Object used when creating a new match.")
+public record MatchCreateDTO(
+        @NotNull(message = "Match type is required")
+        @Schema(description = "Type of match", example = "OPEN")
+        MatchType matchType,
+
+        @NotNull(message = "Organizer ID is required")
+        @Schema(description = "ID of the user who is organizing the match", example = "1")
+        Long organizerId,
+
+        @NotNull(message = "Field ID is required")
+        @Schema(description = "ID of the field where the match will take place", example = "5")
+        Long fieldId,
+
+        @Schema(description = "IDs of players") // (only for OPEN matches)
+        List<Long> playerIds,
+
+        /*
+        @Schema(description = "IDs of teams") //  (only for CLOSED matches)
+        List<Long> teamIds,
+        */
+
+        @Min(value = 1, message = "Minimum number of players must be at least 1")
+        @Schema(description = "Minimum number of players required", example = "8")
+        Integer minPlayers,
+
+        @Min(value = 1, message = "Maximum number of players must be at least 1")
+        @Schema(description = "Maximum number of players allowed", example = "10")
+        Integer maxPlayers,
+
+        @NotNull(message = "Date is required")
+        @Schema(description = "Date of the match", example = "2025-06-15")
+        LocalDate date,
+
+        @NotNull(message = "Start time is required")
+        @Schema(description = "Start time of the match", example = "19:00")
+        LocalDateTime startTime,
+
+        @NotNull(message = "End time is required")
+        @Schema(description = "End time of the match", example = "20:00")
+        LocalDateTime endTime
+
+) {}
