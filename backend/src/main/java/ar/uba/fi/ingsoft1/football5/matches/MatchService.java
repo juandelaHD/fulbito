@@ -102,33 +102,30 @@ public class MatchService {
         return new MatchDTO(savedMatch);
     }
 
-    public MatchDTO joinOpenMatch(Long matchId, Long userId) throws ItemNotFoundException, IllegalArgumentException {
+    public MatchDTO joinOpenMatch(Long matchId, Long userId) throws ItemNotFoundException {
         Match match = loadMatchById(matchId);
 
-        if (match.getType() != MatchType.OPEN) {
-            throw new IllegalArgumentException("Cannot join a closed match");
-        }
-
-        if (match.getStartTime().isBefore(LocalDateTime.now())) {
-            throw new IllegalArgumentException("Match has already started");
-        }
-
-        if (match.getPlayers().size() >= match.getMaxPlayers()) {
-            throw new IllegalArgumentException("Match is full");
-        }
+        validateJoinConditions(match, userId);
 
         User user = userService.loadUserById(userId);
-
-        if (match.getPlayers().contains(user)) {
-            throw new IllegalArgumentException("User is already registered in the match");
-        }
-
         match.addPlayer(user);
 
-        Match updatedMatch = matchRepository.save(match);
-        return new MatchDTO(updatedMatch);
+        return new MatchDTO(matchRepository.save(match));
     }
 
+    private void validateJoinConditions(Match match, Long userId) {
+        if (match.getType() != MatchType.OPEN)
+            throw new IllegalArgumentException("Only open matches can be joined");
 
+        if (match.getStartTime().isBefore(LocalDateTime.now()))
+            throw new IllegalArgumentException("Cannot join a match that already started");
+
+        if (match.getPlayers().size() >= match.getMaxPlayers())
+            throw new IllegalArgumentException("Match is full");
+
+        User user = userService.loadUserById(userId);
+        if (match.getPlayers().contains(user))
+            throw new IllegalArgumentException("User is already registered in the match");
+    }
 
 }

@@ -25,7 +25,7 @@ public record UserDTO(
         @Schema(description = "User's chosen username", example = "john_doe")
         String username,
 
-        @NotBlank(message = "AvatarId must not be blank")
+        @NotNull(message = "AvatarId must not be blank")
         @Schema(description = "Avatar's image Id", example = "1")
         Long avatarId,
 
@@ -33,7 +33,7 @@ public record UserDTO(
         @Schema(description = "Geographical or organizational zone of the user", example = "Buenos Aires")
         String zone,
 
-        @NotBlank(message = "Age must not be blank")
+        @NotNull(message = "Age must not be blank")
         @Schema(description = "User's age", example = "22")
         Integer age,
 
@@ -60,7 +60,7 @@ public record UserDTO(
                 user.getFirstName(),
                 user.getLastName(),
                 user.getUsername(),
-                user.getAvatar().getId(),
+                user.getAvatar() != null ? user.getAvatar().getId() : null,
                 user.getZone(),
                 user.getAge(),
                 user.getGender(),
