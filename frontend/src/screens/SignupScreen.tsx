@@ -8,12 +8,12 @@ import { FileInput } from "@/components/form-components/FileInput/FileInput";
 const fieldLabels: Record<string, string> = {
   firstName: "First Name",
   lastName: "Last Name",
-  email: "Email",
+  username: "Email",
   password: "Password",
   age: "Age",
   gender: "Gender",
-  location: "Location",
-  userType: "Role",
+  zone: "Location",
+  role: "Role",
 };
 
 export const SignupScreen = () => {
@@ -23,12 +23,12 @@ export const SignupScreen = () => {
     defaultValues: {
       firstName: "",
       lastName: "",
-      email: "",
+      username: "",
       password: "",
       age: "",
       gender: "",
-      location: "",
-      userType: "",
+      zone: "",
+      role: "",
       avatar: null as File | null
     },
     validators: {
@@ -48,12 +48,47 @@ export const SignupScreen = () => {
           }
           return { isValid: false, error: "Validation failed" };
         }
-        return { isValid: true };
+        return undefined;
       },
     },
     onSubmit: async ({ value }) => {
-      console.log("Signup data:", value);
-      mutate(value);
+      // Por qué me obliga a hacer esta transformacion manual?
+      const ageNum = Number(value.age);
+      if (isNaN(ageNum)) {
+        toast.error("Age: Debe ser un número válido", {duration: 5000});
+        console.log("Error: Age debe ser un número válido");
+        return;
+      }
+
+      let role: "USER" | "ADMIN";
+      if (value.role === "USER") {
+        role = "USER";
+      } else if (value.role === "ADMIN") {
+        role = "ADMIN";
+      } else {
+        toast.error("Role: Selecciona un rol válido", { duration: 5000 });
+        console.log("Error: Role debe ser 'Player' o 'Field Admin'");
+        return;
+      }
+
+      let gender: "Male" | "Female" | "Other";
+      if (["Male", "Female", "Other"].includes(value.gender)) {
+        gender = value.gender as any;
+      } else {
+        toast.error("Gender: Selecciona un género válido", { duration: 5000 });
+        console.log("Error: Gender debe ser 'Male', 'Female' o 'Other'");
+        return;
+      }
+
+      const payload = {
+        ...value,
+        age: ageNum,
+        role,
+        gender
+      };
+
+      console.log("Signup data:", payload);
+      mutate(payload);
     },
   });
 
@@ -80,7 +115,7 @@ export const SignupScreen = () => {
                         <field.TextField label="Last Name"/>
                     )}
                   </formData.AppField>
-                  <formData.AppField name="email">
+                  <formData.AppField name="username">
                     {(field) => (
                         <field.TextField label="Email"/>
                     )}
@@ -112,21 +147,21 @@ export const SignupScreen = () => {
                         />
                     )}
                   </formData.AppField>
-                  <formData.AppField name="location">
+                  <formData.AppField name="zone">
                     {(field) => (
                         <field.TextField
                             label="Location"
                         />
                     )}
                   </formData.AppField>
-                  <formData.AppField name="userType">
+                  <formData.AppField name="role">
                     {(field) => (
                         <field.SelectField
                             label="Role"
                             options={[
                               {label: "Select Role...", value: ""},
-                              {label: "Player", value: "Player"},
-                              {label: "Field Admin", value: "Field Admin"},
+                              {label: "Player", value: "USER"},
+                              {label: "Field Admin", value: "ADMIN"},
                             ]}
                         />
                     )}
@@ -134,7 +169,7 @@ export const SignupScreen = () => {
                   <formData.AppField name="avatar">
                     {(field) => (
                       <FileInput
-                        label="Avatar (optional)"
+                        label="Avatar"
                         accept="image/*"
                         onChange={(file) => field.handleChange(() => file)}
                       />

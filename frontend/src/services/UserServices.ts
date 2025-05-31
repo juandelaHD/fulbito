@@ -1,15 +1,15 @@
 import { useMutation } from "@tanstack/react-query";
-
 import { BASE_API_URL } from "@/config/app-query-client";
-import { LoginRequest, LoginResponseSchema } from "@/models/Login";
 import { useToken } from "@/services/TokenContext";
+import { LoginRequest, LoginResponseSchema } from "@/models/Login";
+import { SignupRequest, SignupResponseSchema } from "@/models/Signup";
 
 export function useLogin() {
   const [, setToken] = useToken();
 
   return useMutation({
     mutationFn: async (req: LoginRequest) => {
-      const tokenData = await auth("/sessions", req);
+      const tokenData = await loginService(req);
       setToken({ state: "LOGGED_IN", ...tokenData });
     },
   });
@@ -19,25 +19,55 @@ export function useSignup() {
   const [, setToken] = useToken();
 
   return useMutation({
-    mutationFn: async (req: LoginRequest) => {
-      const tokenData = await auth("/users", req);
+    mutationFn: async (req: SignupRequest) => {
+      const tokenData = await signupService(req);
       setToken({ state: "LOGGED_IN", ...tokenData });
     },
   });
 }
 
-async function auth(endpoint: string, data: LoginRequest) {
-  const response = await fetch(BASE_API_URL + endpoint, {
+export async function loginService(req: LoginRequest) {
+  const response = await fetch(`${BASE_API_URL}/sessions/login`, {
     method: "POST",
     headers: {
-      Accept: "application/json",
+      "Accept": "application/json",
       "Content-Type": "application/json",
     },
-    body: JSON.stringify(data),
+    body: JSON.stringify(req),
   });
 
   if (response.ok) {
     return LoginResponseSchema.parse(await response.json());
+  } else {
+    throw new Error(`Failed with status ${response.status}: ${await response.text()}`);
+  }
+}
+
+export async function signupService(req: SignupRequest) {
+  const formData = new FormData();
+
+  formData.append("user", JSON.stringify({
+    firstName: req.firstName,
+    lastName: req.lastName,
+    username: req.username,
+    password: req.password,
+    age: req.age,
+    gender: req.gender,
+    zone: req.zone,
+    role: req.role,
+  }));
+
+  if (req.avatar instanceof File) {
+    formData.append("avatar", req.avatar);
+  }
+
+  const response = await fetch(`${BASE_API_URL}/sessions/sign-up`, {
+    method: "POST",
+    body: formData,
+  });
+
+  if (response.ok) {
+    return SignupResponseSchema.parse(await response.json());
   } else {
     throw new Error(`Failed with status ${response.status}: ${await response.text()}`);
   }

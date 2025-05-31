@@ -2,21 +2,24 @@ import { useAppForm } from "@/config/use-app-form";
 import { CommonLayout } from "@/components/CommonLayout/CommonLayout";
 import { CreateFieldSchema } from "@/models/CreateField";
 import { toast } from "react-hot-toast";
+import {useCreateField} from "@/services/FieldServices.ts";
 
 const fieldLabels: Record<string, string> = {
   name: "Name",
   grassType: "Grass Type",
-  lighting: "Lighting",
+  illuminated: "Lighting",
   zone: "Zone",
   address: "Address",
 };
 
 export const CreateFieldScreen = () => {
+  const { mutate } = useCreateField();
+
   const formData = useAppForm({
     defaultValues: {
       name: "",
       grassType: "",
-      lighting: "",
+      illuminated: "",
       zone: "",
       address: "",
       photos: null as FileList | null,
@@ -35,48 +38,24 @@ export const CreateFieldScreen = () => {
           }
           return { isValid: false };
         }
-        return { isValid: true };
       },
     },
     onSubmit: async ({ value }) => {
-      const formPayload = new FormData();
+      const result = CreateFieldSchema.safeParse(value);
+      if (!result.success) {
+        return;
+      }
 
-      const fieldJson = {
-        name: value.name,
-        grassType: value.grassType === "Synthetic" ? "SYNTHETIC" : "NATURAL_GRASS",
-        illuminated: value.lighting === "Yes",
-        location: {
-          zone: value.zone,
-          address: value.address,
-        },
+      const payload = {
+        name: result.data.name,
+        grassType: result.data.grassType,
+        illuminated: result.data.illuminated,
+        zone: result.data.zone,
+        address: result.data.address,
+        photos: value.photos ? Array.from(value.photos) : [],
       };
 
-      formPayload.append("field", JSON.stringify(fieldJson));
-
-      if (value.photos && value.photos.length > 0) {
-        Array.from(value.photos).forEach((file: File) => {
-          formPayload.append("images", file);
-        });
-      }
-
-      try {
-        const response = await fetch("/fields", {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token") ?? ""}`,
-          },
-          body: formPayload,
-        });
-
-        if (!response.ok) {
-          const errText = await response.text();
-          throw new Error(errText || "Unknown error");
-        }
-
-        toast.success("Field created successfully!");
-      } catch (error: any) {
-        toast.error("Error creating field: " + error.message);
-      }
+      mutate(payload);
     },
   });
 
@@ -95,13 +74,14 @@ export const CreateFieldScreen = () => {
                   label="Grass Type"
                   options={[
                     { label: "Select...", value: "" },
-                    { label: "Synthetic", value: "Synthetic" },
-                    { label: "Natural", value: "Natural" },
+                    { label: "Synthetic", value: "SYNTHETIC_TURF" },
+                    { label: "Natural", value: "NATURAL_GRASS" },
+                    { label: "Hybrid", value: "HYBRID_TURF" },
                   ]}
                 />
               )}
             </formData.AppField>
-            <formData.AppField name="lighting">
+            <formData.AppField name="illuminated">
               {(field) => (
                 <field.SelectField
                   label="Lighting"
