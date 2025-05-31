@@ -53,11 +53,11 @@ public class User implements UserDetails, UserCredentials {
     protected User() {}
 
     public User(String username, String firstName, String lastName, String gender, String zone, Integer age, String password, Role role) {
-        this.firstName = firstName;
-        this.lastName = lastName;
-        this.username = username;
-        this.gender = gender;
-        this.zone = zone;
+        this.firstName = firstName.toLowerCase();
+        this.lastName = lastName.toLowerCase();
+        this.username = username.toLowerCase();
+        this.gender = gender.toLowerCase();
+        this.zone = zone.toLowerCase();
         this.age = age;
         this.password = password;
         this.role = role;
