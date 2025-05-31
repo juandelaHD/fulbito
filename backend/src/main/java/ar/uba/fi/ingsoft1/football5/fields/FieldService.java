@@ -67,7 +67,7 @@ class FieldService {
     }
 
     private void validateOwnership(Field field, JwtUserDetails userDetails) {
-        if (!field.getOwner().getUsername().equals(userDetails.username().toLowerCase())) {
+        if (!field.getOwner().getUsername().equalsIgnoreCase(userDetails.username())) {
             throw new AccessDeniedException(String.format("User does not have permission to delete field with id '%s'.", field.getId()));
         }
     }
