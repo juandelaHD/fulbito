@@ -130,7 +130,7 @@ docker compose up db
 4. Acceder a la documentación de la API en:
 
 ```
-http://localhost:8080/swagger-ui/index.html#
+http://localhost:30002/swagger-ui/index.html#
 ```
 
 ---
