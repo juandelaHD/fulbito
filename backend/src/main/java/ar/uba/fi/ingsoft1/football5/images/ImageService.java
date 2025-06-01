@@ -3,11 +3,15 @@ package ar.uba.fi.ingsoft1.football5.images;
 import ar.uba.fi.ingsoft1.football5.common.exception.ItemNotFoundException;
 import ar.uba.fi.ingsoft1.football5.fields.Field;
 import ar.uba.fi.ingsoft1.football5.user.User;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 
 @Service
@@ -15,6 +19,9 @@ import java.util.List;
 public class ImageService {
 
     private final ImageRepository imageRepository;
+
+    @Value("${app.images.path}")
+    private String storagePath;
 
     public ImageService(ImageRepository imageRepository) {
         this.imageRepository = imageRepository;
@@ -32,7 +39,15 @@ public class ImageService {
     }
 
     public void saveImage(User user, MultipartFile file) throws IOException {
-        byte[] data = file.getBytes();
+        byte[] data;
+
+        if (file == null || file.isEmpty()) {
+            Path path_img = Paths.get(storagePath, "default_profile.webp");
+            data = Files.readAllBytes(path_img);
+        } else {
+            data = file.getBytes();
+        }
+
         Image image = new Image(data, user);
         image = imageRepository.save(image);
         user.setAvatar(image);

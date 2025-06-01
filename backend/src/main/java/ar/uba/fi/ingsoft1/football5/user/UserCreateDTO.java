@@ -19,7 +19,7 @@ public record UserCreateDTO(
 
         @Email(message = "Invalid email format")
         @NotBlank(message = "Username (email) is required")
-        @Schema(description = "Valid username (email) address for the user", example = "elmaildepepe2001@example.com")
+        @Schema(description = "Valid username (email) address for the user", example = "elmaildepepe2001@gmail.com")
         String username,
 
         @NotBlank(message = "Password is required")
