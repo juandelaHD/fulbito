@@ -44,6 +44,14 @@ public class MatchRestController {
             return matchService.createOpenMatch(matchCreate);
         }
     }
+
+    @PostMapping("/{matchId}/join")
+    @Operation(summary = "Join an open match")
+    @ResponseStatus(HttpStatus.OK)
+    public MatchDTO joinOpenMatch(@PathVariable Long matchId, @RequestParam Long userId) throws Exception {
+        return matchService.joinOpenMatch(matchId, userId);
+    }
+
 }
 
 

@@ -13,13 +13,13 @@ public record FieldDTO(
         List<Long> imageIds
 ) {
     public FieldDTO(Field field) {
-        this(
-                field.getId(),
-                field.getName(),
-                field.getGrassType(),
-                field.isIlluminated(),
-                field.getLocation(),
-                field.getImages().stream().map(Image::getId).toList()
-        );
-    }
+            this(
+                    field.getId(),
+                    field.getName(),
+                    field.getGrassType(),
+                    field.isIlluminated(),
+                    field.getLocation(),
+                    field.getImages().stream().map(Image::getId).toList()
+            );
+        }
 }

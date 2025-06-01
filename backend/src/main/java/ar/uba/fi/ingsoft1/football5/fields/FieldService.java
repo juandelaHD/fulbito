@@ -58,14 +58,14 @@ public class FieldService {
     }
 
     private void validateUniqueName(FieldCreateDTO fieldCreate) {
-        fieldRepository.findByName(fieldCreate.name().toLowerCase())
+        fieldRepository.findByName(fieldCreate.name())
                 .ifPresent(field -> {
                     throw new IllegalArgumentException(String.format("Field with name '%s' already exists.", fieldCreate.name()));
                 });
     }
 
     private void validateUniqueLocation(FieldCreateDTO fieldCreate) {
-        fieldRepository.findByLocationZoneAndLocationAddress(fieldCreate.zone().toLowerCase(), fieldCreate.address().toLowerCase())
+        fieldRepository.findByLocationZoneAndLocationAddress(fieldCreate.zone(), fieldCreate.address())
                 .ifPresent(field -> {
                     throw new IllegalArgumentException(String.format("Field with location '%s, %s' already exists.", fieldCreate.zone(), fieldCreate.address()));
                 });
@@ -99,7 +99,7 @@ public class FieldService {
 
 
     private void validateOwnership(Field field, JwtUserDetails userDetails) {
-        if (!field.getOwner().getUsername().equalsIgnoreCase(userDetails.username())) {
+        if (!field.getOwner().getUsername().equals(userDetails.username())) {
             throw new AccessDeniedException(String.format("User does not have permission to delete field with id '%s'.", field.getId()));
         }
     }
