@@ -4,21 +4,19 @@ import ar.uba.fi.ingsoft1.football5.fields.FieldService;
 import ar.uba.fi.ingsoft1.football5.user.Role;
 import ar.uba.fi.ingsoft1.football5.user.UserDTO;
 import ar.uba.fi.ingsoft1.football5.user.UserService;
+import ar.uba.fi.ingsoft1.football5.user.email.EmailSenderService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.context.annotation.ComponentScan;
-import org.springframework.context.annotation.FilterType;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.HashSet;
 import java.util.List;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -32,17 +30,20 @@ class MatchRestControllerTest {
     @Autowired
     private MockMvc mockMvc;
 
-    @MockBean
+    @Mock
     private MatchService matchService;
 
-    @MockBean
+    @Mock
     private UserService userService;
 
-    @MockBean
+    @Mock
     private FieldService fieldService;
 
-    @MockBean
+    @Mock
     private MatchRepository matchRepository;
+
+    @Mock
+    private EmailSenderService emailSenderService;
 
     @Autowired
     private ObjectMapper objectMapper;
@@ -55,7 +56,7 @@ class MatchRestControllerTest {
                 new UserDTO(
                         1L, "Test", "User", "testuser",
                         1L, "Zone", 25, "M",
-                        Role.USER, true, new HashSet<>(), new HashSet<>()),
+                        Role.USER, true),
                 List.of(),
                 MatchStatus.SCHEDULED,
                 MatchType.OPEN,

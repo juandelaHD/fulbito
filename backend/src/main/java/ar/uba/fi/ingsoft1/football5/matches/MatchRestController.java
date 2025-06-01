@@ -48,7 +48,7 @@ public class MatchRestController {
     @PostMapping("/{matchId}/join")
     @Operation(summary = "Join an open match")
     @ResponseStatus(HttpStatus.OK)
-    public MatchDTO joinOpenMatch(@PathVariable Long matchId, @RequestParam Long userId) throws Exception {
+    public MatchDTO joinOpenMatch(@PathVariable Long matchId, @RequestParam Long userId) throws IllegalArgumentException, ItemNotFoundException, UserNotFoundException {
         return matchService.joinOpenMatch(matchId, userId);
     }
 

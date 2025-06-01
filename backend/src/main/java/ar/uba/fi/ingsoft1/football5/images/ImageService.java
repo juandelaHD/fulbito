@@ -39,6 +39,9 @@ public class ImageService {
     }
 
     public byte[] getImageData(Long id) throws ItemNotFoundException {
+        if (id == null) {
+            throw new ItemNotFoundException("image", id);
+        }
         return imageRepository.findById(id)
                 .map(Image::getData)
                 .orElseThrow(() -> new ItemNotFoundException("image", id));

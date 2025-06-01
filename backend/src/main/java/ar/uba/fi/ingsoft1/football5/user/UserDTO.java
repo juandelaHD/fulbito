@@ -1,11 +1,8 @@
 package ar.uba.fi.ingsoft1.football5.user;
 
-import ar.uba.fi.ingsoft1.football5.matches.Match;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-
-import java.util.Set;
 
 @Schema(description = "Data Transfer Object representing a user.")
 public record UserDTO(
@@ -46,13 +43,7 @@ public record UserDTO(
         Role role,
 
         @Schema(description = "Indicates whether the user's email is confirmed", example = "true")
-        boolean emailConfirmed,
-
-        @Schema(description = "Set of matches organized by the user")
-        Set<Match> organizedMatches,
-
-        @Schema(description = "Set of matches the user has joined")
-        Set<Match> joinedMatches
+        boolean emailConfirmed
 
 ) {
     public UserDTO(User user) {
@@ -66,9 +57,7 @@ public record UserDTO(
                 user.getAge(),
                 user.getGender(),
                 user.getRole(),
-                user.isEmailConfirmed(),
-                user.getOrganizedMatches(),
-                user.getJoinedMatches()
+                user.isEmailConfirmed()
         );
     }
 }

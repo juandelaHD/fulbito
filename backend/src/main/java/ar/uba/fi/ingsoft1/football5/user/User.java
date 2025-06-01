@@ -2,6 +2,7 @@ package ar.uba.fi.ingsoft1.football5.user;
 
 import ar.uba.fi.ingsoft1.football5.images.Image;
 import ar.uba.fi.ingsoft1.football5.matches.Match;
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -53,13 +54,13 @@ public class User implements UserDetails, UserCredentials {
     @Column
     private String emailConfirmationToken;
 
-    // Matches that the user has organized.
-    @OneToMany(mappedBy = "organizer", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "organizer", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+    @JsonBackReference("organizer-match")
     private final Set<Match> organizedMatches = new HashSet<>();
 
-    // Matches that the user has joined
-    @ManyToMany(mappedBy = "players")
-    private final Set<Match> matches = new HashSet<>();
+    @ManyToMany(mappedBy = "players", fetch = FetchType.EAGER)
+    @JsonBackReference("player-match")
+    private final Set<Match> joinedMatches = new HashSet<>();
 
     protected User() {}
 
@@ -147,6 +148,6 @@ public class User implements UserDetails, UserCredentials {
     }
 
     public Set<Match> getJoinedMatches() {
-        return matches;
+        return joinedMatches;
     }
 }

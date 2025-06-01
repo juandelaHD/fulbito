@@ -9,6 +9,7 @@ import ar.uba.fi.ingsoft1.football5.user.UserService;
 import ar.uba.fi.ingsoft1.football5.user.Role;
 import ar.uba.fi.ingsoft1.football5.images.Image;
 
+import ar.uba.fi.ingsoft1.football5.user.email.EmailSenderService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -26,6 +27,7 @@ class MatchServiceTest {
     private UserService userService;
     private FieldService fieldService;
     private MatchService matchService;
+    private EmailSenderService emailSenderService;
 
     private Match openMatch;
     private User user;
@@ -35,14 +37,16 @@ class MatchServiceTest {
         matchRepository = mock(MatchRepository.class);
         userService = mock(UserService.class);
         fieldService = mock(FieldService.class);
-        
+        emailSenderService = mock(EmailSenderService.class);
 
-        matchService = new MatchService(matchRepository, userService, fieldService);
+        matchService = new MatchService(matchRepository, userService, fieldService, emailSenderService);
 
         // Match Setup
         Field field = mock(Field.class);
         User organizer = mock(User.class);
         openMatch = new Match(field, organizer, MatchStatus.SCHEDULED, MatchType.OPEN,
+                1,
+                10,
                 LocalDate.now().plusDays(1),
                 LocalDateTime.now().plusHours(2),
                 LocalDateTime.now().plusHours(3)

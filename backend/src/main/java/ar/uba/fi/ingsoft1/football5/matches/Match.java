@@ -2,6 +2,7 @@ package ar.uba.fi.ingsoft1.football5.matches;
 
 import ar.uba.fi.ingsoft1.football5.fields.Field;
 import ar.uba.fi.ingsoft1.football5.user.User;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -24,6 +25,7 @@ public class Match {
     // Organizador del partido
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
+    @JsonManagedReference("organizer-match")
     private User organizer;
 
     // Jugadores inscritos para partido abierto
@@ -33,6 +35,7 @@ public class Match {
             joinColumns = @JoinColumn(name = "match_id"),
             inverseJoinColumns = @JoinColumn(name = "user_id")
     )
+    @JsonManagedReference("player-match")
     private Set<User> players = new HashSet<>();
 
     // TODO: Equipos para partido cerrado (pueden ser 2)
@@ -72,16 +75,15 @@ public class Match {
     @Column(nullable = false)
     private boolean confirmationSent = false;
 
-    @Column
-    private String emailConfirmationToken;
-
     public Match() {}
 
-    public Match(Field field, User organizer, MatchStatus status, MatchType type, LocalDate date, LocalDateTime startTime, LocalDateTime endTime) {
+    public Match(Field field, User organizer, MatchStatus status, MatchType type, Integer minPlayers, Integer maxPlayers, LocalDate date, LocalDateTime startTime, LocalDateTime endTime) {
         this.field = field;
         this.organizer = organizer;
         this.status = status;
         this.type = type;
+        this.minPlayers = minPlayers;
+        this.maxPlayers = maxPlayers;
         this.date = date;
         this.startTime = startTime;
         this.endTime = endTime;
@@ -187,14 +189,6 @@ public class Match {
 
     public void setConfirmationSent(boolean confirmationSent) {
         this.confirmationSent = confirmationSent;
-    }
-
-    public String getEmailConfirmationToken() {
-        return emailConfirmationToken;
-    }
-
-    public void setEmailConfirmationToken(String emailConfirmationToken) {
-        this.emailConfirmationToken = emailConfirmationToken;
     }
     
 }

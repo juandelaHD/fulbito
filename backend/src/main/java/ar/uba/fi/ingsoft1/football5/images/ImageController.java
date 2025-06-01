@@ -8,8 +8,10 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Positive;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 @RestController
 @RequestMapping("/images")
@@ -29,7 +31,18 @@ public class ImageController {
     @ApiResponse(responseCode = "400", description = "Invalid image Id supplied", content = @Content)
     @ApiResponse(responseCode = "404", description = "Image not found", content = @Content)
     public ResponseEntity<byte[]> getImage(@Valid @PathVariable @Positive Long id
-    ) throws ItemNotFoundException {
-        return ResponseEntity.ok(imageService.getImageData(id));
+    )  throws ItemNotFoundException {
+        try {
+            // Attempt to retrieve the image data
+            byte[] imageData = imageService.getImageData(id);
+            return ResponseEntity
+                    .ok()
+                    .contentType(MediaType.IMAGE_JPEG)
+                    .body(imageData);
+        } catch (ItemNotFoundException e) {
+            // If the image is not found, throw a 404 error
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Image not found", e);
+        }
     }
 }
+

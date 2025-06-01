@@ -19,6 +19,6 @@ public class AccountVerificationMailWriter extends EmailWriter {
                 + "http://localhost:30002/sessions/verify-email?token=" + token + "\n\n"
                 + "Once confirmed, you’ll be able to explore players, share your opinions, and be part of the passion of football in Argentina.\n\n"
                 + "See you on the pitch!\n"
-                + "— Ing. de Software I - Group 8");
+                + "— PartidosYa");
     }
 }

@@ -3,6 +3,7 @@ package ar.uba.fi.ingsoft1.football5.fields;
 import ar.uba.fi.ingsoft1.football5.common.exception.ItemNotFoundException;
 import ar.uba.fi.ingsoft1.football5.config.security.JwtUserDetails;
 import ar.uba.fi.ingsoft1.football5.images.ImageService;
+import ar.uba.fi.ingsoft1.football5.matches.MatchRepository;
 import ar.uba.fi.ingsoft1.football5.user.User;
 import ar.uba.fi.ingsoft1.football5.user.UserService;
 import org.junit.jupiter.api.Test;
@@ -30,6 +31,9 @@ class FieldServiceTest {
 
     @Mock
     private ImageService imageService;
+
+    @Mock
+    private MatchRepository matchRepository;
 
     @Mock
     private UserService userService;

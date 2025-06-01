@@ -73,7 +73,7 @@ class SessionRestController {
                     description = "UserCreateDTO JSON payload",
                     schema = @Schema(type = "string", format = "json", implementation = UserCreateDTO.class)
             ) String userJson,
-            @RequestPart(value = "avatar") MultipartFile avatar) throws IOException {
+            MultipartFile avatar) throws IOException {
 
         ObjectMapper objectMapper = new ObjectMapper();
         UserCreateDTO data = objectMapper.readValue(userJson, UserCreateDTO.class);

@@ -14,7 +14,6 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.UUID;
 
 @Service
 @Transactional
@@ -59,6 +58,11 @@ public class MatchService {
             throw new IllegalArgumentException("Start time must be before end time");
         }
 
+        // Validar tiempo de inicio y fin
+        if (match.startTime().isEqual(match.endTime())) {
+            throw new IllegalArgumentException("Start time and end time cannot be the same");
+        }
+
         // Validar fecha
         LocalDate today = LocalDate.now();
         if (!match.date().isAfter(today)) {
@@ -88,6 +92,8 @@ public class MatchService {
                 organizerUser,
                 MatchStatus.SCHEDULED,
                 match.matchType(),
+                match.minPlayers(),
+                match.maxPlayers(),
                 match.date(),
                 match.startTime(),
                 match.endTime()
@@ -96,16 +102,13 @@ public class MatchService {
         // Agregar el organizador a los jugadores del partido
         newMatch.addPlayer(organizerUser);
 
-        // Enviar y crear el UUID (token) de confirmación por email
-        String token = UUID.randomUUID().toString();
+        // Enviar correo de reserva al organizador
         emailSenderService.sendMailToVerifyMatch(
                 organizerUser.getUsername(),
-                token,
                 match.date(),
                 match.startTime(),
                 match.endTime()
         );
-        newMatch.setEmailConfirmationToken(token);
         newMatch.setConfirmationSent(true);
 
         // Guardar el partido
@@ -115,18 +118,18 @@ public class MatchService {
         return new MatchDTO(savedMatch);
     }
 
-    public MatchDTO joinOpenMatch(Long matchId, Long userId) throws ItemNotFoundException {
+    public MatchDTO joinOpenMatch(Long matchId, Long userId) throws ItemNotFoundException, IllegalArgumentException, UserNotFoundException {
         Match match = loadMatchById(matchId);
 
-        validateJoinConditions(match, userId);
-
         User user = userService.loadUserById(userId);
+        validateJoinConditions(match, user);
+
         match.addPlayer(user);
 
         return new MatchDTO(matchRepository.save(match));
     }
 
-    private void validateJoinConditions(Match match, Long userId) {
+    private void validateJoinConditions(Match match, User user) throws IllegalArgumentException {
         if (match.getType() != MatchType.OPEN)
             throw new IllegalArgumentException("Only open matches can be joined");
 
@@ -136,7 +139,6 @@ public class MatchService {
         if (match.getPlayers().size() >= match.getMaxPlayers())
             throw new IllegalArgumentException("Match is full");
 
-        User user = userService.loadUserById(userId);
         if (match.getPlayers().contains(user))
             throw new IllegalArgumentException("User is already registered in the match");
     }

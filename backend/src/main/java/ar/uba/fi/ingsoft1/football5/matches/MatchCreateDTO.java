@@ -5,7 +5,6 @@ import jakarta.validation.constraints.*;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.List;
 
 @Schema(description = "Data Transfer Object used when creating a new match.")
 public record MatchCreateDTO(
@@ -18,7 +17,7 @@ public record MatchCreateDTO(
         Long organizerId,
 
         @NotNull(message = "Field ID is required")
-        @Schema(description = "ID of the field where the match will take place", example = "5")
+        @Schema(description = "ID of the field where the match will take place", example = "1")
         Long fieldId,
 
         /*
@@ -32,7 +31,7 @@ public record MatchCreateDTO(
         */
 
         @Min(value = 1, message = "Minimum number of players must be at least 1")
-        @Schema(description = "Minimum number of players required", example = "8")
+        @Schema(description = "Minimum number of players required", example = "1")
         Integer minPlayers,
 
         @Min(value = 1, message = "Maximum number of players must be at least 1")
@@ -44,11 +43,11 @@ public record MatchCreateDTO(
         LocalDate date,
 
         @NotNull(message = "Start time is required")
-        @Schema(description = "Start time of the match", example = "19:00")
+        @Schema(description = "Start time of the match", example = "2025-06-15T19:00:00")
         LocalDateTime startTime,
 
         @NotNull(message = "End time is required")
-        @Schema(description = "End time of the match", example = "20:00")
+        @Schema(description = "End time of the match", example = "2025-06-15T19:00:00")
         LocalDateTime endTime
 
 ) {}
