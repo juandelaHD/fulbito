@@ -2,11 +2,15 @@ package ar.uba.fi.ingsoft1.football5.fields;
 
 import ar.uba.fi.ingsoft1.football5.common.exception.ItemNotFoundException;
 import ar.uba.fi.ingsoft1.football5.config.security.JwtUserDetails;
+import ar.uba.fi.ingsoft1.football5.fields.filters.*;
 import ar.uba.fi.ingsoft1.football5.images.ImageService;
 import ar.uba.fi.ingsoft1.football5.matches.Match;
 import ar.uba.fi.ingsoft1.football5.matches.MatchRepository;
 import ar.uba.fi.ingsoft1.football5.user.User;
 import ar.uba.fi.ingsoft1.football5.user.UserService;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -97,10 +101,30 @@ public class FieldService {
         return true;
     }
 
-
     private void validateOwnership(Field field, JwtUserDetails userDetails) {
         if (!field.getOwner().getUsername().equals(userDetails.username())) {
             throw new AccessDeniedException(String.format("User does not have permission to delete field with id '%s'.", field.getId()));
         }
+    }
+
+    public Page<FieldDTO> getFieldsWithFilters(Pageable pageable, JwtUserDetails userDetails, FieldFiltersDTO filters) {
+        User owner = userService.loadUserByUsername(userDetails.username());
+        Specification<Field> combinedSpec = getCombinedSpecification(filters, owner.getZone());
+        return fieldRepository.findAll(combinedSpec, pageable)
+                .map(FieldDTO::new);
+    }
+
+    private Specification<Field> getCombinedSpecification(FieldFiltersDTO filters, String userZone) {
+        Specification<Field> specName = new FieldNameSpec(filters.name());
+        Specification<Field> specZone = new FieldZoneSpec(filters.zone(), userZone);
+        Specification<Field> specAddress = new FieldAddressSpec(filters.address());
+        Specification<Field> specGrassType = new FieldGrassTypeSpec(filters.grassType());
+        Specification<Field> specIlluminated = new FieldIlluminatedSpec(filters.illuminated());
+
+        return Specification.where(specName)
+                .and(specZone)
+                .and(specAddress)
+                .and(specGrassType)
+                .and(specIlluminated);
     }
 }
