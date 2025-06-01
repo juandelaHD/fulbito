@@ -30,7 +30,7 @@ public record UserCreateDTO(
         @Schema(description = "User's geographical or organizational zone", example = "Buenos Aires")
         String zone,
 
-        @NotBlank(message = "Age is required")
+        @NotNull(message = "Age is required")
         @Schema(description = "User's age", example = "22")
         Integer age,
 
