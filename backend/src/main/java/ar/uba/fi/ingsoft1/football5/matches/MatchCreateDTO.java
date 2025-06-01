@@ -21,8 +21,10 @@ public record MatchCreateDTO(
         @Schema(description = "ID of the field where the match will take place", example = "5")
         Long fieldId,
 
+        /*
         @Schema(description = "IDs of players") // (only for OPEN matches)
         List<Long> playerIds,
+        */
 
         /*
         @Schema(description = "IDs of teams") //  (only for CLOSED matches)

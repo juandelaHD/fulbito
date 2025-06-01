@@ -46,14 +46,14 @@ public class FieldService {
         return new FieldDTO(field);
     }
 
-    public FieldDTO getFieldById(Long id) throws ItemNotFoundException{
+    public FieldDTO getFieldById(Long id) throws ItemNotFoundException {
         return fieldRepository.findById(id)
                 .map(FieldDTO::new)
                 .orElseThrow(() -> new ItemNotFoundException("field", id));
     }
 
     public Field loadFieldById(Long id) throws ItemNotFoundException {
-        return fieldRepository.findById(id) 
+        return fieldRepository.findById(id)
                 .orElseThrow(() -> new ItemNotFoundException("field", id));
     }
 
@@ -84,18 +84,19 @@ public class FieldService {
     }
 
     public boolean validateFieldAvailability(
-        Long fieldId,
-        LocalDate date,
-        LocalDateTime startTime,
-        LocalDateTime endTime
-    ){
+            Long fieldId,
+            LocalDate date,
+            LocalDateTime startTime,
+            LocalDateTime endTime) {
+
         List<Match> matches = matchRepository.findConflictingMatches(fieldId, date, startTime, endTime);
-        if(!matches.isEmpty()){
-            throw new IllegalArgumentException(String.format("Field with id '%s' is not available on %s from %s to %s",
-            fieldId, date, startTime, endTime));
+        if (!matches.isEmpty()) {
+            throw new IllegalArgumentException(String.format("Field with id '%s' is not available on %s from %s to %s.",
+                    fieldId, date, startTime, endTime));
         }
         return true;
     }
+
 
     private void validateOwnership(Field field, JwtUserDetails userDetails) {
         if (!field.getOwner().getUsername().equals(userDetails.username())) {

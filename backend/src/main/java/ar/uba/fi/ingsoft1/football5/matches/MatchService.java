@@ -8,11 +8,13 @@ import ar.uba.fi.ingsoft1.football5.user.User;
 import ar.uba.fi.ingsoft1.football5.user.UserDTO;
 import ar.uba.fi.ingsoft1.football5.user.UserService;
 
+import ar.uba.fi.ingsoft1.football5.user.email.EmailSenderService;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Service
 @Transactional
@@ -21,15 +23,18 @@ public class MatchService {
     private final MatchRepository matchRepository;
     private final UserService userService;
     private final FieldService fieldService;
+    private final EmailSenderService emailSenderService;
 
     public MatchService(
             MatchRepository matchRepository,
             UserService userService,
-            FieldService fieldService
+            FieldService fieldService,
+            EmailSenderService emailSenderService
     ) {
         this.matchRepository = matchRepository;
         this.userService = userService;
         this.fieldService = fieldService;
+        this.emailSenderService = emailSenderService;
     }
 
     public Match loadMatchById(Long id) throws ItemNotFoundException {
@@ -91,11 +96,19 @@ public class MatchService {
         // Agregar el organizador a los jugadores del partido
         newMatch.addPlayer(organizerUser);
 
-        // Enviar notificación al organizador y crear el UUID (token) de confirmación por email
-        // emailService.sendMatchCreatedNotification(organizerUser, newMatch);
-        // newMatch.setEmailConfirmationToken(UUID.randomUUID().toString());
-        // newMatch.setConfirmationSent(true);
+        // Enviar y crear el UUID (token) de confirmación por email
+        String token = UUID.randomUUID().toString();
+        emailSenderService.sendMailToVerifyMatch(
+                organizerUser.getUsername(),
+                token,
+                match.date(),
+                match.startTime(),
+                match.endTime()
+        );
+        newMatch.setEmailConfirmationToken(token);
+        newMatch.setConfirmationSent(true);
 
+        // Guardar el partido
         Match savedMatch = matchRepository.save(newMatch); // Guardar de nuevo para asegurar que se actualiza la lista de jugadores
 
         // Retornar el DTO del partido guardado

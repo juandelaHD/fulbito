@@ -53,22 +53,22 @@ public class User implements UserDetails, UserCredentials {
     @Column
     private String emailConfirmationToken;
 
-    // Matches that the user has organized
+    // Matches that the user has organized.
     @OneToMany(mappedBy = "organizer", cascade = CascadeType.ALL, orphanRemoval = true)
     private final Set<Match> organizedMatches = new HashSet<>();
 
-    // Matches that the user has joines
+    // Matches that the user has joined
     @ManyToMany(mappedBy = "players")
     private final Set<Match> matches = new HashSet<>();
 
     protected User() {}
 
     public User(String username, String firstName, String lastName, String gender, String zone, Integer age, String password, Role role) {
-        this.firstName = firstName;
-        this.lastName = lastName;
-        this.username = username;
-        this.gender = gender;
-        this.zone = zone;
+        this.firstName = firstName.toLowerCase();
+        this.lastName = lastName.toLowerCase();
+        this.username = username.toLowerCase();
+        this.gender = gender.toLowerCase();
+        this.zone = zone.toLowerCase();
         this.age = age;
         this.password = password;
         this.role = role;
@@ -137,15 +137,16 @@ public class User implements UserDetails, UserCredentials {
     public Integer getAge() {
         return age;
     }
+
     public Role getRole() {
         return role;
     }
 
-    public Set<Match> getOrganizedMatches(){
+    public Set<Match> getOrganizedMatches() {
         return organizedMatches;
     }
 
-    public Set<Match> getJoinedMatches(){
+    public Set<Match> getJoinedMatches() {
         return matches;
     }
 }

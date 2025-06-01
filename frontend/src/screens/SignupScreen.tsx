@@ -3,37 +3,37 @@ import { useAppForm } from "@/config/use-app-form";
 import { useSignup } from "@/services/UserServices";
 import { SignupRequestSchema } from "@/models/Signup";
 import { toast } from "react-hot-toast";
+import { FileInput } from "@/components/form-components/FileInput/FileInput";
 
 const fieldLabels: Record<string, string> = {
   firstName: "First Name",
   lastName: "Last Name",
-  email: "Email",
+  username: "Email",
   password: "Password",
   age: "Age",
   gender: "Gender",
-  location: "Location",
-  userType: "Role",
+  zone: "Location",
+  role: "Role",
 };
 
 export const SignupScreen = () => {
-  const { mutate, error } = useSignup();
+  const { mutate } = useSignup();
 
   const formData = useAppForm({
     defaultValues: {
       firstName: "",
       lastName: "",
-      email: "",
+      username: "",
       password: "",
       age: "",
       gender: "",
-      location: "",
-      userType: "",
+      zone: "",
+      role: "",
+      avatar: null as File | null
     },
     validators: {
       onSubmit: () => {
         const values = formData.store.state.values;
-        
-        console.log("Valores actuales:", values);
 
         const result = SignupRequestSchema.safeParse(values);
         if (!result.success) {
@@ -46,12 +46,28 @@ export const SignupScreen = () => {
           }
           return { isValid: false, error: "Validation failed" };
         }
-        return { isValid: true };
+        return undefined;
       },
     },
     onSubmit: async ({ value }) => {
-      console.log("Signup data:", value);
-      mutate(value);
+      const result = SignupRequestSchema.safeParse(value);
+      if (!result.success) {
+        return;
+      }
+
+      const payload = {
+        firstName: result.data.firstName,
+        lastName: result.data.lastName,
+        username: result.data.username,
+        password: result.data.password,
+        age: result.data.age,
+        gender: result.data.gender,
+        zone: result.data.zone,
+        role: result.data.role,
+        avatar: result.data.avatar instanceof File ? result.data.avatar : null,
+      };
+
+      mutate(payload);
     },
   });
 
@@ -67,7 +83,7 @@ export const SignupScreen = () => {
                 Join the community and simplify your matchday!
               </h2>
               <formData.AppForm>
-                <formData.FormContainer extraError={error} className="space-y-4 md:space-y-6">
+                <formData.FormContainer extraError={null} className="space-y-4 md:space-y-6">
                   <formData.AppField name="firstName">
                     {(field) => (
                         <field.TextField label="First Name"/>
@@ -78,7 +94,7 @@ export const SignupScreen = () => {
                         <field.TextField label="Last Name"/>
                     )}
                   </formData.AppField>
-                  <formData.AppField name="email">
+                  <formData.AppField name="username">
                     {(field) => (
                         <field.TextField label="Email"/>
                     )}
@@ -110,23 +126,32 @@ export const SignupScreen = () => {
                         />
                     )}
                   </formData.AppField>
-                  <formData.AppField name="location">
+                  <formData.AppField name="zone">
                     {(field) => (
                         <field.TextField
                             label="Location"
                         />
                     )}
                   </formData.AppField>
-                  <formData.AppField name="userType">
+                  <formData.AppField name="role">
                     {(field) => (
                         <field.SelectField
                             label="Role"
                             options={[
                               {label: "Select Role...", value: ""},
-                              {label: "Player", value: "Player"},
-                              {label: "Field Admin", value: "Field Admin"},
+                              {label: "Player", value: "USER"},
+                              {label: "Field Admin", value: "ADMIN"},
                             ]}
                         />
+                    )}
+                  </formData.AppField>
+                  <formData.AppField name="avatar">
+                    {(field) => (
+                      <FileInput
+                        label="Avatar"
+                        accept="image/*"
+                        onChange={(file) => field.handleChange(() => file)}
+                      />
                     )}
                   </formData.AppField>
                 </formData.FormContainer>

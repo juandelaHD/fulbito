@@ -53,6 +53,7 @@ public record UserDTO(
 
         @Schema(description = "Set of matches the user has joined")
         Set<Match> joinedMatches
+
 ) {
     public UserDTO(User user) {
         this(

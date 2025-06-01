@@ -4,11 +4,11 @@ import { LoginRequestSchema } from "@/models/Login";
 import { useLogin } from "@/services/UserServices";
 
 export const LoginScreen = () => {
-  const { mutate, error } = useLogin();
+  const { mutate } = useLogin();
 
   const formData = useAppForm({
     defaultValues: {
-      email: "",
+      username: "",
       password: "",
     },
     validators: {
@@ -21,8 +21,8 @@ export const LoginScreen = () => {
     <CommonLayout>
       <h1 className="text-center text-2xl font-bold mb-4">Welcome back!</h1>
       <formData.AppForm>
-        <formData.FormContainer extraError={error}>
-          <formData.AppField name="email" children={(field) => <field.TextField label="Email" />} />
+        <formData.FormContainer extraError={null}>
+          <formData.AppField name="username" children={(field) => <field.TextField label="Email" />} />
           <formData.AppField name="password" children={(field) => <field.PasswordField label="Password" />} />
             <div className="text-sm text-green-700 text-left -mt-2">
                 <a href="/forgot-password" className="hover:underline">

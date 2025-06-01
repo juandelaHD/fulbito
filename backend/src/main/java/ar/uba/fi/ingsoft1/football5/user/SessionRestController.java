@@ -7,7 +7,10 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Valid;
+import jakarta.validation.Validator;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.lang.NonNull;
@@ -18,6 +21,7 @@ import org.springframework.web.server.ResponseStatusException;
 import java.util.Map;
 
 import java.io.IOException;
+import java.util.Set;
 
 @RestController
 @RequestMapping("/sessions")
@@ -25,6 +29,9 @@ import java.io.IOException;
 class SessionRestController {
 
     private final UserService userService;
+
+    @Autowired
+    private Validator validator;
 
     SessionRestController(UserService userService) {
         this.userService = userService;
@@ -70,7 +77,15 @@ class SessionRestController {
 
         ObjectMapper objectMapper = new ObjectMapper();
         UserCreateDTO data = objectMapper.readValue(userJson, UserCreateDTO.class);
-
+        // Validate JSON data with validator annotations in UserCreateDTO
+        Set<ConstraintViolation<UserCreateDTO>> violations = validator.validate(data);
+        if (!violations.isEmpty()) {
+            StringBuilder errorMessage = new StringBuilder("Validation failed: ");
+            for (ConstraintViolation<UserCreateDTO> violation : violations) {
+                errorMessage.append(violation.getPropertyPath()).append(" ").append(violation.getMessage()).append("; ");
+            }
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, errorMessage.toString());
+        }
         return userService
                 .createUser(data, avatar)
                 .map(user -> ResponseEntity.status(HttpStatus.CREATED).body(user))
