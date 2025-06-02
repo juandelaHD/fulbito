@@ -106,6 +106,24 @@ class ReviewServiceTest {
     }
 
     @Test
+    void createReview_whenUserHasAlreadyReviewedField_throwsIllegalArgumentException() throws ItemNotFoundException {
+        Long fieldId = 1L;
+        ReviewCreateDTO reviewCreateDTO = new ReviewCreateDTO(10, "Great field!");
+        Field field = new Field(fieldId, "Test Field", GrassType.NATURAL_GRASS, true,
+                mock(Location.class), user);
+
+        when(userDetails.username()).thenReturn("testUser");
+        when(fieldService.loadFieldById(fieldId)).thenReturn(field);
+        when(userService.loadUserByUsername(userDetails.username())).thenReturn(user);
+        when(reviewRepository.existsByFieldAndUser(field, user)).thenReturn(true);
+
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () ->
+            reviewServiceTest.createReview(reviewCreateDTO, fieldId, userDetails)
+        );
+        assertEquals("User has already reviewed this field.", exception.getMessage());
+    }
+
+    @Test
     void createReview_whenValidData_returnsReviewDTO() throws ItemNotFoundException {
         Long fieldId = 1L;
         ReviewCreateDTO reviewCreateDTO = new ReviewCreateDTO(10, "Great field!");

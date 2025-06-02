@@ -29,7 +29,7 @@ public class ReviewService {
         Field field = fieldService.loadFieldById(fieldId);
         User user = userService.loadUserByUsername(userDetails.username());
         //validateUserCanReviewField(field, user); - if has already played a match in the field, can review
-        // validateUserHasNotReviewedField(field, user); - if has not reviewed the field yet
+        validateUserHasNotReviewedField(field, user);
 
         Review review = new Review(
                 reviewCreateDTO.rating(),
@@ -40,6 +40,12 @@ public class ReviewService {
 
         reviewRepository.save(review);
         return new ReviewDTO(review);
+    }
+
+    private void validateUserHasNotReviewedField(Field field, User user) {
+        if (reviewRepository.existsByFieldAndUser(field, user)) {
+            throw new IllegalArgumentException("User has already reviewed this field.");
+        }
     }
 
     public Page<ReviewDTO> getReviewsByFieldId(Long fieldId, Pageable pageable) throws ItemNotFoundException {
