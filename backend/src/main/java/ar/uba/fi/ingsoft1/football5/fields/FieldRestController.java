@@ -2,6 +2,7 @@ package ar.uba.fi.ingsoft1.football5.fields;
 
 import ar.uba.fi.ingsoft1.football5.common.exception.ItemNotFoundException;
 import ar.uba.fi.ingsoft1.football5.config.security.JwtUserDetails;
+import ar.uba.fi.ingsoft1.football5.fields.filters.FieldFiltersDTO;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -9,7 +10,11 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
+import org.springdoc.core.annotations.ParameterObject;
+import org.springframework.data.domain.Pageable;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -21,7 +26,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/fields")
-@Tag(name = "Fields")
+@Tag(name = "4 - Fields")
 class FieldRestController {
 
     private final FieldService fieldService;
@@ -29,6 +34,23 @@ class FieldRestController {
     @Autowired
     FieldRestController(FieldService fieldService) {
         this.fieldService = fieldService;
+    }
+
+    @GetMapping(produces = "application/json")
+    @Operation(summary = "Get all fields with pagination")
+    @ApiResponse(responseCode = "200", description = "Fields retrieved successfully")
+    Page<FieldDTO> getFields(
+            @Valid @ParameterObject Pageable pageable,
+            @AuthenticationPrincipal JwtUserDetails userDetails,
+            @RequestParam(value = "name", required = false) String name,
+            @RequestParam(value = "zone", required = false) String zone,
+            @RequestParam(value = "address", required = false) String address,
+            @RequestParam(value = "grassType", required = false) GrassType grassType,
+            @RequestParam(value = "isIlluminated", required = false) Boolean isIlluminated,
+            @RequestParam(value = "hasOpenScheduledMatch", required = false) Boolean hasOpenScheduledMatch
+    ) {
+        FieldFiltersDTO filters = new FieldFiltersDTO(name, zone, address, grassType, isIlluminated, hasOpenScheduledMatch);
+        return fieldService.getFieldsWithFilters(pageable, userDetails, filters);
     }
 
     @PostMapping(produces = "application/json", consumes = "multipart/form-data")
