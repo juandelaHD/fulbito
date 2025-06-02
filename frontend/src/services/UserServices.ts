@@ -4,7 +4,7 @@ import { BASE_API_URL } from "@/config/app-query-client";
 import { useToken } from "@/services/TokenContext";
 import { LoginRequest, LoginResponseSchema } from "@/models/Login";
 import { SignupRequest, SignupResponseSchema } from "@/models/Signup";
-import {handleErrorResponse} from "@/services/ApiUtils.ts";
+import { handleErrorResponse } from "@/services/ApiUtils.ts";
 
 export function useLogin() {
   const [, setToken] = useToken();
@@ -12,7 +12,12 @@ export function useLogin() {
   return useMutation({
     mutationFn: async (req: LoginRequest) => {
       const tokenData = await loginService(req);
-      setToken({ state: "LOGGED_IN", ...tokenData });
+      setToken({
+        state: "LOGGED_IN",
+        accessToken: tokenData.accessToken,
+        refreshToken: tokenData.refreshToken,
+        user: tokenData.user,
+      });
     }
   });
 }
@@ -23,7 +28,12 @@ export function useSignup() {
   return useMutation({
     mutationFn: async (req: SignupRequest) => {
       const tokenData = await signupService(req);
-      setToken({ state: "LOGGED_IN", ...tokenData });
+      setToken({
+        state: "LOGGED_IN",
+        accessToken: tokenData.accessToken,
+        refreshToken: tokenData.refreshToken,
+        user: tokenData.user,
+      });
     },
   });
 }
@@ -44,7 +54,7 @@ export async function loginService(req: LoginRequest) {
 
   const json = await response.json();
   toast.success("Login successful!");
-  return LoginResponseSchema.parse(json);
+  return LoginResponseSchema.parse(json); // 👈 asegurate que `json` incluya `user`
 }
 
 export async function signupService(req: SignupRequest) {
@@ -71,10 +81,10 @@ export async function signupService(req: SignupRequest) {
   });
 
   if (!response.ok) {
-    await handleErrorResponse(response, "in sign up")
+    await handleErrorResponse(response, "in sign up");
   }
 
   const json = await response.json();
   toast.success("User created successfully!");
-  return SignupResponseSchema.parse(json);
+  return SignupResponseSchema.parse(json); // 👈 asegurate que `json` incluya `user`
 }

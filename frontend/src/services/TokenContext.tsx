@@ -1,4 +1,5 @@
 import React, { Dispatch, useContext, useState } from "react";
+import { User } from "@/models/User"; // Asegurate de importar esto
 
 type TokenContextData =
   | {
@@ -8,6 +9,7 @@ type TokenContextData =
       state: "LOGGED_IN";
       accessToken: string;
       refreshToken: string | null;
+      user: User;
     };
 
 const TokenContext = React.createContext<[TokenContextData, Dispatch<TokenContextData>] | null>(null);
@@ -17,7 +19,6 @@ export const TokenProvider = ({ children }: React.PropsWithChildren) => {
   return <TokenContext.Provider value={[state, setState]}>{children}</TokenContext.Provider>;
 };
 
-// eslint-disable-next-line react-refresh/only-export-components
 export function useToken() {
   const context = useContext(TokenContext);
   if (context === null) {
