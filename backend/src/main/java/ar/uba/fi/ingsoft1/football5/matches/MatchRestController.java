@@ -7,6 +7,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.lang.NonNull;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -31,18 +32,16 @@ public class MatchRestController {
     @Operation(summary = "Create a new match")
     @ResponseStatus(HttpStatus.CREATED)
     MatchDTO createMatch(@NonNull @RequestBody MatchCreateDTO matchCreate) throws IllegalArgumentException, ItemNotFoundException, UserNotFoundException {
-        {
-            if (matchCreate.matchType() == MatchType.OPEN) {
-                // Validate that the match type is OPEN
-                return matchService.createOpenMatch(matchCreate);
-            } else if (matchCreate.matchType() == MatchType.CLOSED) {
-                // Handle private match creation logic here
-                // For now, it thows an exception if the match type is CLOSED
-                throw new IllegalArgumentException("Match type CLOSED is not supported yet.");
-                // return matchService.createClosedMatch(matchCreate);
-            }
+        if (matchCreate.matchType() == MatchType.OPEN) {
+            // Validate that the match type is OPEN
             return matchService.createOpenMatch(matchCreate);
+        } else if (matchCreate.matchType() == MatchType.CLOSED) {
+            // Handle private match creation logic here
+            // For now, it thows an exception if the match type is CLOSED
+            throw new IllegalArgumentException("Match type CLOSED is not supported yet.");
+            // return matchService.createClosedMatch(matchCreate);
         }
+        return matchService.createOpenMatch(matchCreate);
     }
 
     @PostMapping("/{matchId}/join")
