@@ -1,6 +1,7 @@
 package ar.uba.fi.ingsoft1.football5.fields;
 
 import ar.uba.fi.ingsoft1.football5.images.Image;
+import ar.uba.fi.ingsoft1.football5.matches.Match;
 import ar.uba.fi.ingsoft1.football5.user.User;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
@@ -42,6 +43,10 @@ public class Field {
     @JoinColumn(name = "owner_id")
     private User owner;
 
+    @JsonManagedReference
+    @OneToMany(mappedBy = "field", fetch = FetchType.LAZY)
+    private List<Match> matches = new ArrayList<>();
+
     protected Field() {}
 
     public Field(Long id, String name, GrassType grassType, Boolean illuminated, Location location, User owner) {
@@ -79,5 +84,9 @@ public class Field {
 
     public User getOwner() {
         return owner;
+    }
+
+    public List<Match> getMatches() {
+        return matches;
     }
 }

@@ -20,6 +20,8 @@ import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional
@@ -29,12 +31,15 @@ public class FieldService {
     private final MatchRepository matchRepository;
     private final ImageService imageService;
     private final UserService userService;
+    private final SpecificationService<Field, FieldFiltersDTO> specificationService;
 
-    FieldService(FieldRepository fieldRepository, MatchRepository matchRepository, ImageService imageService, UserService userService) {
+    FieldService(FieldRepository fieldRepository, MatchRepository matchRepository, ImageService imageService,
+                 UserService userService, SpecificationService<Field, FieldFiltersDTO> specificationService) {
         this.fieldRepository = fieldRepository;
         this.matchRepository = matchRepository;
         this.imageService = imageService;
         this.userService = userService;
+        this.specificationService = specificationService;
     }
 
     FieldDTO createField(FieldCreateDTO fieldCreate, List<MultipartFile> images, JwtUserDetails userDetails)
@@ -109,22 +114,25 @@ public class FieldService {
 
     public Page<FieldDTO> getFieldsWithFilters(Pageable pageable, JwtUserDetails userDetails, FieldFiltersDTO filters) {
         User owner = userService.loadUserByUsername(userDetails.username());
-        Specification<Field> combinedSpec = getCombinedSpecification(filters, owner.getZone());
-        return fieldRepository.findAll(combinedSpec, pageable)
-                .map(FieldDTO::new);
+        Specification<Field> combinedSpec = specificationService.build(filters, owner);
+
+        Page<Field> fieldPage = fieldRepository.findAll(combinedSpec, pageable);
+        return fieldPage.map(field -> mapToDTO(field, filters.hasOpenScheduledMatch()));
     }
 
-    private Specification<Field> getCombinedSpecification(FieldFiltersDTO filters, String userZone) {
-        Specification<Field> specName = new FieldNameSpec(filters.name());
-        Specification<Field> specZone = new FieldZoneSpec(filters.zone(), userZone);
-        Specification<Field> specAddress = new FieldAddressSpec(filters.address());
-        Specification<Field> specGrassType = new FieldGrassTypeSpec(filters.grassType());
-        Specification<Field> specIlluminated = new FieldIlluminatedSpec(filters.illuminated());
+    private FieldDTO mapToDTO(Field field, Boolean includeMatches) {
+        // Si es false o null, no se solicitan los partidos abiertos con
+        // jugadores faltantes (matchesWithMissingPlayers = null).
+        if (!Boolean.TRUE.equals(includeMatches)) {
+            return new FieldDTO(field);
+        }
 
-        return Specification.where(specName)
-                .and(specZone)
-                .and(specAddress)
-                .and(specGrassType)
-                .and(specIlluminated);
+        // Si es true, se solicitan los partidos abiertos con jugadores
+        // faltantes (matchesWithMissingPlayers = Map)
+        Map<String, Integer> matches = field.getMatches().stream()
+                .collect(Collectors.toMap(
+                        match -> match.getId().toString(),
+                        match -> Math.max(0, match.getMaxPlayers() - match.getPlayers().size())));
+        return new FieldDTO(field, matches);
     }
 }
