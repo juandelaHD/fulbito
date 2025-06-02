@@ -3,6 +3,7 @@ package ar.uba.fi.ingsoft1.football5.user;
 import ar.uba.fi.ingsoft1.football5.images.Image;
 import ar.uba.fi.ingsoft1.football5.matches.Match;
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -32,6 +33,7 @@ public class User implements UserDetails, UserCredentials {
     @Column(nullable = false)
     private String gender;
 
+    @JsonManagedReference("user-image")
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private Image avatar;
 

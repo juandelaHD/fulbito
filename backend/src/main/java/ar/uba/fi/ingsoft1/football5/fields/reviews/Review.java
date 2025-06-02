@@ -2,7 +2,6 @@ package ar.uba.fi.ingsoft1.football5.fields.reviews;
 
 import ar.uba.fi.ingsoft1.football5.fields.Field;
 import ar.uba.fi.ingsoft1.football5.user.User;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 
 import java.time.LocalDateTime;
@@ -22,11 +21,9 @@ public class Review {
     @Column(nullable = false)
     LocalDateTime createdAt = LocalDateTime.now();
 
-    @JsonManagedReference
     @ManyToOne(fetch = FetchType.LAZY)
     private Field field;
 
-    @JsonManagedReference
     @ManyToOne(fetch = FetchType.LAZY)
     private User user;
 
