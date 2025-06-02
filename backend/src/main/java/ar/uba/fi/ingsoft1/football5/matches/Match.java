@@ -18,12 +18,13 @@ public class Match {
     private Long id;
 
     // Cancha donde se jugará el partido
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne
     @JoinColumn(name = "field_id", nullable = false)
+    @JsonManagedReference("match-field")
     private Field field;
 
     // Organizador del partido
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
     @JsonManagedReference("organizer-match")
     private User organizer;
@@ -91,6 +92,11 @@ public class Match {
 
     public Long getId() {
         return id;
+    }
+
+    public Long setId(Long id) {
+        this.id = id;
+        return this.id;
     }
 
     public Field getField() {

@@ -5,8 +5,7 @@ import ar.uba.fi.ingsoft1.football5.common.exception.UserNotFoundException;
 import ar.uba.fi.ingsoft1.football5.config.security.JwtUserDetails;
 import ar.uba.fi.ingsoft1.football5.fields.Field;
 import ar.uba.fi.ingsoft1.football5.fields.FieldService;
-import ar.uba.fi.ingsoft1.football5.fields.GrassType;
-import ar.uba.fi.ingsoft1.football5.fields.Location;
+import ar.uba.fi.ingsoft1.football5.matches.Match;
 import ar.uba.fi.ingsoft1.football5.user.User;
 import ar.uba.fi.ingsoft1.football5.user.UserService;
 import org.junit.jupiter.api.Test;
@@ -17,6 +16,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -42,7 +43,7 @@ class ReviewServiceTest {
     private User user;
 
     @Mock
-    private Location location;
+    private Field field;
 
     @InjectMocks
     private ReviewService reviewServiceTest;
@@ -65,8 +66,7 @@ class ReviewServiceTest {
         Long fieldId = 1L;
         Pageable pageable = PageRequest.of(0, 10);
 
-        when(fieldService.loadFieldById(fieldId)).thenReturn(new Field(fieldId, "Test Field",
-                GrassType.NATURAL_GRASS, true, location, user));
+        when(fieldService.loadFieldById(fieldId)).thenReturn(field);
         when(reviewRepository.findByFieldId(fieldId, pageable)).thenReturn(Page.empty());
 
         Page<ReviewDTO> result = reviewServiceTest.getReviewsByFieldId(fieldId, pageable);
@@ -91,11 +91,8 @@ class ReviewServiceTest {
         Long fieldId = 1L;
         String username = "testUser";
         ReviewCreateDTO reviewCreateDTO = new ReviewCreateDTO(10, "Great field!");
-        Field field = new Field(fieldId, "Test Field", GrassType.NATURAL_GRASS, true,
-                mock(Location.class), user);
 
         when(userDetails.username()).thenReturn(username);
-
         when(fieldService.loadFieldById(fieldId)).thenReturn(field);
         when(userService.loadUserByUsername(userDetails.username())).thenThrow(new UserNotFoundException("user", username));
 
@@ -109,8 +106,6 @@ class ReviewServiceTest {
     void createReview_whenUserHasAlreadyReviewedField_throwsIllegalArgumentException() throws ItemNotFoundException {
         Long fieldId = 1L;
         ReviewCreateDTO reviewCreateDTO = new ReviewCreateDTO(10, "Great field!");
-        Field field = new Field(fieldId, "Test Field", GrassType.NATURAL_GRASS, true,
-                mock(Location.class), user);
 
         when(userDetails.username()).thenReturn("testUser");
         when(fieldService.loadFieldById(fieldId)).thenReturn(field);
@@ -124,17 +119,41 @@ class ReviewServiceTest {
     }
 
     @Test
+    void createField_whenUserHasNotPlayedInTheField_throwsIllegalArgumentException() throws ItemNotFoundException {
+        Long fieldId = 1L;
+        ReviewCreateDTO reviewCreateDTO = new ReviewCreateDTO(10, "Great field!");
+        Match match = mock(Match.class);
+        Field anotherField = mock(Field.class);
+
+        when(match.getField()).thenReturn(anotherField);
+        when(anotherField.getId()).thenReturn(2L);
+
+        when(userDetails.username()).thenReturn("testUser");
+        when(fieldService.loadFieldById(fieldId)).thenReturn(field);
+        when(userService.loadUserByUsername(userDetails.username())).thenReturn(user);
+        when(user.getJoinedMatches()).thenReturn(Set.of(match));
+
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () ->
+            reviewServiceTest.createReview(reviewCreateDTO, fieldId, userDetails)
+        );
+        assertEquals("User must have played at least one match in the field to review it.", exception.getMessage());
+    }
+
+    @Test
     void createReview_whenValidData_returnsReviewDTO() throws ItemNotFoundException {
         Long fieldId = 1L;
         ReviewCreateDTO reviewCreateDTO = new ReviewCreateDTO(10, "Great field!");
-        Field field = new Field(fieldId, "Test Field", GrassType.NATURAL_GRASS, true,
-                mock(Location.class), user);
         Review review = new Review(reviewCreateDTO.rating(), reviewCreateDTO.comment(), field, user);
+        Match match = mock(Match.class);
+
+        when(match.getField()).thenReturn(field);
+        when(field.getId()).thenReturn(1L);
 
         when(userDetails.username()).thenReturn("testUser");
         when(fieldService.loadFieldById(fieldId)).thenReturn(field);
         when(userService.loadUserByUsername(userDetails.username())).thenReturn(user);
         when(reviewRepository.save(any(Review.class))).thenReturn(review);
+        when(user.getJoinedMatches()).thenReturn(Set.of(match));
 
         ReviewDTO result = reviewServiceTest.createReview(reviewCreateDTO, fieldId, userDetails);
 

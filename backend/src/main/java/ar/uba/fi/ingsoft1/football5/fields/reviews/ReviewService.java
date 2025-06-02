@@ -28,8 +28,8 @@ public class ReviewService {
             throws ItemNotFoundException {
         Field field = fieldService.loadFieldById(fieldId);
         User user = userService.loadUserByUsername(userDetails.username());
-        //validateUserCanReviewField(field, user); - if has already played a match in the field, can review
         validateUserHasNotReviewedField(field, user);
+        validateUserCanReviewField(field, user);
 
         Review review = new Review(
                 reviewCreateDTO.rating(),
@@ -40,6 +40,13 @@ public class ReviewService {
 
         reviewRepository.save(review);
         return new ReviewDTO(review);
+    }
+
+    private void validateUserCanReviewField(Field field, User user) {
+        if (user.getJoinedMatches().stream().noneMatch(match -> match.getField().getId().equals(field.getId()))) {
+            throw new IllegalArgumentException(
+                    "User must have played at least one match in the field to review it.");
+        }
     }
 
     private void validateUserHasNotReviewedField(Field field, User user) {
