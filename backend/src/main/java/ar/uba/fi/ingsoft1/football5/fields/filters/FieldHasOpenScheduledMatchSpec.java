@@ -25,6 +25,7 @@ public class FieldHasOpenScheduledMatchSpec implements Specification<Field> {
         Join<Field, Match> joinMatch = root.join("matches", JoinType.INNER);
         Predicate openPredicate = criteriaBuilder.equal(joinMatch.get("type"), MatchType.OPEN);
         Predicate scheduledPredicate = criteriaBuilder.equal(joinMatch.get("status"), MatchStatus.SCHEDULED);
+        // La fecha sea en el futuro
         return criteriaBuilder.and(openPredicate, scheduledPredicate);
     }
 }
