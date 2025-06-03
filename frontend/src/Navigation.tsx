@@ -20,7 +20,7 @@ export const Navigation = () => {
             <CreateFieldScreen />
           </Route>
           <Route path="/fields">
-            <CreateFieldScreen />
+            <FieldsScreen />
           </Route>
           <Route>
             <Redirect href="/" />
