@@ -46,8 +46,11 @@ const LoggedInLinks = () => {
             <Link className={styles.navLink} href="/under-construction">
                 Main Page
             </Link>
-            <Link className={styles.navLink} href="/create-field">
-                Crear cancha
+            <Link className={styles.navLink} href="/fields/new">
+                Create Field
+            </Link>
+            <Link className={styles.navLink} href="/fields">
+                View Fields
             </Link>
             <button onClick={logOut} className={styles.navLink}>
                 Log out

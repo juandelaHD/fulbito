@@ -3,6 +3,7 @@ package ar.uba.fi.ingsoft1.football5.fields;
 import ar.uba.fi.ingsoft1.football5.images.Image;
 import ar.uba.fi.ingsoft1.football5.matches.Match;
 import ar.uba.fi.ingsoft1.football5.user.User;
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 
@@ -34,16 +35,15 @@ public class Field {
     @Embedded
     private Location location;
 
-    @JsonManagedReference
+    @JsonManagedReference("field-image")
     @OneToMany(mappedBy = "field", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Image> images = new ArrayList<>();
 
-    @JsonManagedReference
     @ManyToOne
     @JoinColumn(name = "owner_id")
     private User owner;
 
-    @JsonManagedReference
+    @JsonBackReference("match-field")
     @OneToMany(mappedBy = "field", fetch = FetchType.LAZY)
     private List<Match> matches = new ArrayList<>();
 

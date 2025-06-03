@@ -15,12 +15,12 @@ public class Image {
     @Column(name = "data", columnDefinition = "BYTEA")
     private byte[] data;
 
-    @JsonBackReference
+    @JsonBackReference("field-image")
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "field_id")
     private Field field;
 
-    @JsonBackReference
+    @JsonBackReference("user-image")
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private User user;
