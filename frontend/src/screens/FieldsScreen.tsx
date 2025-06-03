@@ -67,7 +67,7 @@ const mockFields: Field[] = [
   },
 ]
 
-export default function FieldsScreen() {
+export const FieldsScreen = () => {
   const handleReserve = (field: Field) => {
     toast.error(`⚠️ Reservations for ${field.name} is not implemented yet!`)
   }
