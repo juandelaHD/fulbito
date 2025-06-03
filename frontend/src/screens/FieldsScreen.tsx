@@ -2,6 +2,7 @@ import { FieldsTable, Field } from "@/components/tables/FieldsTable"
 import { FieldsFilters, FieldsFiltersContainer } from "@/components/filters/FieldsFilters"
 import { useState } from "react"
 import { toast } from "react-hot-toast"
+import { CommonLayout } from "@/components/CommonLayout/CommonLayout";
 
 const mockFields: Field[] = [
   {
@@ -88,6 +89,7 @@ export const FieldsScreen = () => {
   }
 
   return (
+  <CommonLayout>
     <div className="w-[1040px] mx-auto px-4">
       <h1 className="text-2xl font-bold">Search for our Available Fields</h1>
       <FieldsFiltersContainer filters={filters} setFilters={setFilters} onSearch={handleSearch} />
@@ -95,5 +97,6 @@ export const FieldsScreen = () => {
         <FieldsTable data={fields} onReserve={(f) => toast.error(`⚠️ Reservations not implemented yet for ${f.name}`)} />
       )}
     </div>
+  </CommonLayout>
   )
 }
