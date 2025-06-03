@@ -2,6 +2,7 @@ package ar.uba.fi.ingsoft1.football5.matches;
 
 import ar.uba.fi.ingsoft1.football5.common.exception.ItemNotFoundException;
 import ar.uba.fi.ingsoft1.football5.common.exception.UserNotFoundException;
+import ar.uba.fi.ingsoft1.football5.config.security.JwtUserDetails;
 import ar.uba.fi.ingsoft1.football5.fields.Field;
 import ar.uba.fi.ingsoft1.football5.fields.FieldService;
 import ar.uba.fi.ingsoft1.football5.user.User;
@@ -12,6 +13,10 @@ import ar.uba.fi.ingsoft1.football5.images.Image;
 import ar.uba.fi.ingsoft1.football5.user.email.EmailSenderService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -21,27 +26,35 @@ import java.util.Set;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+@ExtendWith(MockitoExtension.class)
 class MatchServiceTest {
 
+    @Mock
+    private JwtUserDetails userDetails;
+
+    @Mock
     private MatchRepository matchRepository;
+
+    @Mock
     private UserService userService;
+
+    @Mock
     private FieldService fieldService;
-    private MatchService matchService;
+
+    @Mock
     private EmailSenderService emailSenderService;
 
+    @Mock
     private Match openMatch;
+
+    @Mock
     private User user;
+
+    @InjectMocks
+    private MatchService matchService;
 
     @BeforeEach
     void setUp() {
-        matchRepository = mock(MatchRepository.class);
-        userService = mock(UserService.class);
-        fieldService = mock(FieldService.class);
-        emailSenderService = mock(EmailSenderService.class);
-
-        matchService = new MatchService(matchRepository, userService, fieldService, emailSenderService);
-
-        // Match Setup
         Field field = mock(Field.class);
         User organizer = mock(User.class);
         openMatch = new Match(field, organizer, MatchStatus.SCHEDULED, MatchType.OPEN,
@@ -53,23 +66,21 @@ class MatchServiceTest {
         );
         openMatch.setMaxPlayers(2);
         openMatch.setMinPlayers(1);
-
-        // User Setup
         user = new User("testuser", "Test", "User", "M", "Zone1", 25, "pass123", Role.USER);
-
     }
 
     @Test
     void testJoinOpenMatch_successful() throws Exception {
         Image mockAvatar = mock(Image.class);
-        when(mockAvatar.getId()).thenReturn(123L); 
+        when(mockAvatar.getId()).thenReturn(123L);
         user.setAvatar(mockAvatar);
 
+        when(userDetails.username()).thenReturn("testuser");
         when(matchRepository.findById(1L)).thenReturn(Optional.of(openMatch));
-        when(userService.loadUserById(99L)).thenReturn(user);
+        when(userService.loadUserByUsername(anyString())).thenReturn(user);
         when(matchRepository.save(openMatch)).thenReturn(openMatch);
 
-        MatchDTO result = matchService.joinOpenMatch(1L, 99L);
+        MatchDTO result = matchService.joinOpenMatch(1L, userDetails);
 
         assertEquals(1, result.players().size());
         assertTrue(openMatch.getPlayers().contains(user));
@@ -81,7 +92,7 @@ class MatchServiceTest {
         when(matchRepository.findById(1L)).thenReturn(Optional.of(openMatch));
 
         Exception ex = assertThrows(IllegalArgumentException.class, () ->
-                matchService.joinOpenMatch(1L, 99L)
+                matchService.joinOpenMatch(1L, userDetails)
         );
 
         assertEquals("Cannot join a match that already started", ex.getMessage());
@@ -97,7 +108,7 @@ class MatchServiceTest {
         when(matchRepository.findById(1L)).thenReturn(Optional.of(openMatch));
 
         Exception ex = assertThrows(IllegalArgumentException.class, () ->
-                matchService.joinOpenMatch(1L, 99L)
+                matchService.joinOpenMatch(1L, userDetails)
         );
 
         assertEquals("Match is full", ex.getMessage());
@@ -106,11 +117,12 @@ class MatchServiceTest {
     @Test
     void testJoinOpenMatch_alreadyJoined() {
         openMatch.getPlayers().add(user);
+        when(userDetails.username()).thenReturn("testuser");
         when(matchRepository.findById(1L)).thenReturn(Optional.of(openMatch));
-        when(userService.loadUserById(99L)).thenReturn(user);
+        when(userService.loadUserByUsername(anyString())).thenReturn(user);
 
         Exception ex = assertThrows(IllegalArgumentException.class, () ->
-                matchService.joinOpenMatch(1L, 99L)
+                matchService.joinOpenMatch(1L, userDetails)
         );
 
         assertEquals("User is already registered in the match", ex.getMessage());
@@ -122,7 +134,7 @@ class MatchServiceTest {
         when(matchRepository.findById(1L)).thenReturn(Optional.of(openMatch));
 
         Exception ex = assertThrows(IllegalArgumentException.class, () ->
-                matchService.joinOpenMatch(1L, 99L)
+                matchService.joinOpenMatch(1L, userDetails)
         );
 
         assertEquals("Only open matches can be joined", ex.getMessage());
@@ -133,17 +145,18 @@ class MatchServiceTest {
         when(matchRepository.findById(999L)).thenReturn(Optional.empty());
 
         assertThrows(ItemNotFoundException.class, () ->
-                matchService.joinOpenMatch(999L, 99L)
+                matchService.joinOpenMatch(999L, userDetails)
         );
     }
 
     @Test
     void testJoinOpenMatch_userNotFound() {
+        when(userDetails.username()).thenReturn("testuser");
         when(matchRepository.findById(1L)).thenReturn(Optional.of(openMatch));
-        when(userService.loadUserById(99L)).thenThrow(new UserNotFoundException("user", user.getUsername()));
+        when(userService.loadUserByUsername(anyString())).thenThrow(new UserNotFoundException("user", user.getUsername()));
 
         assertThrows(UserNotFoundException.class, () ->
-            matchService.joinOpenMatch(1L, 99L)
+            matchService.joinOpenMatch(1L, userDetails)
         );
     }
 
@@ -153,12 +166,12 @@ class MatchServiceTest {
         when(mockAvatar.getId()).thenReturn(123L);
         user.setAvatar(mockAvatar);
 
+        when(userDetails.username()).thenReturn("testuser");
         when(matchRepository.findById(1L)).thenReturn(Optional.of(openMatch));
-        when(userService.loadUserById(99L)).thenReturn(user);
+        when(userService.loadUserByUsername(anyString())).thenReturn(user);
         when(matchRepository.save(openMatch)).thenReturn(openMatch);
 
-        matchService.joinOpenMatch(1L, 99L);
+        matchService.joinOpenMatch(1L, userDetails);
         verify(matchRepository, times(1)).save(openMatch);
     }
-
 }
