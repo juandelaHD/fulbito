@@ -1,10 +1,11 @@
-import { FieldsTable, Field } from "@/components/tables/FieldsTable"
+import { FieldsTable} from "@/components/tables/FieldsTable"
 import { FieldsFilters, FieldsFiltersContainer } from "@/components/filters/FieldsFilters"
 import { useState } from "react"
 import { toast } from "react-hot-toast"
 import { CommonLayout } from "@/components/CommonLayout/CommonLayout";
+import { useGetFields } from "@/services/FieldServices"; 
 
-const mockFields: Field[] = [
+/* const mockFields: Field[] = [
   {
     id: 1,
     name: "Cancha 1",
@@ -69,6 +70,7 @@ const mockFields: Field[] = [
     photos: "https://via.placeholder.com/150",
   },
 ]
+*/
 
 export const FieldsScreen = () => {
   const [filters, setFilters] = useState<FieldsFilters>({
@@ -78,25 +80,66 @@ export const FieldsScreen = () => {
     grassType: "",
     isIlluminated: false,
     hasOpenScheduledMatch: false,
-  })
+  });
 
-  const [fields, setFields] = useState<Field[]>([])
+  const {
+    data: fetchedFields,
+    refetch,
+    isFetching,
+  } = useGetFields({
+    name: filters.name,
+    zone: filters.zone,
+    address: filters.address,
+    grassType:
+      filters.grassType === "natural"
+        ? "NATURAL_GRASS"
+        : filters.grassType === "synthetic"
+        ? "SYNTHETIC_TURF"
+        : filters.grassType === "mixed"
+        ? "HYBRID_TURF"
+        : undefined,
+    isIlluminated: filters.isIlluminated,
+    hasOpenScheduledMatch: filters.hasOpenScheduledMatch,
+    page: 0,
+    size: 50,
+  });
 
   const handleSearch = async () => {
-    // TODO: llamar al backend con los filtros
-    // const result = await fetchFields(filters)
-    setFields(mockFields) // temporal
-  }
+    const payload = {
+      name: filters.name,
+      zone: filters.zone,
+      address: filters.address,
+      grassType:
+        filters.grassType === "natural"
+          ? "NATURAL_GRASS"
+          : filters.grassType === "synthetic"
+          ? "SYNTHETIC_TURF"
+          : filters.grassType === "mixed"
+          ? "HYBRID_TURF"
+          : undefined,
+      isIlluminated: filters.isIlluminated,
+      hasOpenScheduledMatch: filters.hasOpenScheduledMatch,
+      page: 0,
+      size: 50,
+    };
+
+    console.log("📦 Payload for field search:", payload);
+    await refetch();
+  };
 
   return (
-  <CommonLayout>
-    <div className="w-[1040px] mx-auto px-4">
-      <h1 className="text-2xl font-bold">Search for our Available Fields</h1>
-      <FieldsFiltersContainer filters={filters} setFilters={setFilters} onSearch={handleSearch} />
-      {fields.length > 0 && (
-        <FieldsTable data={fields} onReserve={(f) => toast.error(`⚠️ Reservations not implemented yet for ${f.name}`)} />
-      )}
-    </div>
-  </CommonLayout>
-  )
-}
+    <CommonLayout>
+      <div className="w-[1040px] mx-auto px-4">
+        <h1 className="text-2xl font-bold">Search for our Available Fields</h1>
+        <FieldsFiltersContainer filters={filters} setFilters={setFilters} onSearch={handleSearch} />
+        {isFetching && <p className="text-sm text-gray-500">Loading...</p>}
+        {fetchedFields?.content?.length > 0 && (
+          <FieldsTable
+            data={fetchedFields.content}
+            onReserve={(f) => toast.error(`⚠️ Reservations not implemented yet for ${f.name}`)}
+          />
+        )}
+      </div>
+    </CommonLayout>
+  );
+};

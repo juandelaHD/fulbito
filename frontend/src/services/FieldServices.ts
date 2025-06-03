@@ -1,5 +1,5 @@
 import { toast } from "react-hot-toast";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { BASE_API_URL } from "@/config/app-query-client";
 import {CreateFieldRequest, CreateFieldResponseSchema} from "@/models/CreateField.ts";
 import {useToken} from "@/services/TokenContext.tsx";
@@ -47,4 +47,47 @@ export async function createFieldService(req: CreateFieldRequest, token: string)
     } else {
         await handleErrorResponse(response, "creating field")
     }
+}
+
+export type GetFieldsRequest = {
+  name?: string;
+  zone?: string;
+  address?: string;
+  grassType?: "NATURAL_GRASS" | "SYNTHETIC_TURF" | "HYBRID_TURF";
+  isIlluminated?: boolean;
+  hasOpenScheduledMatch?: boolean;
+  page?: number;
+  size?: number;
+};
+
+export function useGetFields(filters: GetFieldsRequest) {
+  const [tokenState] = useToken();
+  const token = tokenState.state === "LOGGED_IN" ? tokenState.accessToken : "";
+
+  return useQuery({
+    queryKey: ["fields", filters],
+    queryFn: async () => {
+      const params = new URLSearchParams();
+
+      Object.entries(filters).forEach(([key, value]) => {
+        if (value !== undefined && value !== "") {
+          params.append(key, String(value));
+        }
+      });
+
+      const response = await fetch(`${BASE_API_URL}/fields?${params.toString()}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          Accept: "application/json",
+        },
+      });
+
+      if (!response.ok) {
+        await handleErrorResponse(response, "fetching fields");
+      }
+
+      return await response.json();
+    },
+    enabled: false, // manual refetch via useGetFields(...).refetch()
+  });
 }
