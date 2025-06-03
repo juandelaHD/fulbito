@@ -15,22 +15,22 @@ type Props = {
 
 export const FieldsFiltersContainer = ({ filters, setFilters, onSearch }: Props) => {
   return (
-    <div className="space-y-0">
+    <div className="space-y-0 max-w-[1040px] mx-auto">
       {/* Row 1: Name + Zone */}
-      <div className="flex flex-wrap gap-x-[10px] gap-y-[15px] pb-4">
+      <div className="flex gap-x-[10px] gap-y-[15px] pb-4">
         <input
           type="text"
           placeholder="Name"
           value={filters.name}
           onChange={(e) => setFilters({ ...filters, name: e.target.value })}
-          className="border p-2 rounded mb-[10px] flex-1 min-w-[200px]"
+          className="border p-2 rounded mb-[10px] w-1/2"
         />
         <input
           type="text"
           placeholder="Zone"
           value={filters.zone}
           onChange={(e) => setFilters({ ...filters, zone: e.target.value })}
-          className="border p-2 rounded mb-[10px] flex-1 min-w-[200px]"
+          className="border p-2 rounded mb-[10px] w-1/2"
         />
       </div>
 
@@ -46,11 +46,11 @@ export const FieldsFiltersContainer = ({ filters, setFilters, onSearch }: Props)
       </div>
 
       {/* Row 3: Grass type + Checkboxes */}
-      <div className="flex flex-wrap items-center gap-y-[15px] pb-4">
+      <div className="flex flex-wrap items-center gap-y-[15px] gap-x-[20px] pb-4">
         <select
           value={filters.grassType}
           onChange={(e) => setFilters({ ...filters, grassType: e.target.value })}
-          className="border p-2 rounded mr-[30px] mb-[10px] min-w-[200px]"
+          className="border p-2 rounded mb-[10px] min-w-[200px]"
         >
           <option value="">Any grass type</option>
           <option value="Césped natural">Natural</option>
@@ -58,7 +58,7 @@ export const FieldsFiltersContainer = ({ filters, setFilters, onSearch }: Props)
           <option value="Mixto">Mixed</option>
         </select>
 
-        <label className="flex items-center gap-2 mr-[15px] mb-[10px]">
+        <label className="flex items-center gap-2 mb-[10px]">
           <input
             type="checkbox"
             checked={filters.isIlluminated}
@@ -67,7 +67,7 @@ export const FieldsFiltersContainer = ({ filters, setFilters, onSearch }: Props)
           <span>Illuminated</span>
         </label>
 
-        <label className="flex items-center gap-2 mr-[5px] mb-[10px]">
+        <label className="flex items-center gap-2 mb-[10px]">
           <input
             type="checkbox"
             checked={filters.hasOpenScheduledMatch}

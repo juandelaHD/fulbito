@@ -88,8 +88,8 @@ export const FieldsScreen = () => {
   }
 
   return (
-    <div className="p-6 space-y-6">
-      <h1 className="text-2xl font-bold">Search Available Fields</h1>
+    <div className="w-[1040px] mx-auto px-4">
+      <h1 className="text-2xl font-bold">Search for our Available Fields</h1>
       <FieldsFiltersContainer filters={filters} setFilters={setFilters} onSearch={handleSearch} />
       {fields.length > 0 && (
         <FieldsTable data={fields} onReserve={(f) => toast.error(`⚠️ Reservations not implemented yet for ${f.name}`)} />
