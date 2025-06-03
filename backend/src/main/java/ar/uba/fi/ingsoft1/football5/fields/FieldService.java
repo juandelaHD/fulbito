@@ -6,6 +6,7 @@ import ar.uba.fi.ingsoft1.football5.fields.filters.*;
 import ar.uba.fi.ingsoft1.football5.images.ImageService;
 import ar.uba.fi.ingsoft1.football5.matches.Match;
 import ar.uba.fi.ingsoft1.football5.matches.MatchRepository;
+import ar.uba.fi.ingsoft1.football5.matches.MatchStatus;
 import ar.uba.fi.ingsoft1.football5.user.User;
 import ar.uba.fi.ingsoft1.football5.user.UserService;
 import org.springframework.data.domain.Page;
@@ -86,10 +87,17 @@ public class FieldService {
                 .orElseThrow(() -> new ItemNotFoundException("field", id));
 
         validateOwnership(field, userDetails);
-
-        // TODO: Here we must add active reservations restriction when implemented.
+        validateNonActiveMatches(field);
 
         fieldRepository.delete(field);
+    }
+
+    private void validateNonActiveMatches(Field field) {
+        List<Match> activeMatches = matchRepository.findByFieldAndStatus(field, MatchStatus.SCHEDULED);
+        if (!activeMatches.isEmpty()) {
+            throw new IllegalArgumentException(String.format("Field with id '%s' cannot be deleted because it has active matches.", field.getId()));
+        }
+        // TODO: When adding schedules, we must check that the match is not scheduled in the future (SCHEDULED + Future Time)
     }
 
     public boolean validateFieldAvailability(
