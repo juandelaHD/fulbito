@@ -1,4 +1,6 @@
 import { FieldsTable, Field } from "@/components/tables/FieldsTable"
+import { FieldsFilters, FieldsFiltersContainer } from "@/components/filters/FieldsFilters"
+import { useState } from "react"
 import { toast } from "react-hot-toast"
 
 const mockFields: Field[] = [
@@ -68,14 +70,30 @@ const mockFields: Field[] = [
 ]
 
 export const FieldsScreen = () => {
-  const handleReserve = (field: Field) => {
-    toast.error(`⚠️ Reservations for ${field.name} is not implemented yet!`)
+  const [filters, setFilters] = useState<FieldsFilters>({
+    name: "",
+    zone: "",
+    address: "",
+    grassType: "",
+    isIlluminated: false,
+    hasOpenScheduledMatch: false,
+  })
+
+  const [fields, setFields] = useState<Field[]>([])
+
+  const handleSearch = async () => {
+    // TODO: llamar al backend con los filtros
+    // const result = await fetchFields(filters)
+    setFields(mockFields) // temporal
   }
 
   return (
     <div className="p-6 space-y-6">
-      <h1 className="text-2xl font-bold">Available Fields</h1>
-      <FieldsTable data={mockFields} onReserve={handleReserve} />
+      <h1 className="text-2xl font-bold">Search Available Fields</h1>
+      <FieldsFiltersContainer filters={filters} setFilters={setFilters} onSearch={handleSearch} />
+      {fields.length > 0 && (
+        <FieldsTable data={fields} onReserve={(f) => toast.error(`⚠️ Reservations not implemented yet for ${f.name}`)} />
+      )}
     </div>
   )
 }
