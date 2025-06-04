@@ -4,16 +4,15 @@ import ar.uba.fi.ingsoft1.football5.config.security.JwtUserDetails;
 import ar.uba.fi.ingsoft1.football5.fields.FieldService;
 import ar.uba.fi.ingsoft1.football5.user.Role;
 import ar.uba.fi.ingsoft1.football5.user.UserDTO;
-import ar.uba.fi.ingsoft1.football5.user.UserService;
-import ar.uba.fi.ingsoft1.football5.user.email.EmailSenderService;
+import org.springframework.http.MediaType;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.test.context.ContextConfiguration;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.LocalDate;
@@ -22,30 +21,24 @@ import java.util.List;
 
 import static org.mockito.Mockito.mock;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(controllers = MatchRestController.class)
-@ContextConfiguration(classes = MatchRestController.class)
 @AutoConfigureMockMvc(addFilters = false)
 class MatchRestControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
 
-    @Mock
+    @SuppressWarnings("deprecation")
+    @MockBean
     private MatchService matchService;
 
-    @Mock
-    private UserService userService;
-
-    @Mock
-    private FieldService fieldService;
-
-    @Mock
-    private MatchRepository matchRepository;
-
-    @Mock
-    private EmailSenderService emailSenderService;
+    @SuppressWarnings("deprecation")
+    @MockBean
+    private JwtService jwtService;
 
     @Autowired
     private ObjectMapper objectMapper;
@@ -78,5 +71,70 @@ class MatchRestControllerTest {
                 .andExpect(jsonPath("$.id").value(1L))
                 .andExpect(jsonPath("$.matchType").value("OPEN"))
                 .andExpect(jsonPath("$.organizer.username").value("testuser"));
+    }
+
+    @Test
+    void testGetAvailableOpenMatches_returnsListOfMatches() throws Exception {
+        MatchDTO match1 = new MatchDTO(
+                1L,
+                null,
+                new UserDTO(1L, "Test", "User", "testuser", 1L, "Zone", 25, "M", Role.USER, true),
+                List.of(),
+                MatchStatus.SCHEDULED,
+                MatchType.OPEN,
+                5,
+                10,
+                LocalDate.now().plusDays(1),
+                LocalDateTime.now().plusHours(2),
+                LocalDateTime.now().plusHours(3),
+                false
+        );
+
+        MatchDTO match2 = new MatchDTO(
+                2L,
+                null,
+                new UserDTO(2L, "Jane", "Doe", "janedoe", 1L, "Zone", 22, "F", Role.USER, true),
+                List.of(),
+                MatchStatus.SCHEDULED,
+                MatchType.OPEN,
+                4,
+                8,
+                LocalDate.now().plusDays(2),
+                LocalDateTime.now().plusHours(4),
+                LocalDateTime.now().plusHours(5),
+                false
+        );
+
+        List<MatchDTO> matches = List.of(match1, match2);
+
+        Mockito.when(matchService.getAvailableOpenMatches()).thenReturn(matches);
+
+        mockMvc.perform(get("/matches/open-available"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(2))
+                .andExpect(jsonPath("$[0].id").value(1L))
+                .andExpect(jsonPath("$[1].id").value(2L));
+    }
+
+    @Test
+    void testGetMatchById_NotFound() throws Exception {
+        Long nonExistentId = 999l;
+        when(matchService.getMatchById(nonExistentId))
+        .thenThrow(new ItemNotFoundException("Match not found", nonExistentId));
+
+        mockMvc.perform(get("/matches/{id}", nonExistentId))
+                .andExpect(status().isNotFound());
+
+    }
+
+    @Test
+    void testCreateOpenMatch_withInvalidData_shouldFail() throws Exception {
+        MatchCreateDTO invalidDto = new MatchCreateDTO(
+                                null, null, null, null, null, null, null, null);
+
+        mockMvc.perform(post("/matches/create")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(invalidDto)))
+                .andExpect(status().isBadRequest());
     }
 }
