@@ -7,7 +7,7 @@ export const GetFieldsRequestSchema = z.object({
   grassType: z.enum(["NATURAL_GRASS", "SYNTHETIC_TURF", "HYBRID_TURF"]).optional(),
   isIlluminated: z.boolean().optional(),
   hasOpenScheduledMatch: z.boolean().optional(),
-  page: z.number().int().min(1).optional(),
+  page: z.number().int().min(0).optional(),
   size: z.number().int().min(1).max(100).optional()
 });
 

@@ -23,6 +23,7 @@ export const FieldsScreen = () => {
     data: fetchedFields,
     refetch,
     isFetching,
+    error,
   } = useGetFields({
     name: filters.name || undefined,
     zone: filters.zone || undefined,

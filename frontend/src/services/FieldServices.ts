@@ -57,30 +57,33 @@ export function useGetFields(filters: GetFieldsRequest) {
 
   return useQuery<GetFieldsResponse>({
     queryKey: ["fields", filters],
-    queryFn: async () => {
-      const params = new URLSearchParams();
+    queryFn: async ({ queryKey }) => {
+        const [, filters] = queryKey as ["fields", GetFieldsRequest];
 
-      Object.entries(filters).forEach(([key, value]) => {
-        if (value !== undefined && value !== "") {
-          params.append(key, String(value));
+        const params = new URLSearchParams();
+
+        Object.entries(filters).forEach(([key, value]) => {
+            if (value !== undefined && value !== "") {
+            params.append(key, String(value));
+            }
+        });
+
+        const response = await fetch(`${BASE_API_URL}/fields?${params.toString()}`, {
+            headers: {
+            Authorization: `Bearer ${token}`,
+            Accept: "application/json",
+            },
+        });
+
+        if (!response.ok) {
+            await handleErrorResponse(response, "fetching fields");
+            throw new Error("Error fetching fields");
         }
-      });
 
-      const response = await fetch(`${BASE_API_URL}/fields?${params.toString()}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          Accept: "application/json",
-        },
-      });
-
-      if (response.ok) {
         const json = await response.json();
-        toast.success("Fields fetched successfully", { duration: 5000 });
         return GetFieldsResponseSchema.parse(json);
-      } else {
-        await handleErrorResponse(response, "fetching fields");
-      }
     },
+
     enabled: false,
   });
 }
