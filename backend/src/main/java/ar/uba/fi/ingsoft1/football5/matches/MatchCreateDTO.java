@@ -12,10 +12,6 @@ public record MatchCreateDTO(
         @Schema(description = "Type of match", example = "OPEN")
         MatchType matchType,
 
-        @NotNull(message = "Organizer ID is required")
-        @Schema(description = "ID of the user who is organizing the match", example = "1")
-        Long organizerId,
-
         @NotNull(message = "Field ID is required")
         @Schema(description = "ID of the field where the match will take place", example = "1")
         Long fieldId,
@@ -50,4 +46,19 @@ public record MatchCreateDTO(
         @Schema(description = "End time of the match", example = "2025-06-15T19:00:00")
         LocalDateTime endTime
 
-) {}
+) {
+    public MatchCreateDTO {
+            if (startTime.isAfter(endTime)) {
+                    throw new IllegalArgumentException("Start time must be before end time");
+            }
+
+            if (startTime.isEqual(endTime)) {
+                    throw new IllegalArgumentException("Start time and end time cannot be the same");
+            }
+
+            LocalDate today = LocalDate.now();
+            if (!date.isAfter(today)) {
+                    throw new IllegalArgumentException("Match date must be in the future");
+            }
+    }
+}

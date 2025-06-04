@@ -3,6 +3,9 @@ package ar.uba.fi.ingsoft1.football5.fields;
 import ar.uba.fi.ingsoft1.football5.common.exception.ItemNotFoundException;
 import ar.uba.fi.ingsoft1.football5.config.security.JwtUserDetails;
 import ar.uba.fi.ingsoft1.football5.fields.filters.FieldFiltersDTO;
+import ar.uba.fi.ingsoft1.football5.fields.reviews.ReviewCreateDTO;
+import ar.uba.fi.ingsoft1.football5.fields.reviews.ReviewDTO;
+import ar.uba.fi.ingsoft1.football5.fields.reviews.ReviewService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -30,10 +33,12 @@ import java.util.List;
 class FieldRestController {
 
     private final FieldService fieldService;
+    private final ReviewService reviewService;
 
     @Autowired
-    FieldRestController(FieldService fieldService) {
+    FieldRestController(FieldService fieldService, ReviewService reviewService) {
         this.fieldService = fieldService;
+        this.reviewService = reviewService;
     }
 
     @GetMapping(produces = "application/json")
@@ -86,6 +91,35 @@ class FieldRestController {
             @AuthenticationPrincipal JwtUserDetails userDetails
     ) throws ItemNotFoundException {
         fieldService.deleteField(id, userDetails);
+    }
+
+    // --- Reviews Endpoints
+
+    @GetMapping(path = "/{id}/reviews", produces = "application/json")
+    @Operation(summary = "Get reviews for a field by ID")
+    @ResponseStatus(HttpStatus.OK)
+    @ApiResponse(responseCode = "200", description = "Reviews retrieved successfully")
+    @ApiResponse(responseCode = "404", description = "Field not found", content = @Content)
+    Page<ReviewDTO> getReviewsByFieldId(
+            @Valid @ParameterObject Pageable pageable,
+            @PathVariable("id") @Parameter(description = "ID of the field") Long fieldId
+    ) throws ItemNotFoundException {
+        return reviewService.getReviewsByFieldId(fieldId, pageable);
+    }
+
+    @PostMapping(path = "/{id}/reviews", produces = "application/json")
+    @Operation(summary = "Create a review for a field by ID")
+    @ResponseStatus(HttpStatus.CREATED)
+    @ApiResponse(responseCode = "201", description = "Review created successfully")
+    @ApiResponse(responseCode = "404", description = "Field not found", content = @Content)
+    @ApiResponse(responseCode = "400", description = "Invalid review data supplied", content = @Content)
+    @PreAuthorize("hasRole('USER')")
+    ReviewDTO createReview(
+            @PathVariable("id") @Parameter(description = "ID of the field") Long fieldId,
+            @Valid @RequestBody ReviewCreateDTO reviewCreateDTO,
+            @AuthenticationPrincipal JwtUserDetails userDetails
+    ) throws ItemNotFoundException {
+        return reviewService.createReview(reviewCreateDTO, fieldId, userDetails);
     }
 }
 
