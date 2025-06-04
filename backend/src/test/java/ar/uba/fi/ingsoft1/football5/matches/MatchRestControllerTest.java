@@ -1,7 +1,7 @@
 package ar.uba.fi.ingsoft1.football5.matches;
 
-import ar.uba.fi.ingsoft1.football5.common.exception.ItemNotFoundException;
-import ar.uba.fi.ingsoft1.football5.config.security.JwtService;
+import ar.uba.fi.ingsoft1.football5.config.security.JwtUserDetails;
+import ar.uba.fi.ingsoft1.football5.fields.FieldService;
 import ar.uba.fi.ingsoft1.football5.user.Role;
 import ar.uba.fi.ingsoft1.football5.user.UserDTO;
 import org.springframework.http.MediaType;
@@ -19,6 +19,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import static org.mockito.Mockito.mock;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -62,7 +63,7 @@ class MatchRestControllerTest {
                 false
         );
 
-        Mockito.when(matchService.joinOpenMatch(1L, 99L)).thenReturn(fakeMatch);
+        Mockito.when(matchService.joinOpenMatch(1L, mock(JwtUserDetails.class))).thenReturn(fakeMatch);
 
         mockMvc.perform(post("/matches/1/join")
                         .param("userId", "99"))

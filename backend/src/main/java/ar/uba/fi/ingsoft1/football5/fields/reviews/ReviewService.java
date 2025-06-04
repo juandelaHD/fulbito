@@ -47,6 +47,7 @@ public class ReviewService {
             throw new IllegalArgumentException(
                     "User must have played at least one match in the field to review it.");
         }
+        // TODO: When adding schedules, we must check that the match has already been played in the field (SCHEDULED + Past Time)
     }
 
     private void validateUserHasNotReviewedField(Field field, User user) {

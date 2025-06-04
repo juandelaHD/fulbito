@@ -8,7 +8,7 @@ export type Field = {
   lighting: string
   zone: string
   address: string
-  photos: string // URL o base64 temporal para mock
+  photos: string
 }
 
 type FieldsTableProps = {

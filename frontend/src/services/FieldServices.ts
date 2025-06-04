@@ -1,9 +1,10 @@
 import { toast } from "react-hot-toast";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { BASE_API_URL } from "@/config/app-query-client";
 import {CreateFieldRequest, CreateFieldResponseSchema} from "@/models/CreateField.ts";
 import {useToken} from "@/services/TokenContext.tsx";
 import {handleErrorResponse} from "@/services/ApiUtils.ts";
+import {GetFieldsRequest, GetFieldsResponse, GetFieldsResponseSchema} from "@/models/GetFields.ts";
 
 export function useCreateField() {
     const [tokenState] = useToken();
@@ -42,9 +43,58 @@ export async function createFieldService(req: CreateFieldRequest, token: string)
     });
 
     if (response.ok) {
-        toast.success("Field created successfully", { duration: 5000 });
-        return CreateFieldResponseSchema.parse(await response.json());
+      const json = await response.json();
+      toast.success("Field created successfully", { duration: 5000 });
+      return CreateFieldResponseSchema.parse(json);
     } else {
         await handleErrorResponse(response, "creating field")
     }
+}
+
+export function useGetFields(filters: GetFieldsRequest) {
+  const [tokenState] = useToken();
+  const token = tokenState.state === "LOGGED_IN" ? tokenState.accessToken : "";
+
+  return useQuery<GetFieldsResponse, Error>({
+    queryKey: ["fields", filters],
+    queryFn: async ({ queryKey }) => {
+    const [, rawFilters] = queryKey;
+    const filters = rawFilters as GetFieldsRequest;
+
+    console.log("🌐 Requesting fields with filters:", filters);
+
+    const params = new URLSearchParams();
+    Object.entries(filters).forEach(([key, value]) => {
+        if (value !== undefined && value !== "") {
+        params.append(key, String(value));
+        }
+    });
+
+      const url = `${BASE_API_URL}/fields?${params.toString()}`;
+
+      try {
+        const response = await fetch(url, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            Accept: "application/json",
+          },
+        });
+
+        const json = await response.json();
+
+        console.log("✅ Fields response:", json);
+
+        if (!response.ok) {
+          toast.error("Failed to fetch fields. Please try again later.");
+          throw new Error(json.message || "Unknown error");
+        }
+
+        return GetFieldsResponseSchema.parse(json);
+      } catch (err) {
+        console.error("❌ Error fetching fields:", err);
+        throw err;
+      }
+    },
+    enabled: false,
+  });
 }
