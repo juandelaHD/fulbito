@@ -3,74 +3,11 @@ import { FieldsFilters, FieldsFiltersContainer } from "@/components/filters/Fiel
 import { useState } from "react"
 import { toast } from "react-hot-toast"
 import { CommonLayout } from "@/components/CommonLayout/CommonLayout";
-import { useGetFields } from "@/services/FieldServices"; 
+import { useGetFields } from "@/services/FieldServices";
+import {GetFieldsRequest} from "@/models/GetFields.ts";
 
-/* const mockFields: Field[] = [
-  {
-    id: 1,
-    name: "Cancha 1",
-    grassType: "Césped natural",
-    lighting: "Yes",
-    zone: "Belgrano",
-    address: "Juramento 123",
-    photos: "https://via.placeholder.com/150",
-  },
-  {
-    id: 2,
-    name: "Cancha 2",
-    grassType: "Sintético",
-    lighting: "No",
-    zone: "Palermo",
-    address: "Av. Santa Fe 456",
-    photos: "https://via.placeholder.com/150",
-  },
-  {
-    id: 3,
-    name: "Cancha 3",
-    grassType: "Sintético",
-    lighting: "Yes",
-    zone: "Caballito",
-    address: "Av. Rivadavia 789",
-    photos: "https://via.placeholder.com/150",
-  },
-  {
-    id: 4,
-    name: "Cancha 4",
-    grassType: "Césped natural",
-    lighting: "No",
-    zone: "Recoleta",
-    address: "Calle Libertad 333",
-    photos: "https://via.placeholder.com/150",
-  },
-  {
-    id: 5,
-    name: "Cancha 5",
-    grassType: "Sintético",
-    lighting: "No",
-    zone: "Villa Urquiza",
-    address: "Av. Triunvirato 777",
-    photos: "https://via.placeholder.com/150",
-  },
-  {
-    id: 6,
-    name: "Cancha 6",
-    grassType: "Mixto",
-    lighting: "No",
-    zone: "Almagro",
-    address: "Medrano 800",
-    photos: "https://via.placeholder.com/150",
-  },
-  {
-    id: 7,
-    name: "Cancha 7",
-    grassType: "Sintético",
-    lighting: "Yes",
-    zone: "Núñez",
-    address: "Av. Del Libertador 999",
-    photos: "https://via.placeholder.com/150",
-  },
-]
-*/
+import type { Field as FieldForTable } from "@/components/tables/FieldsTable";
+import {BASE_API_URL} from "@/config/app-query-client.ts";
 
 export const FieldsScreen = () => {
   const [filters, setFilters] = useState<FieldsFilters>({
@@ -87,9 +24,9 @@ export const FieldsScreen = () => {
     refetch,
     isFetching,
   } = useGetFields({
-    name: filters.name,
-    zone: filters.zone,
-    address: filters.address,
+    name: filters.name || undefined,
+    zone: filters.zone || undefined,
+    address: filters.address || undefined,
     grassType:
       filters.grassType === "natural"
         ? "NATURAL_GRASS"
@@ -98,13 +35,14 @@ export const FieldsScreen = () => {
         : filters.grassType === "mixed"
         ? "HYBRID_TURF"
         : undefined,
-    isIlluminated: filters.isIlluminated,
-    hasOpenScheduledMatch: filters.hasOpenScheduledMatch,
+    isIlluminated: filters.isIlluminated || undefined,
+    hasOpenScheduledMatch: filters.hasOpenScheduledMatch || undefined,
     page: 0,
     size: 50,
-  });
+  } as GetFieldsRequest);
 
   const handleSearch = async () => {
+    // Entiendo se podria borrar, lo dejo solo para el console.log
     const payload = {
       name: filters.name,
       zone: filters.zone,
@@ -114,7 +52,7 @@ export const FieldsScreen = () => {
           ? "NATURAL_GRASS"
           : filters.grassType === "synthetic"
           ? "SYNTHETIC_TURF"
-          : filters.grassType === "mixed"
+          : filters.grassType === "hybrid"
           ? "HYBRID_TURF"
           : undefined,
       isIlluminated: filters.isIlluminated,
@@ -124,8 +62,35 @@ export const FieldsScreen = () => {
     };
 
     console.log("📦 Payload for field search:", payload);
-    await refetch();
+    try {
+      await refetch();
+    } catch (err) {
+      toast.error("Error fetching fields. Please try again later.");
+    }
   };
+
+  const rowsForTable: FieldForTable[] = fetchedFields?.content?.map((item) => {
+    const idNum = Number(item.id);
+    const photoUrl =
+        item.imageIds && item.imageIds.length > 0
+            ? `${BASE_API_URL}/images/${item.imageIds[0]}`
+            : "";
+
+    return {
+      id: idNum,
+      name: item.name,
+      grassType:
+          item.grassType === "NATURAL_GRASS"
+              ? "Natural"
+              : item.grassType === "SYNTHETIC_TURF"
+              ? "Sintético"
+              : "Híbrido",
+      lighting: item.illuminated ? "Iluminada" : "Sin luz",
+      zone: item.location.zone,
+      address: item.location.address,
+      photos: photoUrl,
+    };
+  }) || [];
 
   return (
     <CommonLayout>
@@ -133,11 +98,29 @@ export const FieldsScreen = () => {
         <h1 className="text-2xl font-bold">Search for our Available Fields</h1>
         <FieldsFiltersContainer filters={filters} setFilters={setFilters} onSearch={handleSearch} />
         {isFetching && <p className="text-sm text-gray-500">Loading...</p>}
-        {fetchedFields?.content?.length > 0 && (
-          <FieldsTable
-            data={fetchedFields.content}
-            onReserve={(f) => toast.error(`⚠️ Reservations not implemented yet for ${f.name}`)}
-          />
+
+        {/* Si la respuesta trae contenido, paso el array mapeado a la tabla */}
+        {!isFetching && rowsForTable.length > 0 && (
+            <FieldsTable
+                data={rowsForTable}
+                onReserve={(f) =>
+                    toast.error(
+                        `⚠️ Aún no está implementada la funcionalidad de reservar: ${f.name}`
+                    )
+                }
+            />
+        )}
+
+        {/* Si ya buscaste y no hay resultados */}
+        {!isFetching && fetchedFields?.content && fetchedFields.content.length === 0 && (
+          <p className="text-sm text-gray-500">No fields found with the current filters.</p>
+        )}
+
+        {/* Si hubo error en la consulta */}
+        {error && (
+            <p className="text-sm text-red-500 mt-4">
+              Ocurrió un error al obtener las canchas.
+            </p>
         )}
       </div>
     </CommonLayout>

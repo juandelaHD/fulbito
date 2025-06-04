@@ -4,6 +4,7 @@ import { BASE_API_URL } from "@/config/app-query-client";
 import {CreateFieldRequest, CreateFieldResponseSchema} from "@/models/CreateField.ts";
 import {useToken} from "@/services/TokenContext.tsx";
 import {handleErrorResponse} from "@/services/ApiUtils.ts";
+import {GetFieldsRequest, GetFieldsResponse, GetFieldsResponseSchema} from "@/models/GetFields.ts";
 
 export function useCreateField() {
     const [tokenState] = useToken();
@@ -42,29 +43,19 @@ export async function createFieldService(req: CreateFieldRequest, token: string)
     });
 
     if (response.ok) {
-        toast.success("Field created successfully", { duration: 5000 });
-        return CreateFieldResponseSchema.parse(await response.json());
+      const json = await response.json();
+      toast.success("Field created successfully", { duration: 5000 });
+      return CreateFieldResponseSchema.parse(json);
     } else {
         await handleErrorResponse(response, "creating field")
     }
 }
 
-export type GetFieldsRequest = {
-  name?: string;
-  zone?: string;
-  address?: string;
-  grassType?: "NATURAL_GRASS" | "SYNTHETIC_TURF" | "HYBRID_TURF";
-  isIlluminated?: boolean;
-  hasOpenScheduledMatch?: boolean;
-  page?: number;
-  size?: number;
-};
-
 export function useGetFields(filters: GetFieldsRequest) {
   const [tokenState] = useToken();
   const token = tokenState.state === "LOGGED_IN" ? tokenState.accessToken : "";
 
-  return useQuery({
+  return useQuery<GetFieldsResponse>({
     queryKey: ["fields", filters],
     queryFn: async () => {
       const params = new URLSearchParams();
@@ -82,12 +73,14 @@ export function useGetFields(filters: GetFieldsRequest) {
         },
       });
 
-      if (!response.ok) {
+      if (response.ok) {
+        const json = await response.json();
+        toast.success("Fields fetched successfully", { duration: 5000 });
+        return GetFieldsResponseSchema.parse(json);
+      } else {
         await handleErrorResponse(response, "fetching fields");
       }
-
-      return await response.json();
     },
-    enabled: false, // manual refetch via useGetFields(...).refetch()
+    enabled: false,
   });
 }
