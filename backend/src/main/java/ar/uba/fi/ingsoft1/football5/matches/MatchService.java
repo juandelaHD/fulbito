@@ -13,6 +13,7 @@ import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Service
 @Transactional
@@ -112,6 +113,11 @@ public class MatchService {
 
         if (match.getPlayers().contains(user))
             throw new IllegalArgumentException("User is already registered in the match");
+    }
+
+    public List<MatchDTO> getAvailableOpenMatches() {
+        List<Match> matches = matchRepository.findAvailableOpenMatches(LocalDateTime.now());
+        return matches.stream().map(MatchDTO::new).toList();
     }
 
 }
