@@ -92,7 +92,6 @@ export function useGetFields(filters: GetFieldsRequest) {
         return GetFieldsResponseSchema.parse(json);
       } catch (err) {
         console.error("❌ Error fetching fields:", err);
-        toast.error("Ocurrió un error al obtener las canchas.");
         throw err;
       }
     },

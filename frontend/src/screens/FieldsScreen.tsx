@@ -78,9 +78,9 @@ export const FieldsScreen = () => {
           item.grassType === "NATURAL_GRASS"
               ? "Natural"
               : item.grassType === "SYNTHETIC_TURF"
-              ? "Sintético"
-              : "Híbrido",
-      lighting: item.illuminated ? "Iluminada" : "Sin luz",
+              ? "Synthetic"
+              : "Hybrid",
+      lighting: item.illuminated ? "Illuminated" : "No lighting",
       zone: item.location.zone,
       address: item.location.address,
       photos: photoUrl,
@@ -90,7 +90,7 @@ export const FieldsScreen = () => {
   return (
     <CommonLayout>
       <div className="w-[1040px] mx-auto px-4">
-        <h1 className="text-2xl font-bold">Search for our Available Fields</h1>
+        <h1 className="text-2xl font-bold">Search through our Available Fields</h1>
         <FieldsFiltersContainer filters={filters} setFilters={setFilters} onSearch={handleSearch} />
         {isFetching && <p className="text-sm text-gray-500">Loading...</p>}
 
@@ -100,17 +100,11 @@ export const FieldsScreen = () => {
                 data={rowsForTable}
                 onReserve={(f) =>
                     toast.error(
-                        `⚠️ Aún no está implementada la funcionalidad de reservar: ${f.name}`
+                        `⚠️ Reservations are not yet implemented for: ${f.name}`
                     )
                 }
             />
         )}
-
-        {/* Si ya buscaste y no hay resultados */}
-        {!isFetching && fetchedFields?.content && fetchedFields.content.length === 0 && (
-          <p className="text-sm text-gray-500">No fields found with the current filters.</p>
-        )}
-
       </div>
     </CommonLayout>
   );

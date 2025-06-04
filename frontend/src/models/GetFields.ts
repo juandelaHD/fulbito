@@ -14,7 +14,7 @@ export const GetFieldsRequestSchema = z.object({
 export type GetFieldsRequest = z.infer<typeof GetFieldsRequestSchema>;
 
 export const FieldItemSchema = z.object({
-    id: z.string().min(1, "Field ID is required"),
+    id: z.number().min(1, "Field ID is required"),
     name: z.string().min(1, "Field name is required"),
     grassType: z.enum(["NATURAL_GRASS", "SYNTHETIC_TURF", "HYBRID_TURF"], {
         errorMap: () => ({ message: "Select grass type" }),
@@ -25,7 +25,7 @@ export const FieldItemSchema = z.object({
         address: z.string().min(2, "Address is required"),
     }),
     imageIds: z.array(z.number()).optional(),
-    matchesWithMissingPlayers: z.record(z.string(), z.number()).optional(),
+    matchesWithMissingPlayers: z.record(z.string(), z.number()).nullable().optional(),
 });
 
 export const GetFieldsResponseSchema = z.object({
@@ -36,7 +36,6 @@ export const GetFieldsResponseSchema = z.object({
         .object({
             pageNumber: z.number(),
             pageSize: z.number(),
-            // Chequear que otra info de paginacion se esta retornando y agregar lo necesario.
         })
         .optional(),
 });
