@@ -1,8 +1,11 @@
 package ar.uba.fi.ingsoft1.football5.matches;
 
+import ar.uba.fi.ingsoft1.football5.common.exception.ItemNotFoundException;
 import ar.uba.fi.ingsoft1.football5.config.security.JwtService;
 import ar.uba.fi.ingsoft1.football5.user.Role;
 import ar.uba.fi.ingsoft1.football5.user.UserDTO;
+import org.springframework.http.MediaType;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -17,13 +20,12 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @WebMvcTest(controllers = MatchRestController.class)
 @AutoConfigureMockMvc(addFilters = false)
@@ -114,5 +116,34 @@ class MatchRestControllerTest {
                 .andExpect(jsonPath("$.length()").value(2))
                 .andExpect(jsonPath("$[0].id").value(1L))
                 .andExpect(jsonPath("$[1].id").value(2L));
+    }
+
+    @Test
+    void testGetMatchById_NotFound() throws Exception {
+        Long nonExistentId = 999l;
+        when(matchService.getMatchById(nonExistentId))
+        .thenThrow(new ItemNotFoundException("Match not found", nonExistentId));
+
+        mockMvc.perform(get("/matches/{id}", nonExistentId))
+                .andExpect(status().isNotFound());
+
+    }
+
+    @Test
+    void testCreateOpenMatch_withInvalidData_shouldFail() throws Exception {
+        MatchCreateDTO invalidMatch = new MatchCreateDTO(
+                null, null, null, null, null, null, null, null);
+        Mockito.when(matchService.createOpenMatch(Mockito.any(MatchCreateDTO.class)))
+                .thenThrow(new IllegalArgumentException("Invalid data for open match"));
+
+        String requestBody = objectMapper.writeValueAsString(invalidMatch);
+
+        mockMvc.perform(post("/matches/create")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(requestBody))
+                .andExpect(result -> {
+                        Throwable exception = result.getResolvedException();
+                        assertNotNull(exception, "An exception was expected due to null fields");
+                });
     }
 }
