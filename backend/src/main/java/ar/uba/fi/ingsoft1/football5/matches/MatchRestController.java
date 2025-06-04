@@ -35,7 +35,7 @@ public class MatchRestController {
     @PostMapping(path = "/create", consumes = "application/json", produces = "application/json")
     @Operation(summary = "Create a new match")
     @ResponseStatus(HttpStatus.CREATED)
-    MatchDTO createMatch(@NonNull @RequestBody MatchCreateDTO matchCreate) 
+    MatchDTO createMatch(@Valid @RequestBody MatchCreateDTO matchCreate) 
             throws IllegalArgumentException, ItemNotFoundException, UserNotFoundException {
 
         if (matchCreate.matchType() == MatchType.OPEN) {

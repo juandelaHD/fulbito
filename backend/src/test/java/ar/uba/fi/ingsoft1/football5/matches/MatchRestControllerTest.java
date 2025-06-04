@@ -23,9 +23,6 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @WebMvcTest(controllers = MatchRestController.class)
 @AutoConfigureMockMvc(addFilters = false)
@@ -131,19 +128,12 @@ class MatchRestControllerTest {
 
     @Test
     void testCreateOpenMatch_withInvalidData_shouldFail() throws Exception {
-        MatchCreateDTO invalidMatch = new MatchCreateDTO(
-                null, null, null, null, null, null, null, null);
-        Mockito.when(matchService.createOpenMatch(Mockito.any(MatchCreateDTO.class)))
-                .thenThrow(new IllegalArgumentException("Invalid data for open match"));
-
-        String requestBody = objectMapper.writeValueAsString(invalidMatch);
+        MatchCreateDTO invalidDto = new MatchCreateDTO(
+                                null, null, null, null, null, null, null, null);
 
         mockMvc.perform(post("/matches/create")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(requestBody))
-                .andExpect(result -> {
-                        Throwable exception = result.getResolvedException();
-                        assertNotNull(exception, "An exception was expected due to null fields");
-                });
+                .content(objectMapper.writeValueAsString(invalidDto)))
+                .andExpect(status().isBadRequest());
     }
 }
