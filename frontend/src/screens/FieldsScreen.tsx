@@ -23,7 +23,6 @@ export const FieldsScreen = () => {
     data: fetchedFields,
     refetch,
     isFetching,
-    error,
   } = useGetFields({
     name: filters.name || undefined,
     zone: filters.zone || undefined,
@@ -43,7 +42,6 @@ export const FieldsScreen = () => {
   } as GetFieldsRequest);
 
   const handleSearch = async () => {
-    // Entiendo se podria borrar, lo dejo solo para el console.log
     const payload = {
       name: filters.name,
       zone: filters.zone,
@@ -63,11 +61,7 @@ export const FieldsScreen = () => {
     };
 
     console.log("📦 Payload for field search:", payload);
-    try {
-      await refetch();
-    } catch (err) {
-      toast.error("Error fetching fields. Please try again later.");
-    }
+    await refetch(); 
   };
 
   const rowsForTable: FieldForTable[] = fetchedFields?.content?.map((item) => {
@@ -117,12 +111,6 @@ export const FieldsScreen = () => {
           <p className="text-sm text-gray-500">No fields found with the current filters.</p>
         )}
 
-        {/* Si hubo error en la consulta */}
-        {error && (
-            <p className="text-sm text-red-500 mt-4">
-              Ocurrió un error al obtener las canchas.
-            </p>
-        )}
       </div>
     </CommonLayout>
   );

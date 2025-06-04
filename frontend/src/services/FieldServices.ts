@@ -55,35 +55,47 @@ export function useGetFields(filters: GetFieldsRequest) {
   const [tokenState] = useToken();
   const token = tokenState.state === "LOGGED_IN" ? tokenState.accessToken : "";
 
-  return useQuery<GetFieldsResponse>({
+  return useQuery<GetFieldsResponse, Error>({
     queryKey: ["fields", filters],
     queryFn: async ({ queryKey }) => {
-        const [, filters] = queryKey as ["fields", GetFieldsRequest];
+    const [, rawFilters] = queryKey;
+    const filters = rawFilters as GetFieldsRequest;
 
-        const params = new URLSearchParams();
+    console.log("🌐 Requesting fields with filters:", filters);
 
-        Object.entries(filters).forEach(([key, value]) => {
-            if (value !== undefined && value !== "") {
-            params.append(key, String(value));
-            }
-        });
+    const params = new URLSearchParams();
+    Object.entries(filters).forEach(([key, value]) => {
+        if (value !== undefined && value !== "") {
+        params.append(key, String(value));
+        }
+    });
 
-        const response = await fetch(`${BASE_API_URL}/fields?${params.toString()}`, {
-            headers: {
+      const url = `${BASE_API_URL}/fields?${params.toString()}`;
+
+      try {
+        const response = await fetch(url, {
+          headers: {
             Authorization: `Bearer ${token}`,
             Accept: "application/json",
-            },
+          },
         });
 
+        const json = await response.json();
+
+        console.log("✅ Fields response:", json);
+
         if (!response.ok) {
-            await handleErrorResponse(response, "fetching fields");
-            throw new Error("Error fetching fields");
+          toast.error("Failed to fetch fields. Please try again later.");
+          throw new Error(json.message || "Unknown error");
         }
 
-        const json = await response.json();
         return GetFieldsResponseSchema.parse(json);
+      } catch (err) {
+        console.error("❌ Error fetching fields:", err);
+        toast.error("Ocurrió un error al obtener las canchas.");
+        throw err;
+      }
     },
-
     enabled: false,
   });
 }
