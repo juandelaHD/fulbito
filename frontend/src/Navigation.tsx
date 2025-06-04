@@ -5,6 +5,7 @@ import { MainScreen } from "@/screens/MainScreen";
 import { SignupScreen } from "@/screens/SignupScreen";
 import { CreateFieldScreen } from "@/screens/CreateFieldScreen"; 
 import { useToken } from "@/services/TokenContext";
+import { FieldsScreen } from "@/screens/FieldsScreen";
 
 export const Navigation = () => {
   const [tokenState] = useToken();
@@ -15,8 +16,11 @@ export const Navigation = () => {
           <Route path="/">
             <MainScreen />
           </Route>
-         <Route path="/create-field">
+         <Route path="/fields/new">
             <CreateFieldScreen />
+          </Route>
+          <Route path="/fields">
+            <FieldsScreen />
           </Route>
           <Route>
             <Redirect href="/" />
@@ -28,6 +32,9 @@ export const Navigation = () => {
         <Switch>
           <Route path="/login">
             <LoginScreen />
+          </Route>
+          <Route path="/fields">
+            <FieldsScreen />
           </Route>
           <Route path="/signup">
             <SignupScreen />
