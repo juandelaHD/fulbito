@@ -4,6 +4,9 @@ import ar.uba.fi.ingsoft1.football5.common.exception.ItemNotFoundException;
 import ar.uba.fi.ingsoft1.football5.common.exception.UserNotFoundException;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.lang.NonNull;
@@ -50,6 +53,14 @@ public class MatchRestController {
     public MatchDTO joinOpenMatch(@PathVariable Long matchId, @RequestParam Long userId) throws IllegalArgumentException, ItemNotFoundException, UserNotFoundException {
         return matchService.joinOpenMatch(matchId, userId);
     }
+
+    @GetMapping(path = "/open-available", produces = "application/json")
+    @Operation(summary = "Get all currently available open matches")
+    @ResponseStatus(HttpStatus.OK)
+    public List<MatchDTO> getAvailableOpenMatches() {
+        return matchService.getAvailableOpenMatches();
+    }
+
 
 }
 
