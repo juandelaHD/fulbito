@@ -27,4 +27,13 @@ public interface MatchRepository extends JpaRepository<Match, Long> {
             @Param("startTime") LocalDateTime startTime,
             @Param("endTime") LocalDateTime endTime
     );
+
+    @Query("""
+    SELECT m FROM Match m
+    WHERE m.type = 'OPEN'
+    AND m.status = 'SCHEDULED'
+    AND m.startTime > :now
+    AND size(m.players) < m.maxPlayers
+    """)
+    List<Match> findAvailableOpenMatches(@Param("now") LocalDateTime now);
 }

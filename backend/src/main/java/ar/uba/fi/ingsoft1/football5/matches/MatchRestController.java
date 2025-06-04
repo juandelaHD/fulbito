@@ -7,8 +7,12 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.lang.NonNull;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -64,6 +68,14 @@ public class MatchRestController {
             throws IllegalArgumentException, ItemNotFoundException, UserNotFoundException {
         return matchService.joinOpenMatch(matchId, userDetails);
     }
+
+    @GetMapping(path = "/open-available", produces = "application/json")
+    @Operation(summary = "Get all currently available open matches")
+    @ResponseStatus(HttpStatus.OK)
+    public List<MatchDTO> getAvailableOpenMatches() {
+        return matchService.getAvailableOpenMatches();
+    }
+
 
 }
 
