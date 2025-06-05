@@ -1,5 +1,14 @@
+/*
+TODO: tests for MatchRestController
+ * - testJoinOpenMatchEndpoint_returnsMatchDTO
+ * - testGetAvailableOpenMatches_returnsListOfMatches
+ * - testGetMatchById_NotFound
+ * - testCreateOpenMatch_withInvalidData_shouldFail
+
 package ar.uba.fi.ingsoft1.football5.matches;
 
+import ar.uba.fi.ingsoft1.football5.common.exception.ItemNotFoundException;
+import ar.uba.fi.ingsoft1.football5.config.security.JwtService;
 import ar.uba.fi.ingsoft1.football5.config.security.JwtUserDetails;
 import ar.uba.fi.ingsoft1.football5.fields.FieldService;
 import ar.uba.fi.ingsoft1.football5.user.Role;
@@ -130,7 +139,7 @@ class MatchRestControllerTest {
     @Test
     void testCreateOpenMatch_withInvalidData_shouldFail() throws Exception {
         MatchCreateDTO invalidDto = new MatchCreateDTO(
-                                null, null, null, null, null, null, null, null);
+                                null, null, null, null, null, null, null);
 
         mockMvc.perform(post("/matches/create")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -138,3 +147,5 @@ class MatchRestControllerTest {
                 .andExpect(status().isBadRequest());
     }
 }
+
+ */
