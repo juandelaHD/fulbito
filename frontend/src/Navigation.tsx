@@ -23,6 +23,9 @@ export const Navigation = () => {
           <Route path="/fields">
             <FieldsScreen />
           </Route>
+          <Route path="/open-matches">
+            <OpenMatchesScreen />
+          </Route>
           <Route>
             <Redirect href="/" />
           </Route>
@@ -40,9 +43,6 @@ export const Navigation = () => {
           <Route path="/signup">
             <SignupScreen />
           </Route>
-        <Route path="/open-matches">
-          <OpenMatchesScreen />
-        </Route>
           <Route>
             <Redirect href="/signup" />
           </Route>

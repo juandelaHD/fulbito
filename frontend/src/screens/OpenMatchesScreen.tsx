@@ -4,23 +4,12 @@ import { useGetOpenMatches, useJoinMatch } from "@/services/MatchesServices";
 import { OpenMatchesTable, Match as TableMatch } from "@/components/tables/OpenMatchesTable";
 
 export default function OpenMatchesScreen() {
-  // 1) Traer partidos abiertos
-  const {
-    data: rawMatches,
-    isLoading: isFetchingMatches,
-    isError,
-    refetch,
-  } = useGetOpenMatches();
-
-  // 2) Hook para la mutación de “join”
+  const { data: rawMatches, isLoading: isFetchingMatches, isError, refetch } = useGetOpenMatches();
   const { mutateAsync: joinMatch } = useJoinMatch();
-
-  // 3) Estado para mapear rawMatches → TableMatch[]
   const [matches, setMatches] = useState<TableMatch[]>([]);
 
-  // 4) Cuando cambian rawMatches, mapeamos
   useEffect(() => {
-    if (rawMatches) {
+    if (Array.isArray(rawMatches)) {
       const mapped: TableMatch[] = rawMatches.map((m) => {
         const start = new Date(m.startTime);
         const end = new Date(m.endTime);
@@ -28,14 +17,8 @@ export default function OpenMatchesScreen() {
           id: m.id,
           fieldName: m.field.name,
           date: m.date,
-          startTime: start.toLocaleTimeString("es-AR", {
-            hour: "2-digit",
-            minute: "2-digit",
-          }),
-          endTime: end.toLocaleTimeString("es-AR", {
-            hour: "2-digit",
-            minute: "2-digit",
-          }),
+          startTime: start.toLocaleTimeString("es-AR", { hour: "2-digit", minute: "2-digit" }),
+          endTime: end.toLocaleTimeString("es-AR",   { hour: "2-digit", minute: "2-digit" }),
           inscritos: m.players.length,
           minPlayers: m.minPlayers,
           maxPlayers: m.maxPlayers,
@@ -45,7 +28,6 @@ export default function OpenMatchesScreen() {
     }
   }, [rawMatches]);
 
-  // 5) Handler para inscribirse y recargar la lista
   const handleJoin = async (matchId: number) => {
     await joinMatch(matchId);
     refetch();
@@ -59,11 +41,7 @@ export default function OpenMatchesScreen() {
       {isError && <div className="text-red-500">Error cargando partidos.</div>}
 
       {!isFetchingMatches && !isError && (
-        <OpenMatchesTable
-          data={matches}
-          onJoin={handleJoin}
-          joiningId={null}
-        />
+        <OpenMatchesTable data={matches} onJoin={handleJoin} joiningId={null} />
       )}
     </div>
   );
