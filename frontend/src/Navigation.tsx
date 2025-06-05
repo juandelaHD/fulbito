@@ -7,7 +7,7 @@ import { CreateFieldScreen } from "@/screens/CreateFieldScreen";
 import { useToken } from "@/services/TokenContext";
 import OpenMatchesScreen from "@/screens/OpenMatchesScreen";
 import { FieldsScreen } from "@/screens/FieldsScreen";
-
+import { MatchScreen } from "./screens/MatchScreen";
 export const Navigation = () => {
   const [tokenState] = useToken();
   switch (tokenState.state) {
@@ -25,6 +25,9 @@ export const Navigation = () => {
           </Route>
           <Route path="/open-matches">
             <OpenMatchesScreen />
+          </Route>
+          <Route path="/match">
+            <MatchScreen />
           </Route>
           <Route>
             <Redirect href="/" />
