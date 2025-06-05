@@ -64,7 +64,12 @@ export async function getOpenMatchesService(token: string): Promise<RawMatchDTO[
   if (!response.ok) {
     await handleErrorResponse(response, "fetching open matches");
   }
-  return (await response.json()) as RawMatchDTO[];
+
+  const json = await response.json();
+
+  console.log("✅ Fields response:", json);
+
+  return (json) as RawMatchDTO[];
 }
 
 export function useGetOpenMatches() {
