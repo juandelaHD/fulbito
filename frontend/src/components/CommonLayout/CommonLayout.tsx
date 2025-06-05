@@ -43,7 +43,7 @@ const LoggedInLinks = () => {
 
     return (
         <>
-            <Link className={styles.navLink} href="/under-construction">
+            <Link className={styles.navLink} href="/">
                 Main Page
             </Link>
             <Link className={styles.navLink} href="/fields/new">
