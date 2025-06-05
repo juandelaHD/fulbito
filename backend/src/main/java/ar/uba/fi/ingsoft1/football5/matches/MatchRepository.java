@@ -1,5 +1,6 @@
 package ar.uba.fi.ingsoft1.football5.matches;
 
+import ar.uba.fi.ingsoft1.football5.fields.Field;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -9,6 +10,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 public interface MatchRepository extends JpaRepository<Match, Long> {
+    List<Match> findByFieldAndStatus(Field field, MatchStatus status);
     List<Match> findByType(MatchType type);
     List<Match> findByStatus(MatchStatus status);
     @Query("""
@@ -25,4 +27,13 @@ public interface MatchRepository extends JpaRepository<Match, Long> {
             @Param("startTime") LocalDateTime startTime,
             @Param("endTime") LocalDateTime endTime
     );
+
+    @Query("""
+    SELECT m FROM Match m
+    WHERE m.type = 'OPEN'
+    AND m.status = 'SCHEDULED'
+    AND m.startTime > :now
+    AND size(m.players) < m.maxPlayers
+    """)
+    List<Match> findAvailableOpenMatches(@Param("now") LocalDateTime now);
 }

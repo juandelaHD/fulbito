@@ -57,18 +57,6 @@ public class UserService implements UserDetailsService {
                 .orElseThrow(() -> new UserNotFoundException(USER_NOT_FOUND, username));
     }
 
-    public User loadUserById(Long id) {
-        return userRepository
-                .findById(id)
-                .orElseThrow(() -> new UserNotFoundException(USER_NOT_FOUND, id));
-    }
-
-    public UserDTO getUserById(Long id) throws UserNotFoundException {
-        return userRepository.findById(id)
-                .map(UserDTO::new)
-                .orElseThrow(() -> new UserNotFoundException(USER_NOT_FOUND, id));
-    }
-
     public UserDTO getUser(String username) throws UserNotFoundException {
         User user = loadUserByUsername(username);
         return new UserDTO(user);
@@ -132,7 +120,6 @@ public class UserService implements UserDetailsService {
         userRepository.save(user);
         return Optional.of(user);
     }
-
 
     private TokenDTO generateTokens(User user) {
         String accessToken = jwtService.createToken(new JwtUserDetails(

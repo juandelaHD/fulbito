@@ -3,7 +3,9 @@ package ar.uba.fi.ingsoft1.football5.fields;
 import ar.uba.fi.ingsoft1.football5.common.exception.ItemNotFoundException;
 import ar.uba.fi.ingsoft1.football5.config.security.JwtUserDetails;
 import ar.uba.fi.ingsoft1.football5.images.ImageService;
+import ar.uba.fi.ingsoft1.football5.matches.Match;
 import ar.uba.fi.ingsoft1.football5.matches.MatchRepository;
+import ar.uba.fi.ingsoft1.football5.matches.MatchStatus;
 import ar.uba.fi.ingsoft1.football5.user.User;
 import ar.uba.fi.ingsoft1.football5.user.UserService;
 import org.junit.jupiter.api.Test;
@@ -20,8 +22,7 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class FieldServiceTest {
@@ -132,6 +133,22 @@ class FieldServiceTest {
     }
 
     @Test
+    void deleteField_whenFieldHasActiveMatches_throwsIllegalArgumentException() {
+        Field field = new Field(1L, "field 1", GrassType.NATURAL_GRASS, true,
+                new Location("zone a", "address 1"), owner);
+
+        when(owner.getUsername()).thenReturn("ownerUser");
+        when(userDetails.username()).thenReturn("ownerUser");
+        when(fieldRepository.findById(1L)).thenReturn(Optional.of(field));
+        when(matchRepository.findByFieldAndStatus(field, MatchStatus.SCHEDULED)).thenReturn(List.of(mock(Match.class)));
+
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () ->
+            fieldService.deleteField(1L, userDetails)
+        );
+
+        assertEquals("Field with id '1' cannot be deleted because it has active matches.", exception.getMessage());
+    }
+    @Test
     void deleteField_whenUserIsOwner_deletesField() throws ItemNotFoundException {
         Field field = new Field(1L, "field 1", GrassType.NATURAL_GRASS, true,
                 new Location("zone a", "address 1"), owner);
@@ -139,6 +156,7 @@ class FieldServiceTest {
         when(fieldRepository.findById(1L)).thenReturn(Optional.of(field));
         when(owner.getUsername()).thenReturn("ownerUser");
         when(userDetails.username()).thenReturn("ownerUser");
+        when(matchRepository.findByFieldAndStatus(field, MatchStatus.SCHEDULED)).thenReturn(List.of());
 
         fieldService.deleteField(1L, userDetails);
         verify(fieldRepository).delete(field);
