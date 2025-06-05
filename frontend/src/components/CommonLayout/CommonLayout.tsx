@@ -52,6 +52,9 @@ const LoggedInLinks = () => {
             <Link className={styles.navLink} href="/fields">
                 View Fields
             </Link>
+            <Link className={styles.navLink} href="/match">
+                Create Match
+            </Link>
             <button onClick={logOut} className={styles.navLink}>
                 Log out
             </button>
