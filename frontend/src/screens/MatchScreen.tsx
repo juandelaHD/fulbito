@@ -5,7 +5,7 @@ import { CreateMatchSchema } from "@/models/CreateMatch";
 import { useCreateMatch } from "@/services/MatchServices";
 import "react-datepicker/dist/react-datepicker.css";
 import DatePicker from "react-datepicker";
-import { format } from "date-fns"; // Agregá esto arriba si no lo tenés
+import { format } from "date-fns"; 
 
 // TODO: Reemplazá esto por una forma real de obtener el usuario autenticado
 const organizerId = 1;
@@ -22,13 +22,13 @@ const matchLabels: Record<string, string> = {
 
 // MOCK FIELDS
 const mockFields = [
-  { id: 1, name: "Cancha 1" },
-  { id: 2, name: "Cancha 2" },
-  { id: 3, name: "Cancha 3" },
-  { id: 4, name: "Cancha 4" },
-  { id: 5, name: "Cancha 5" },
-  { id: 6, name: "Cancha 6" },
-  { id: 7, name: "Cancha 7" },
+  { id: 1, name: "Serrano Corner" },
+  { id: 2, name: "Grun" },
+  { id: 3, name: "Centenera Sports" },
+  { id: 4, name: "Marangoni" },
+  { id: 5, name: "Futbol Retiro" },
+  { id: 6, name: "San Isidro Futbol" },
+  { id: 7, name: "Futbol Junin" },
 ];
 
 export const MatchScreen = () => {
