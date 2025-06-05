@@ -128,6 +128,11 @@ public class FieldService {
         return fieldPage.map(field -> mapToDTO(field, filters.hasOpenScheduledMatch()));
     }
 
+    public Page<FieldDTO> getFieldsWithNonFilters(Pageable pageable) {
+        Page<Field> fieldPage = fieldRepository.findAll(pageable);
+        return fieldPage.map( field -> mapToDTO(field, null));
+    }
+
     private FieldDTO mapToDTO(Field field, Boolean includeMatches) {
         // Si es false o null, no se solicitan los partidos abiertos con
         // jugadores faltantes (matchesWithMissingPlayers = null).

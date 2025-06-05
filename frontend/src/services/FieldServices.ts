@@ -70,7 +70,7 @@ export function useGetFields(filters: GetFieldsRequest) {
         }
     });
 
-      const url = `${BASE_API_URL}/fields?${params.toString()}`;
+      const url = `${BASE_API_URL}/fields/filters?${params.toString()}`;
 
       try {
         const response = await fetch(url, {

@@ -2,7 +2,7 @@ import { useAppForm } from "@/config/use-app-form";
 import { CommonLayout } from "@/components/CommonLayout/CommonLayout";
 import { toast } from "react-hot-toast";
 import { CreateMatchSchema } from "@/models/CreateMatch";
-import { useCreateMatch } from "@/services/MatchServices";
+import { useCreateMatch, useAvailableFields } from "@/services/MatchServices";
 import "react-datepicker/dist/react-datepicker.css";
 import DatePicker from "react-datepicker";
 import { format } from "date-fns"; // Agregá esto arriba si no lo tenés
@@ -20,19 +20,9 @@ const matchLabels: Record<string, string> = {
   endTime: "End Time",
 };
 
-// MOCK FIELDS
-const mockFields = [
-  { id: 1, name: "Cancha 1" },
-  { id: 2, name: "Cancha 2" },
-  { id: 3, name: "Cancha 3" },
-  { id: 4, name: "Cancha 4" },
-  { id: 5, name: "Cancha 5" },
-  { id: 6, name: "Cancha 6" },
-  { id: 7, name: "Cancha 7" },
-];
-
 export const MatchScreen = () => {
   const { mutate } = useCreateMatch();
+  const { fields, loadingFields } = useAvailableFields();
 
   const formData = useAppForm({
     defaultValues: {
@@ -102,7 +92,14 @@ export const MatchScreen = () => {
               {(field) => (
                 <field.SelectField
                   label="Field"
-                  options={mockFields.map((f) => ({ label: f.name, value: f.id.toString() }))}
+                  options={
+                    loadingFields
+                      ? [{ label: "Loading fields...", value: "" }]
+                      : fields.map((f) => ({
+                        label: f.name,
+                        value: f.id.toString(),
+                      }))
+                  }
                 />
               )}
             </formData.AppField>

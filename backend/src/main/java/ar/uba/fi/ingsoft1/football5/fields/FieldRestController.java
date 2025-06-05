@@ -41,8 +41,8 @@ class FieldRestController {
         this.reviewService = reviewService;
     }
 
-    @GetMapping(produces = "application/json")
-    @Operation(summary = "Get all fields with pagination")
+    @GetMapping(path = "/filters", produces = "application/json")
+    @Operation(summary = "Get all fields with pagination and filters")
     @ApiResponse(responseCode = "200", description = "Fields retrieved successfully")
     Page<FieldDTO> getFields(
             @Valid @ParameterObject Pageable pageable,
@@ -56,6 +56,15 @@ class FieldRestController {
     ) {
         FieldFiltersDTO filters = new FieldFiltersDTO(name, zone, address, grassType, isIlluminated, hasOpenScheduledMatch);
         return fieldService.getFieldsWithFilters(pageable, userDetails, filters);
+    }
+
+    @GetMapping(produces = "application/json")
+    @Operation(summary = "Get all fields with pagination")
+    @ApiResponse(responseCode = "200", description = "Fields retrieved successfully")
+    Page<FieldDTO> getAllFields(
+            @Valid @ParameterObject Pageable pageable
+    ) {
+        return fieldService.getFieldsWithNonFilters(pageable);
     }
 
     @PostMapping(produces = "application/json", consumes = "multipart/form-data")
