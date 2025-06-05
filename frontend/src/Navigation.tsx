@@ -5,6 +5,7 @@ import { MainScreen } from "@/screens/MainScreen";
 import { SignupScreen } from "@/screens/SignupScreen";
 import { CreateFieldScreen } from "@/screens/CreateFieldScreen"; 
 import { useToken } from "@/services/TokenContext";
+import OpenMatchesScreen from "@/screens/OpenMatchesScreen";
 import { FieldsScreen } from "@/screens/FieldsScreen";
 import { MatchScreen } from "./screens/MatchScreen";
 import { AdminHomePage } from "./screens/AdminHomePage";
@@ -24,6 +25,9 @@ export const Navigation = () => {
           </Route>
           <Route path="/fields">
             <FieldsScreen />
+          </Route>
+          <Route path="/open-matches">
+            <OpenMatchesScreen />
           </Route>
           <Route path="/match">
             <MatchScreen />
