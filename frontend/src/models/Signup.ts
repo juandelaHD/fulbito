@@ -18,21 +18,9 @@ export const SignupRequestSchema = z.object({
 
 export type SignupRequest = z.infer<typeof SignupRequestSchema>;
 
-export const UserSchema = z.object({
-  id: z.number(),
-  username: z.string(),
-  firstName: z.string(),
-  lastName: z.string(),
-  gender: z.string(),
-  zone: z.string(),
-  age: z.number(),
-  role: z.string(),
-});
-
 export const SignupResponseSchema = z.object({
   accessToken: z.string().min(1),
   refreshToken: z.string().nullable(),
-  user: UserSchema,
 });
 
 export type SignupResponse = z.infer<typeof SignupResponseSchema>;
