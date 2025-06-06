@@ -1,10 +1,13 @@
 package ar.uba.fi.ingsoft1.football5.user;
 
+import ar.uba.fi.ingsoft1.football5.user.password_reset_token.ResetPasswordDTO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.HttpStatus;
 import org.springframework.lang.NonNull;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Map;
 
 @RestController
 @RequestMapping("/users")
@@ -23,5 +26,18 @@ class UserRestController {
     // TODO: When are we using this service? Is it for the user or admin profile page? Decide PreAuthorize annotation.
     UserDTO getUser(@NonNull @PathVariable String username) {
         return userService.getUser(username);
+    }
+
+    @PostMapping("/forgot-password")
+    @ResponseStatus(HttpStatus.OK)
+    public void forgotPassword(@RequestBody Map<String, String> body) {
+        String email = body.get("email");
+        userService.initiatePasswordReset(email);
+    }
+
+    @PostMapping("/reset-password")
+    @ResponseStatus(HttpStatus.OK)
+    public void resetPassword(@RequestBody ResetPasswordDTO dto) {
+        userService.resetPassword(dto.token(), dto.newPassword(), dto.confirmPassword());
     }
 }

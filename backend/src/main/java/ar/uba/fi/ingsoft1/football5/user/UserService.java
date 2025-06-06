@@ -5,6 +5,8 @@ import ar.uba.fi.ingsoft1.football5.config.security.JwtService;
 import ar.uba.fi.ingsoft1.football5.config.security.JwtUserDetails;
 import ar.uba.fi.ingsoft1.football5.images.ImageService;
 import ar.uba.fi.ingsoft1.football5.user.email.EmailSenderService;
+import ar.uba.fi.ingsoft1.football5.user.password_reset_token.PasswordResetService;
+import ar.uba.fi.ingsoft1.football5.user.password_reset_token.PasswordResetToken;
 import ar.uba.fi.ingsoft1.football5.user.refresh_token.RefreshToken;
 import ar.uba.fi.ingsoft1.football5.user.refresh_token.RefreshTokenService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,6 +34,7 @@ public class UserService implements UserDetailsService {
     private final RefreshTokenService refreshTokenService;
     private final ImageService imageService;
     private final EmailSenderService emailService;
+    private final PasswordResetService passwordResetService;
 
     @Autowired
     UserService(
@@ -40,7 +43,8 @@ public class UserService implements UserDetailsService {
             UserRepository userRepository,
             RefreshTokenService refreshTokenService,
             ImageService imageService,
-            EmailSenderService emailService
+            EmailSenderService emailService,
+            PasswordResetService passwordResetService
     ) {
         this.jwtService = jwtService;
         this.passwordEncoder = passwordEncoder;
@@ -48,6 +52,7 @@ public class UserService implements UserDetailsService {
         this.refreshTokenService = refreshTokenService;
         this.imageService = imageService;
         this.emailService = emailService;
+        this.passwordResetService = passwordResetService;
     }
 
     @Override
@@ -119,6 +124,27 @@ public class UserService implements UserDetailsService {
         user.setEmailConfirmationToken(null);
         userRepository.save(user);
         return Optional.of(user);
+    }
+
+    public void initiatePasswordReset(String email) {
+        userRepository.findByUsername(email.toLowerCase()).ifPresent(user -> {
+            PasswordResetToken token = passwordResetService.createToken(user);
+            emailService.sendPasswordResetMail(user.getUsername(), token.getToken());
+        });
+        // Always return success to avoid user enumeration
+    }
+
+    public void resetPassword(String token, String newPassword, String confirmPassword) {
+        if (!newPassword.equals(confirmPassword)) {
+            throw new IllegalArgumentException("Las contraseñas no coinciden");
+        }
+        // Validate token and reset password
+        User user = passwordResetService.validateToken(token)
+                .orElseThrow(() -> new IllegalArgumentException("Token inválido o expirado"));
+        user.setPassword(passwordEncoder.encode(newPassword));
+        userRepository.save(user);
+        passwordResetService.invalidateToken(token);
+        emailService.sendPasswordResetMail(user.getUsername(), token);
     }
 
     private TokenDTO generateTokens(User user) {

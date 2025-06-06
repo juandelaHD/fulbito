@@ -93,6 +93,10 @@ public class User implements UserDetails, UserCredentials {
         return List.of(new SimpleGrantedAuthority(role.name()));
     }
 
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
     public Long getId() {
         return id;
     }
