@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import { useGetOpenMatches, useJoinMatch } from "@/services/MatchesServices";
 import { OpenMatchesTable, Match as TableMatch } from "@/components/tables/OpenMatchesTable";
+import { CommonLayout } from "@/components/CommonLayout/CommonLayout";
 
 export default function OpenMatchesScreen() {
   const { data: rawMatches, isLoading: isFetchingMatches, isError, refetch } = useGetOpenMatches();
@@ -34,6 +35,7 @@ export default function OpenMatchesScreen() {
   };
 
   return (
+    <CommonLayout>
     <div className="p-6 space-y-6">
       <h1 className="text-2xl font-bold">Open Matches</h1>
 
@@ -44,5 +46,6 @@ export default function OpenMatchesScreen() {
         <OpenMatchesTable data={matches} onJoin={handleJoin} joiningId={null} />
       )}
     </div>
+    </CommonLayout>
   );
 }
