@@ -6,7 +6,6 @@ import ar.uba.fi.ingsoft1.football5.config.security.JwtUserDetails;
 import ar.uba.fi.ingsoft1.football5.fields.Field;
 import ar.uba.fi.ingsoft1.football5.fields.FieldService;
 import ar.uba.fi.ingsoft1.football5.user.User;
-import ar.uba.fi.ingsoft1.football5.user.UserDTO;
 import ar.uba.fi.ingsoft1.football5.user.UserService;
 import ar.uba.fi.ingsoft1.football5.user.Role;
 import ar.uba.fi.ingsoft1.football5.images.Image;
@@ -188,7 +187,6 @@ class MatchServiceTest {
         when(fieldService.validateFieldAvailability(anyLong(), any(), any(), any())).thenReturn(true);
 
         when(userDetails.username()).thenReturn("testuser");
-        UserDTO userDTO = new UserDTO(1L, "Test", "User", "testuser", 1L, "Zone", 25, "M", Role.USER, true);
         when(userService.loadUserByUsername("testuser")).thenReturn(user);
 
         MatchCreateDTO dto = new MatchCreateDTO(
@@ -251,8 +249,6 @@ class MatchServiceTest {
         when(fieldService.loadFieldById(1L)).thenReturn(field);
         when(fieldService.validateFieldAvailability(any(), any(), any(), any())).thenReturn(false);
 
-        User user = new User("testuser", "Test", "User", "M", "Zone", 25, "pass", Role.USER);
-
         MatchCreateDTO dto = new MatchCreateDTO(
                 MatchType.OPEN,
                 1L,
@@ -279,6 +275,5 @@ class MatchServiceTest {
         });
 
         assertEquals("Failed to find match with id '123'", ex.getMessage());
-    }
-        
+    } 
 }
