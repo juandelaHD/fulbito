@@ -1,10 +1,10 @@
-/*
+/* 
 TODO: tests for MatchRestController
  * - testJoinOpenMatchEndpoint_returnsMatchDTO
  * - testGetAvailableOpenMatches_returnsListOfMatches
  * - testGetMatchById_NotFound
  * - testCreateOpenMatch_withInvalidData_shouldFail
-
+*/
 package ar.uba.fi.ingsoft1.football5.matches;
 
 import ar.uba.fi.ingsoft1.football5.common.exception.ItemNotFoundException;
@@ -148,4 +148,4 @@ class MatchRestControllerTest {
     }
 }
 
- */
+ 
