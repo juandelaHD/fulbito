@@ -1,21 +1,3 @@
-/*
-TODO: Test for MatchService
- * This file is commented out to avoid compilation errors.
-    * Uncomment and implement tests as needed.
-    * - testJoinOpenMatch_successful
-    * - testJoinOpenMatch_alreadyStarted
-    * - testJoinOpenMatch_matchFull
-    * - testJoinOpenMatch_alreadyJoined
-    * - testJoinOpenMatch_closedMatch
-    * - testJoinOpenMatch_matchNotFound
-    * - testJoinOpenMatch_userNotFound
-    * - testJoinOpenMatch_saveIsCalled
-    * - testCreateOpenMatch_successful
-    * - testCreateOpenMatch_dateInPast_throwsException
-    * - testCreateOpenMatch_startAfterEnd_throwsException
-    * - testCreateOpenMatch_fieldUnavailable_throwsException
-    * - testGetMatchById_notFound
-*/
 package ar.uba.fi.ingsoft1.football5.matches;
 
 import ar.uba.fi.ingsoft1.football5.common.exception.ItemNotFoundException;
@@ -90,7 +72,7 @@ class MatchServiceTest {
         openMatch.setMinPlayers(1);
         user = new User("testuser", "Test", "User", "M", "Zone1", 25, "pass123", Role.USER);
     }
-/* 
+ 
     @Test
     void testJoinOpenMatch_successful() throws Exception {
         Image mockAvatar = mock(Image.class);
@@ -135,7 +117,7 @@ class MatchServiceTest {
 
         assertEquals("Match is full", ex.getMessage());
     }
-
+ 
     @Test
     void testJoinOpenMatch_alreadyJoined() {
         openMatch.getPlayers().add(user);
@@ -196,7 +178,7 @@ class MatchServiceTest {
         matchService.joinOpenMatch(1L, userDetails);
         verify(matchRepository, times(1)).save(openMatch);
     }
-*/
+
     @Test
     void testCreateOpenMatch_successful() throws Exception {
         Field field = mock(Field.class);
