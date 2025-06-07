@@ -62,20 +62,40 @@ public class Field {
         return id;
     }
 
+    public void setId(Long id) {
+        this.id = id;
+    }
+
     public String getName() {
         return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 
     public GrassType getGrassType() {
         return grassType;
     }
 
+    public void setGrassType(GrassType grassType) {
+        this.grassType = grassType;
+    }
+
     public Boolean isIlluminated() {
         return illuminated;
     }
 
+    public void setIlluminated(Boolean illuminated) {
+        this.illuminated = illuminated;
+    }
+
     public Location getLocation() {
         return location;
+    }
+
+    public void setLocation(Location location) {
+        this.location = location;
     }
 
     public List<Image> getImages() {

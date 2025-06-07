@@ -12,6 +12,7 @@ import java.util.Optional;
 public interface FieldRepository extends JpaRepository<Field, Long>, JpaSpecificationExecutor<Field> {
     Optional<Field> findByName(String name);
     Optional<Field> findByLocationZoneAndLocationAddress(String zone, String address);
+    Page<Field> findByOwnerId(Long ownerId, Pageable pageable);
 
     @Override
     @EntityGraph(attributePaths = {"matches"})

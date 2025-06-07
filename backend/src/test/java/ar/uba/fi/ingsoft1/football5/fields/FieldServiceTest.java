@@ -13,6 +13,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.AccessDeniedException;
 
 import java.io.IOException;
@@ -49,7 +51,7 @@ class FieldServiceTest {
     private FieldService fieldService;
 
     @Test
-    void createField_whenDuplicatedName_throwsIllegalArgumentException() {
+    void createField_whenNotUniqueName_throwsIllegalArgumentException() {
         FieldCreateDTO fieldCreateDTO = new FieldCreateDTO("field 1", GrassType.NATURAL_GRASS, true,
                 "zone a", "address 1");
 
@@ -65,7 +67,7 @@ class FieldServiceTest {
     }
 
     @Test
-    void createField_whenDuplicatedLocation_throwsIllegalArgumentException() {
+    void createField_whenNotUniqueLocation_throwsIllegalArgumentException() {
         FieldCreateDTO fieldCreateDTO = new FieldCreateDTO("field 1", GrassType.NATURAL_GRASS, true,
                 "zone a", "address 1");
 
@@ -122,14 +124,14 @@ class FieldServiceTest {
                 new Location("zone a", "address 1"), owner);
 
         when(fieldRepository.findById(1L)).thenReturn(Optional.of(field));
-        when(owner.getUsername()).thenReturn("ownerUser");
-        when(userDetails.username()).thenReturn("otherUser");
+        when(owner.getUsername()).thenReturn("owner-user");
+        when(userDetails.username()).thenReturn("other-user");
 
         AccessDeniedException exception = assertThrows(AccessDeniedException.class, () ->
             fieldService.deleteField(1L, userDetails)
         );
 
-        assertEquals("User does not have permission to delete field with id '1'.", exception.getMessage());
+        assertEquals("User does not have access to field with id '1'.", exception.getMessage());
     }
 
     @Test
@@ -137,8 +139,8 @@ class FieldServiceTest {
         Field field = new Field(1L, "field 1", GrassType.NATURAL_GRASS, true,
                 new Location("zone a", "address 1"), owner);
 
-        when(owner.getUsername()).thenReturn("ownerUser");
-        when(userDetails.username()).thenReturn("ownerUser");
+        when(owner.getUsername()).thenReturn("owner-user");
+        when(userDetails.username()).thenReturn("owner-user");
         when(fieldRepository.findById(1L)).thenReturn(Optional.of(field));
         when(matchRepository.findByFieldAndStatus(field, MatchStatus.SCHEDULED)).thenReturn(List.of(mock(Match.class)));
 
@@ -154,11 +156,117 @@ class FieldServiceTest {
                 new Location("zone a", "address 1"), owner);
 
         when(fieldRepository.findById(1L)).thenReturn(Optional.of(field));
-        when(owner.getUsername()).thenReturn("ownerUser");
-        when(userDetails.username()).thenReturn("ownerUser");
+        when(owner.getUsername()).thenReturn("owner-user");
+        when(userDetails.username()).thenReturn("owner-user");
         when(matchRepository.findByFieldAndStatus(field, MatchStatus.SCHEDULED)).thenReturn(List.of());
 
         fieldService.deleteField(1L, userDetails);
         verify(fieldRepository).delete(field);
+    }
+
+    @Test
+    void updateField_whenFieldDoesNotExist_throwsItemNotFoundException() {
+        when(fieldRepository.findById(1L)).thenReturn(Optional.empty());
+
+        ItemNotFoundException exception = assertThrows(ItemNotFoundException.class, () ->
+            fieldService.updateField(1L, new FieldCreateDTO("field 1", GrassType.NATURAL_GRASS, true,
+                    "zone a", "address 1"), List.of(), userDetails)
+        );
+
+        assertEquals("Failed to find field with id '1'", exception.getMessage());
+    }
+
+    @Test
+    void updateField_whenUserIsNotOwner_throwsAccessDeniedException() {
+        Field field = new Field(1L, "field 1", GrassType.NATURAL_GRASS, true,
+                new Location("zone a", "address 1"), owner);
+
+        when(fieldRepository.findById(1L)).thenReturn(Optional.of(field));
+        when(owner.getUsername()).thenReturn("owner-user");
+        when(userDetails.username()).thenReturn("other-user");
+
+        AccessDeniedException exception = assertThrows(AccessDeniedException.class, () ->
+            fieldService.updateField(1L, new FieldCreateDTO("field 1", GrassType.NATURAL_GRASS, true,
+                    "zone a", "address 1"), List.of(), userDetails)
+        );
+
+        assertEquals("User does not have access to field with id '1'.", exception.getMessage());
+    }
+
+    @Test
+    void updateField_whenNotUniqueName_throwsIllegalArgumentException() {
+        Field field = new Field(1L, "field 1", GrassType.NATURAL_GRASS, true,
+                new Location("zone a", "address 1"), owner);
+
+        when(fieldRepository.findById(1L)).thenReturn(Optional.of(field));
+        when(fieldRepository.findByName("field 1")).thenReturn(Optional.of(new Field(2L, "field 1", GrassType.NATURAL_GRASS, true,
+                new Location("zone b", "address 2"), owner)));
+        when(userDetails.username()).thenReturn("owner-user");
+        when(owner.getUsername()).thenReturn("owner-user");
+
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () ->
+            fieldService.updateField(1L, new FieldCreateDTO("field 1", GrassType.NATURAL_GRASS, true,
+                    "zone a", "address 1"), List.of(), userDetails)
+        );
+
+        assertEquals("Field with name 'field 1' already exists.", exception.getMessage());
+    }
+
+    @Test
+    void updateField_whenNotUniqueLocation_throwsIllegalArgumentException() {
+        Field field = new Field(1L, "field 1", GrassType.NATURAL_GRASS, true,
+                new Location("zone a", "address 1"), owner);
+
+        when(fieldRepository.findById(1L)).thenReturn(Optional.of(field));
+        when(fieldRepository.findByName("field 1")).thenReturn(Optional.empty());
+        when(fieldRepository.findByLocationZoneAndLocationAddress("zone a", "address 1"))
+                .thenReturn(Optional.of(new Field(2L, "field 2", GrassType.NATURAL_GRASS, true,
+                        new Location("zone a", "address 1"), owner)));
+        when(userDetails.username()).thenReturn("owner-user");
+        when(owner.getUsername()).thenReturn("owner-user");
+
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () ->
+            fieldService.updateField(1L, new FieldCreateDTO("field 1", GrassType.NATURAL_GRASS, true,
+                    "zone a", "address 1"), List.of(), userDetails)
+        );
+
+        assertEquals("Field with location 'zone a, address 1' already exists.", exception.getMessage());
+    }
+
+    @Test
+    void updateField_whenValidationsPassed_returnsUpdatedField() throws IOException, ItemNotFoundException {
+        Field field = new Field(1L, "field 1", GrassType.NATURAL_GRASS, true,
+                new Location("zone a", "address 1"), owner);
+        FieldCreateDTO fieldCreateDTO = new FieldCreateDTO("field 1", GrassType.NATURAL_GRASS, true,
+                "zone a", "address 1");
+
+        when(fieldRepository.findById(1L)).thenReturn(Optional.of(field));
+        when(fieldRepository.findByName(fieldCreateDTO.name())).thenReturn(Optional.empty());
+        when(fieldRepository.findByLocationZoneAndLocationAddress(fieldCreateDTO.zone(), fieldCreateDTO.address()))
+                .thenReturn(Optional.empty());
+        when(owner.getUsername()).thenReturn("owner-user");
+        when(fieldRepository.save(any(Field.class))).thenReturn(field);
+        when(userDetails.username()).thenReturn("owner-user");
+
+        FieldDTO fieldDTO = fieldService.updateField(1L, fieldCreateDTO, List.of(), userDetails);
+
+        assertEquals(fieldCreateDTO.name(), fieldDTO.name());
+        assertEquals(fieldCreateDTO.grassType(), fieldDTO.grassType());
+        assertEquals(fieldCreateDTO.illuminated(), fieldDTO.illuminated());
+        assertEquals(fieldCreateDTO.zone(), fieldDTO.location().zone());
+        assertEquals(fieldCreateDTO.address(), fieldDTO.location().address());
+        assertEquals(List.of(), fieldDTO.imageIds());
+    }
+
+    @Test
+    void getOwnedFields_whenUserIsAdmin_returnsOwnedFields() {
+        when(userDetails.username()).thenReturn("adminUser");
+        when(userService.loadUserByUsername("adminUser")).thenReturn(owner);
+        when(fieldRepository.findByOwnerId(eq(owner.getId()), any())).thenReturn(Page.empty());
+
+        Page<FieldDTO> ownedFields = fieldService.getOwnedFields(Pageable.unpaged(), userDetails);
+
+        assertEquals(0, ownedFields.getTotalElements());
+        verify(fieldRepository).findByOwnerId(owner.getId(), Pageable.unpaged());
     }
 }
