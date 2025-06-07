@@ -46,8 +46,8 @@ public class FieldService {
     FieldDTO createField(FieldCreateDTO fieldCreate, List<MultipartFile> images, JwtUserDetails userDetails)
             throws IllegalArgumentException, IOException {
 
-        validateUniqueName(fieldCreate);
-        validateUniqueLocation(fieldCreate);
+        validateUniqueName(fieldCreate, null);
+        validateUniqueLocation(fieldCreate, null);
 
         User owner = userService.loadUserByUsername(userDetails.username());
         Field field = fieldRepository.save(fieldCreate.asField(owner));
@@ -67,20 +67,6 @@ public class FieldService {
                 .orElseThrow(() -> new ItemNotFoundException("field", id));
     }
 
-    private void validateUniqueName(FieldCreateDTO fieldCreate) {
-        fieldRepository.findByName(fieldCreate.name())
-                .ifPresent(field -> {
-                    throw new IllegalArgumentException(String.format("Field with name '%s' already exists.", fieldCreate.name()));
-                });
-    }
-
-    private void validateUniqueLocation(FieldCreateDTO fieldCreate) {
-        fieldRepository.findByLocationZoneAndLocationAddress(fieldCreate.zone(), fieldCreate.address())
-                .ifPresent(field -> {
-                    throw new IllegalArgumentException(String.format("Field with location '%s, %s' already exists.", fieldCreate.zone(), fieldCreate.address()));
-                });
-    }
-
     public void deleteField(Long id, JwtUserDetails userDetails)
             throws ItemNotFoundException, IllegalArgumentException {
         Field field = fieldRepository.findById(id)
@@ -92,12 +78,31 @@ public class FieldService {
         fieldRepository.delete(field);
     }
 
-    private void validateNonActiveMatches(Field field) {
-        List<Match> activeMatches = matchRepository.findByFieldAndStatus(field, MatchStatus.SCHEDULED);
-        if (!activeMatches.isEmpty()) {
-            throw new IllegalArgumentException(String.format("Field with id '%s' cannot be deleted because it has active matches.", field.getId()));
-        }
-        // TODO: When adding schedules, we must check that the match is not scheduled in the future (SCHEDULED + Future Time)
+    public Page<FieldDTO> getFieldsWithFilters(Pageable pageable, JwtUserDetails userDetails, FieldFiltersDTO filters) {
+        User owner = userService.loadUserByUsername(userDetails.username());
+        Specification<Field> combinedSpec = specificationService.build(filters, owner);
+
+        Page<Field> fieldPage = fieldRepository.findAll(combinedSpec, pageable);
+        return fieldPage.map(field -> mapToDTO(field, filters.hasOpenScheduledMatch()));
+    }
+
+    public FieldDTO updateField(Long id, FieldCreateDTO fieldCreate, List<MultipartFile> images, JwtUserDetails userDetails) throws ItemNotFoundException, IOException {
+        Field field = fieldRepository.findById(id)
+                .orElseThrow(() -> new ItemNotFoundException("field", id));
+
+        validateOwnership(field, userDetails);
+        validateUniqueName(fieldCreate, id);
+        validateUniqueLocation(fieldCreate, id);
+
+        Field saved = fieldRepository.save(fieldCreate.adUpdatedField(field));
+        imageService.saveImages(saved, images);
+        return new FieldDTO(saved);
+    }
+
+    public Page<FieldDTO> getOwnedFields(Pageable pageable, JwtUserDetails userDetails) {
+        User owner = userService.loadUserByUsername(userDetails.username());
+        Page<Field> fieldPage = fieldRepository.findByOwnerId(owner.getId(), pageable);
+        return fieldPage.map(field -> mapToDTO(field, false));
     }
 
     public boolean validateFieldAvailability(
@@ -114,18 +119,34 @@ public class FieldService {
         return true;
     }
 
-    private void validateOwnership(Field field, JwtUserDetails userDetails) {
-        if (!field.getOwner().getUsername().equals(userDetails.username())) {
-            throw new AccessDeniedException(String.format("User does not have permission to delete field with id '%s'.", field.getId()));
-        }
+    private void validateUniqueName(FieldCreateDTO fieldCreate, Long id) {
+        fieldRepository.findByName(fieldCreate.name().toLowerCase())
+                .filter(field -> !field.getId().equals(id))
+                .ifPresent(field -> {
+                    throw new IllegalArgumentException(String.format("Field with name '%s' already exists.", fieldCreate.name()));
+                });
     }
 
-    public Page<FieldDTO> getFieldsWithFilters(Pageable pageable, JwtUserDetails userDetails, FieldFiltersDTO filters) {
-        User owner = userService.loadUserByUsername(userDetails.username());
-        Specification<Field> combinedSpec = specificationService.build(filters, owner);
+    private void validateUniqueLocation(FieldCreateDTO fieldCreate, Long id) {
+        fieldRepository.findByLocationZoneAndLocationAddress(fieldCreate.zone().toLowerCase(), fieldCreate.address().toLowerCase())
+                .filter(field -> !field.getId().equals(id))
+                .ifPresent(field -> {
+                    throw new IllegalArgumentException(String.format("Field with location '%s, %s' already exists.", fieldCreate.zone(), fieldCreate.address()));
+                });
+    }
 
-        Page<Field> fieldPage = fieldRepository.findAll(combinedSpec, pageable);
-        return fieldPage.map(field -> mapToDTO(field, filters.hasOpenScheduledMatch()));
+    private void validateNonActiveMatches(Field field) {
+        List<Match> activeMatches = matchRepository.findByFieldAndStatus(field, MatchStatus.SCHEDULED);
+        if (!activeMatches.isEmpty()) {
+            throw new IllegalArgumentException(String.format("Field with id '%s' cannot be deleted because it has active matches.", field.getId()));
+        }
+        // TODO: When adding schedules, we must check that the match is not scheduled in the future (SCHEDULED + Future Time)
+    }
+
+    private void validateOwnership(Field field, JwtUserDetails userDetails) {
+        if (!field.getOwner().getUsername().equals(userDetails.username().toLowerCase())) {
+            throw new AccessDeniedException(String.format("User does not have access to field with id '%s'.", field.getId()));
+        }
     }
 
     private FieldDTO mapToDTO(Field field, Boolean includeMatches) {
