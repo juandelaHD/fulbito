@@ -46,4 +46,9 @@ public class EmailSenderService {
         this.sendMail(recipientEmailAddress, new PasswordResetMailWriter(token));
     }
 
+    public void sendPasswordChangedMail(String recipientEmailAddress) {
+        this.sendMail(recipientEmailAddress, new PasswordChangeMailWriter());
+    }
+
+
 }

@@ -144,7 +144,7 @@ public class UserService implements UserDetailsService {
         user.setPassword(passwordEncoder.encode(newPassword));
         userRepository.save(user);
         passwordResetService.invalidateToken(token);
-        emailService.sendPasswordResetMail(user.getUsername(), token);
+        emailService.sendPasswordChangedMail(user.getUsername());
     }
 
     private TokenDTO generateTokens(User user) {
