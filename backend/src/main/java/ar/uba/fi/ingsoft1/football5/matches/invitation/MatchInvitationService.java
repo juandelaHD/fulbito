@@ -19,12 +19,14 @@ public class MatchInvitationService {
         this.matchRepository = matchRepository;
     }
 
-    public MatchInvitation createInvitation(Long matchId, int hoursValid) {
-        Match match = matchRepository.findById(matchId).orElseThrow();
+    public MatchInvitationDTO createInvitation(Long matchId, int hoursValid) throws IllegalArgumentException {
+        Match match = matchRepository.findById(matchId)
+                .orElseThrow(() -> new IllegalArgumentException("Match not found with id: " + matchId));
         String token = UUID.randomUUID().toString();
         LocalDateTime expiry = LocalDateTime.now().plusHours(hoursValid);
         MatchInvitation invitation = new MatchInvitation(token, match, expiry);
-        return invitationRepository.save(invitation);
+        invitation = invitationRepository.save(invitation);
+        return new MatchInvitationDTO(invitation);
     }
 
     public Optional<MatchInvitation> validateToken(String token) {

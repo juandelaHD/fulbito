@@ -4,9 +4,13 @@ import ar.uba.fi.ingsoft1.football5.common.exception.UserNotFoundException;
 import ar.uba.fi.ingsoft1.football5.config.security.JwtService;
 import ar.uba.fi.ingsoft1.football5.config.security.JwtUserDetails;
 import ar.uba.fi.ingsoft1.football5.images.ImageService;
+import ar.uba.fi.ingsoft1.football5.matches.MatchRepository;
+import ar.uba.fi.ingsoft1.football5.matches.invitation.MatchInvitation;
+import ar.uba.fi.ingsoft1.football5.matches.invitation.MatchInvitationService;
 import ar.uba.fi.ingsoft1.football5.user.email.EmailSenderService;
 import ar.uba.fi.ingsoft1.football5.user.password_reset_token.PasswordResetService;
 import ar.uba.fi.ingsoft1.football5.user.password_reset_token.PasswordResetToken;
+import ar.uba.fi.ingsoft1.football5.user.password_reset_token.PasswordResetTokenRepository;
 import ar.uba.fi.ingsoft1.football5.user.refresh_token.RefreshToken;
 import ar.uba.fi.ingsoft1.football5.user.refresh_token.RefreshTokenService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,6 +39,8 @@ public class UserService implements UserDetailsService {
     private final ImageService imageService;
     private final EmailSenderService emailService;
     private final PasswordResetService passwordResetService;
+    private final MatchRepository matchRepository;
+    private final MatchInvitationService matchInvitationService;
 
     @Autowired
     UserService(
@@ -44,7 +50,9 @@ public class UserService implements UserDetailsService {
             RefreshTokenService refreshTokenService,
             ImageService imageService,
             EmailSenderService emailService,
-            PasswordResetService passwordResetService
+            PasswordResetService passwordResetService,
+            MatchRepository matchRepository,
+            MatchInvitationService matchInvitationService
     ) {
         this.jwtService = jwtService;
         this.passwordEncoder = passwordEncoder;
@@ -53,6 +61,8 @@ public class UserService implements UserDetailsService {
         this.imageService = imageService;
         this.emailService = emailService;
         this.passwordResetService = passwordResetService;
+        this.matchRepository = matchRepository;
+        this.matchInvitationService = matchInvitationService;
     }
 
     @Override
@@ -75,6 +85,12 @@ public class UserService implements UserDetailsService {
 
         var user = data.asUser(passwordEncoder::encode);
         user.setEmailConfirmed(false);
+
+        if (data.invitationToken() != null) {
+            var invitation = matchInvitationService.validateToken(data.invitationToken())
+                    .orElseThrow(() -> new IllegalArgumentException("Invalid invitation token or expired"));
+            user.setInvitationToken(data.invitationToken());
+        }
 
         User savedUser = userRepository.save(user);
         imageService.saveImage(savedUser, avatar);
@@ -122,6 +138,17 @@ public class UserService implements UserDetailsService {
         User user = maybeUser.get();
         user.setEmailConfirmed(true);
         user.setEmailConfirmationToken(null);
+
+        if (user.getInvitationToken() != null) {
+            matchInvitationService.validateToken(user.getInvitationToken()).ifPresent(inv -> {
+                matchInvitationService.markAsUsed(inv, user);
+                var match = inv.getMatch();
+                match.addPlayer(user);
+                matchRepository.save(match);
+            });
+            user.setInvitationToken(null);
+        }
+
         userRepository.save(user);
         return Optional.of(user);
     }
@@ -136,11 +163,11 @@ public class UserService implements UserDetailsService {
 
     public void resetPassword(String token, String newPassword, String confirmPassword) {
         if (!newPassword.equals(confirmPassword)) {
-            throw new IllegalArgumentException("Las contraseñas no coinciden");
+            throw new IllegalArgumentException("Passwords do not match");
         }
         // Validate token and reset password
         User user = passwordResetService.validateToken(token)
-                .orElseThrow(() -> new IllegalArgumentException("Token inválido o expirado"));
+                .orElseThrow(() -> new IllegalArgumentException("Invalid or expired token"));
         user.setPassword(passwordEncoder.encode(newPassword));
         userRepository.save(user);
         passwordResetService.invalidateToken(token);

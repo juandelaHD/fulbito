@@ -64,6 +64,9 @@ public class User implements UserDetails, UserCredentials {
     @JsonBackReference("player-match")
     private final Set<Match> joinedMatches = new HashSet<>();
 
+    @Column(name = "invitation_token")
+    private String invitationToken;
+
     protected User() {}
 
     public User(String username, String firstName, String lastName, String gender, String zone, Integer age, String password, Role role) {
@@ -155,5 +158,13 @@ public class User implements UserDetails, UserCredentials {
 
     public Set<Match> getJoinedMatches() {
         return joinedMatches;
+    }
+
+    public String getInvitationToken() {
+        return invitationToken;
+    }
+
+    public void setInvitationToken(String invitationToken) {
+        this.invitationToken = invitationToken;
     }
 }
