@@ -1,5 +1,7 @@
 package ar.uba.fi.ingsoft1.football5.user;
 
+import ar.uba.fi.ingsoft1.football5.user.password_reset_token.ForgotPasswordRequestDTO;
+import ar.uba.fi.ingsoft1.football5.user.password_reset_token.ResetPasswordDTO;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -226,4 +228,68 @@ class SessionRestController {
                 .map(user -> ResponseEntity.ok(Map.of("message", "Email verified successfully!")))
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid verification token"));
     }
+
+    @PostMapping("/forgot-password")
+    @Operation(
+            summary = "Request password reset",
+            description = "Sends an email with a link to reset the password if the user exists.",
+            requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                    required = true,
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ForgotPasswordRequestDTO.class)
+                    )
+            ),
+            responses = {
+                    @ApiResponse(
+                            responseCode = "200",
+                            description = "Request received. If the email exists, a reset link is sent."
+                    )
+            }
+    )
+    @ResponseStatus(HttpStatus.OK)
+    public void forgotPassword(@RequestBody ForgotPasswordRequestDTO request) {
+        userService.initiatePasswordReset(request.email());
+    }
+
+    @PostMapping("/reset-password")
+    @Operation(
+            summary = "Reset password using token",
+            description = "Allows setting a new password using the token received by email.",
+            requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                    required = true,
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ResetPasswordDTO.class)
+                    )
+            ),
+            responses = {
+                    @ApiResponse(
+                            responseCode = "200",
+                            description = "Password successfully reset."
+                    ),
+                    @ApiResponse(
+                            responseCode = "400",
+                            description = "Invalid or expired token, or passwords do not match.",
+                            content = @Content(
+                                    mediaType = "application/json",
+                                    schema = @Schema(
+                                            example = """
+                    {
+                      "status": 400,
+                      "error": "Bad Request",
+                      "message": "Invalid or expired token",
+                      "path": "/sessions/reset-password"
+                    }
+                    """
+                                    )
+                            )
+                    )
+            }
+    )
+    @ResponseStatus(HttpStatus.OK)
+    public void resetPassword(@RequestBody ResetPasswordDTO dto) {
+        userService.resetPassword(dto.token(), dto.newPassword(), dto.confirmPassword());
+    }
 }
+
