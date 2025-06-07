@@ -2,6 +2,8 @@ package ar.uba.fi.ingsoft1.football5.user.password_reset_token;
 
 import ar.uba.fi.ingsoft1.football5.user.User;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.UUID;
@@ -14,8 +16,10 @@ public class PasswordResetService {
         this.tokenRepo = tokenRepo;
     }
 
+    @Transactional
     public PasswordResetToken createToken(User user) {
-        tokenRepo.deleteByUser(user); // Solo un token activo por usuario
+        tokenRepo.deleteByUserId(user.getId()); // Elimina usando el ID
+        tokenRepo.flush();
         PasswordResetToken token = new PasswordResetToken();
         token.setToken(UUID.randomUUID().toString());
         token.setUser(user);

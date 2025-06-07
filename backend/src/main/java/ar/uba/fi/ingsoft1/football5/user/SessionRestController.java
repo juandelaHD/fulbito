@@ -9,6 +9,7 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Valid;
 import jakarta.validation.Validator;
@@ -20,6 +21,8 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
 import java.io.IOException;
@@ -250,6 +253,25 @@ class SessionRestController {
     @ResponseStatus(HttpStatus.OK)
     public void forgotPassword(@RequestBody ForgotPasswordRequestDTO request) {
         userService.initiatePasswordReset(request.email());
+    }
+
+    @GetMapping("/reset-password")
+    @Operation(
+            summary = "Redirect to frontend for password reset",
+            description = "Redirects to the frontend application with the reset token.",
+            parameters = {
+                    @Parameter(name = "token", description = "Password reset token", required = true)
+            },
+            responses = {
+                    @ApiResponse(
+                            responseCode = "302",
+                            description = "Redirects to the frontend application"
+                    )
+            }
+    )
+    public void redirectToFrontend(@RequestParam("token") String token, HttpServletResponse response) throws IOException {
+        String frontendUrl = "http://localhost:30003/reset-password?token=" + URLEncoder.encode(token, StandardCharsets.UTF_8);
+        response.sendRedirect(frontendUrl);
     }
 
     @PostMapping("/reset-password")

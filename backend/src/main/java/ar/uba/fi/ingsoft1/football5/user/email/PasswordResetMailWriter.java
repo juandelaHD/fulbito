@@ -16,7 +16,7 @@ public class PasswordResetMailWriter extends EmailWriter {
                 + "We received a request to reset your password.\n"
                 + "To continue, please click the following link:\n\n"
                 // TODO: Change this URL to the actual production URL (FRONTEND_URL)
-                + "http://localhost:30002/sessions/reset-password?token=" + token + "\n\n"
+                + "http://localhost:30003/reset-password?token=" + token + "\n\n"
                 + "If you did not request this change, you can safely ignore this email.\n\n"
                 + "Best regards,\n"
                 + "— PartidosYa");
