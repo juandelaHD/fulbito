@@ -17,7 +17,7 @@ const fieldLabels: Record<string, string> = {
 };
 
 export const SignupScreen = () => {
-  const { mutate } = useSignup();
+  const { mutateAsync } = useSignup();
 
   const formData = useAppForm({
     defaultValues: {
@@ -54,7 +54,6 @@ export const SignupScreen = () => {
       if (!result.success) {
         return;
       }
-
       const payload = {
         firstName: result.data.firstName,
         lastName: result.data.lastName,
@@ -66,9 +65,8 @@ export const SignupScreen = () => {
         role: result.data.role,
         avatar: result.data.avatar instanceof File ? result.data.avatar : null,
       };
-
-      mutate(payload);
-    },
+      await mutateAsync(payload);
+      },
   });
 
   return (

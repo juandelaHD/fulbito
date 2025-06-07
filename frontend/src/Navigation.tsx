@@ -12,6 +12,7 @@ import { AdminHomePage } from "./screens/AdminHomePage";
 import { PlayerHomePage } from "./screens/PlayerHomePage";
 import { ForgotPasswordScreen } from "@/screens/ForgotPasswordScreen.tsx";
 import { ResetPasswordScreen } from "@/screens/ResetPasswordScreen.tsx";
+import { SignupInvitationScreen } from "@/screens/SignupWithInvitation.tsx";
 
 export const Navigation = () => {
   const [tokenState] = useToken();
@@ -63,7 +64,11 @@ export const Navigation = () => {
           <Route path="/reset-password">
             <ResetPasswordScreen />
           </Route>
+          <Route path="/invite/:token">
+            <SignupInvitationScreen />
+          </Route>
           <Route>
+            {/* DEFAULT */}
             <Redirect href="/signup" />
           </Route>
         </Switch>

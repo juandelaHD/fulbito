@@ -23,7 +23,7 @@ export function useSignup() {
   const [, setToken] = useToken();
 
   return useMutation({
-    mutationFn: async (req: SignupRequest) => {
+    mutationFn: async (req: SignupRequest & { invitationToken?: string }) => {
       const tokenData = await signupService(req);
       setToken({ state: "LOGGED_IN", ...tokenData });
     },
@@ -49,10 +49,10 @@ export async function loginService(req: LoginRequest) {
   return LoginResponseSchema.parse(json);
 }
 
-export async function signupService(req: SignupRequest) {
+export async function signupService(req: SignupRequest & { invitationToken?: string }) {
   const formData = new FormData();
 
-  formData.append("user", JSON.stringify({
+  const userPayload: any = {
     firstName: req.firstName,
     lastName: req.lastName,
     username: req.username,
@@ -61,7 +61,13 @@ export async function signupService(req: SignupRequest) {
     gender: req.gender,
     zone: req.zone,
     role: req.role,
-  }));
+  };
+
+  if (req.invitationToken) {
+    userPayload.invitationToken = req.invitationToken;
+  }
+
+  formData.append("user", JSON.stringify(userPayload));
 
   if (req.avatar instanceof File) {
     formData.append("avatar", req.avatar);
@@ -73,7 +79,7 @@ export async function signupService(req: SignupRequest) {
   });
 
   if (!response.ok) {
-    await handleErrorResponse(response, "in sign up")
+    await handleErrorResponse(response, "in sign up");
   }
 
   const json = await response.json();
