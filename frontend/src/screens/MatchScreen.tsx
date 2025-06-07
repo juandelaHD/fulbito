@@ -1,14 +1,12 @@
 import { useAppForm } from "@/config/use-app-form";
 import { CommonLayout } from "@/components/CommonLayout/CommonLayout";
-import { toast } from "react-hot-toast";
 import { CreateMatchSchema } from "@/models/CreateMatch";
-import { useCreateMatch, useAvailableFields } from "@/services/MatchServices";
+import { useCreateMatch } from "@/services/MatchServices";
+import { useAvailableFields } from "@/services/FieldServices";
 import "react-datepicker/dist/react-datepicker.css";
+import { toast } from "react-hot-toast";
 import DatePicker from "react-datepicker";
-import { format } from "date-fns"; // Agregá esto arriba si no lo tenés
-
-// TODO: Reemplazá esto por una forma real de obtener el usuario autenticado
-const organizerId = 1;
+import { format } from "date-fns";
 
 const matchLabels: Record<string, string> = {
   matchType: "Match Type",
@@ -21,8 +19,9 @@ const matchLabels: Record<string, string> = {
 };
 
 export const MatchScreen = () => {
-  const { mutate } = useCreateMatch();
-  const { fields, loadingFields } = useAvailableFields();
+  const { mutateAsync } = useCreateMatch();
+
+  const { fields, loadingFields} = useAvailableFields();
 
   const formData = useAppForm({
     defaultValues: {
@@ -54,16 +53,22 @@ export const MatchScreen = () => {
         const result = CreateMatchSchema.safeParse(value);
         if (!result.success) return;
 
+        const fieldId = parseInt(result.data.fieldId, 10);
+        console.log(fieldId);
+        if (isNaN(fieldId)) {
+          toast.error("Please select a field.", { duration: 5000 });
+          return;
+        }
+        console.log("Creating match with payload:", result.data);
         const payload = {
           ...result.data,
-          organizerId,
           fieldId: parseInt(result.data.fieldId, 10),
           date: format(result.data.date, "yyyy-MM-dd"),
           startTime: format(result.data.startTime, "yyyy-MM-dd'T'HH:mm:ss"),
           endTime: format(result.data.endTime, "yyyy-MM-dd'T'HH:mm:ss"),
         };
 
-        mutate(payload);
+        await mutateAsync(payload);
       },
   });
 
@@ -94,11 +99,14 @@ export const MatchScreen = () => {
                   label="Field"
                   options={
                     loadingFields
-                      ? [{ label: "Loading fields...", value: "" }]
-                      : fields.map((f) => ({
-                        label: f.name,
-                        value: f.id.toString(),
-                      }))
+                      ? [{ label: "No available fields", value: "" }]
+                      : [
+                        { label: "Select...", value: "" },
+                        ...fields.map((f) => ({
+                          label: f.name,
+                          value: f.id.toString(),
+                        })),
+                      ]
                   }
                 />
               )}

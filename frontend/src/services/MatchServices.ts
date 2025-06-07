@@ -1,13 +1,11 @@
 // MatchServices.ts (actualizado)
 import { useMutation } from "@tanstack/react-query";
 import { toast } from "react-hot-toast";
-import { useEffect, useState } from "react";
+
 import { BASE_API_URL } from "@/config/app-query-client";
 import { useToken } from "@/services/TokenContext";
 
 
-
-// ✅ Tipo final que espera el backend
 export type CreateMatchPayload = {
   matchType: string;
   fieldId: number;
@@ -16,7 +14,6 @@ export type CreateMatchPayload = {
   date: string; // yyyy-MM-dd
   startTime: string; // yyyy-MM-ddTHH:mm:ss
   endTime: string;
-  organizerId: number;
 };
 
 export function useCreateMatch() {
@@ -44,31 +41,4 @@ export function useCreateMatch() {
       return res.json();
     },
   });
-}
-
-export function useAvailableFields() {
-  const [fields, setFields] = useState<{ id: number; name: string }[]>([]);
-  const [loadingFields, setLoadingFields] = useState(true);
-  const [tokenState] = useToken();
-  const token = tokenState.state === "LOGGED_IN" ? tokenState.accessToken : "";
-
-  useEffect(() => {
-    const fetchFields = async () => {
-      try {
-        const res = await fetch(`${BASE_API_URL}/fields`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        if (!res.ok) throw new Error("Error fetching fields");
-        const data = await res.json();
-        setFields(data.map((f: any) => ({ id: f.id, name: f.name })));
-      } catch (e) {
-        toast.error("Error loading fields");
-      } finally {
-        setLoadingFields(false);
-      }
-    };
-    fetchFields();
-  }, [token]);
-
-  return { fields, loadingFields };
 }

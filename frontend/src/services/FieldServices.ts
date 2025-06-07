@@ -5,6 +5,7 @@ import {CreateFieldRequest, CreateFieldResponseSchema} from "@/models/CreateFiel
 import {useToken} from "@/services/TokenContext.tsx";
 import {handleErrorResponse} from "@/services/ApiUtils.ts";
 import {GetFieldsRequest, GetFieldsResponse, GetFieldsResponseSchema} from "@/models/GetFields.ts";
+import { useEffect, useState } from "react";
 
 export function useCreateField() {
     const [tokenState] = useToken();
@@ -61,7 +62,7 @@ export function useGetFields(filters: GetFieldsRequest) {
     const [, rawFilters] = queryKey;
     const filters = rawFilters as GetFieldsRequest;
 
-    console.log("🌐 Requesting fields with filters:", filters);
+    console.log("Requesting fields with filters:", filters);
 
     const params = new URLSearchParams();
     Object.entries(filters).forEach(([key, value]) => {
@@ -82,7 +83,7 @@ export function useGetFields(filters: GetFieldsRequest) {
 
         const json = await response.json();
 
-        console.log("✅ Fields response:", json);
+        console.log("Fields response:", json);
 
         if (!response.ok) {
           toast.error("Failed to fetch fields. Please try again later.");
@@ -91,10 +92,37 @@ export function useGetFields(filters: GetFieldsRequest) {
 
         return GetFieldsResponseSchema.parse(json);
       } catch (err) {
-        console.error("❌ Error fetching fields:", err);
+        console.error("Error fetching fields:", err);
         throw err;
       }
     },
     enabled: false,
   });
+}
+
+export function useAvailableFields() {
+  const [fields, setFields] = useState<{ id: number; name: string }[]>([]);
+  const [loadingFields, setLoadingFields] = useState(true);
+  const [tokenState] = useToken();
+  const token = tokenState.state === "LOGGED_IN" ? tokenState.accessToken : "";
+
+  useEffect(() => {
+    const fetchFields = async () => {
+      try {
+        const res = await fetch(`${BASE_API_URL}/fields`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (!res.ok) throw new Error("Error fetching fields");
+        const data = await res.json();
+        setFields(data.content.map((f: any) => ({ id: f.id, name: f.name })));
+      } catch (e) {
+        toast.error("Error loading fields");
+      } finally {
+        setLoadingFields(false);
+      }
+    };
+    fetchFields();
+  }, [token]);
+
+  return { fields, loadingFields };
 }
