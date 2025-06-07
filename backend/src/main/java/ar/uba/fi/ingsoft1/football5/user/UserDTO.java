@@ -24,7 +24,7 @@ public record UserDTO(
 
         @NotNull(message = "AvatarId must not be blank")
         @Schema(description = "Avatar's image Id", example = "1")
-        Long avatarId,
+        String avatarUrl,
 
         @NotBlank(message = "Zone must not be blank")
         @Schema(description = "Geographical or organizational zone of the user", example = "Buenos Aires")
@@ -52,7 +52,7 @@ public record UserDTO(
                 user.getFirstName(),
                 user.getLastName(),
                 user.getUsername(),
-                user.getAvatar() != null ? user.getAvatar().getId() : null,
+                "/images/" + user.getAvatar().getId(),
                 user.getZone(),
                 user.getAge(),
                 user.getGender(),

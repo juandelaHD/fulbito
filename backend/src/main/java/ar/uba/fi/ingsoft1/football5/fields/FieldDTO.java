@@ -11,7 +11,7 @@ public record FieldDTO(
         GrassType grassType,
         Boolean illuminated,
         Location location,
-        List<Long> imageIds,
+        List<String> imagesUrls,
         Map<String, Integer> matchesWithMissingPlayers
 ) {
     public FieldDTO(Field field) {
@@ -21,7 +21,7 @@ public record FieldDTO(
                     field.getGrassType(),
                     field.isIlluminated(),
                     field.getLocation(),
-                    field.getImages().stream().map(Image::getId).toList(),
+                    field.getImages().stream().map(image -> "/images/" + image.getId()).toList(),
                     null // No se solicitan los partidos abiertos
             );
     }
@@ -33,7 +33,7 @@ public record FieldDTO(
                 field.getGrassType(),
                 field.isIlluminated(),
                 field.getLocation(),
-                field.getImages().stream().map(Image::getId).toList(),
+                field.getImages().stream().map(image -> "/images/" + image.getId()).toList(),
                 openMatches // Se incluyen los partidos abiertos con jugadores faltantes
         );
     }
