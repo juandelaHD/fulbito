@@ -44,5 +44,15 @@ public class ImageController {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Image not found", e);
         }
     }
+
+    @DeleteMapping("/{id}")
+    @Operation(summary = "Delete an image by its Id")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @ApiResponse(responseCode = "204", description = "Image deleted successfully")
+    @ApiResponse(responseCode = "400", description = "Invalid image Id supplied", content = @Content)
+    @ApiResponse(responseCode = "404", description = "Image not found", content = @Content)
+    public void deleteImage(@Valid @PathVariable @Positive Long id) throws ItemNotFoundException {
+        imageService.deleteImage(id);
+    }
 }
 

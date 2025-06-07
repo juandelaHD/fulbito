@@ -61,4 +61,10 @@ public class ImageService {
                 .map(Image::getData)
                 .orElseThrow(() -> new ItemNotFoundException("image", id));
     }
+
+    public void deleteImage(Long id) throws ItemNotFoundException {
+        Image image = imageRepository.findById(id)
+                .orElseThrow(() -> new ItemNotFoundException("image", id));
+        imageRepository.delete(image);
+    }
 }
