@@ -18,7 +18,7 @@ public class PasswordResetService {
 
     @Transactional
     public PasswordResetToken createToken(User user) {
-        tokenRepo.deleteByUserId(user.getId()); // Elimina usando el ID
+        tokenRepo.deleteByUserId(user.getId());
         tokenRepo.flush();
         PasswordResetToken token = new PasswordResetToken();
         token.setToken(UUID.randomUUID().toString());
