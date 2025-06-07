@@ -50,26 +50,34 @@ export const MatchScreen = () => {
       },
     },
     onSubmit: async ({ value }) => {
-        const result = CreateMatchSchema.safeParse(value);
-        if (!result.success) return;
+      const result = CreateMatchSchema.safeParse(value);
+      if (!result.success) return;
 
-        const fieldId = parseInt(result.data.fieldId, 10);
-        console.log(fieldId);
-        if (isNaN(fieldId)) {
-          toast.error("Please select a field.", { duration: 5000 });
-          return;
-        }
-        console.log("Creating match with payload:", result.data);
-        const payload = {
-          ...result.data,
-          fieldId: parseInt(result.data.fieldId, 10),
-          date: format(result.data.date, "yyyy-MM-dd"),
-          startTime: format(result.data.startTime, "yyyy-MM-dd'T'HH:mm:ss"),
-          endTime: format(result.data.endTime, "yyyy-MM-dd'T'HH:mm:ss"),
-        };
+      const fieldId = parseInt(result.data.fieldId, 10);
+      const minPlayers = parseInt(result.data.minPlayers, 10);
+      const maxPlayers = parseInt(result.data.maxPlayers, 10);
 
-        await mutateAsync(payload);
-      },
+      if (isNaN(fieldId)) {
+        toast.error("Please select a field.", { duration: 5000 });
+        return;
+      }
+      if (isNaN(minPlayers) || isNaN(maxPlayers)) {
+        toast.error("Min/Max Players must be numbers.", { duration: 5000 });
+        return;
+      }
+
+      const payload = {
+        ...result.data,
+        fieldId,
+        minPlayers,
+        maxPlayers,
+        date: format(result.data.date, "yyyy-MM-dd"),
+        startTime: format(result.data.startTime, "yyyy-MM-dd'T'HH:mm:ss"),
+        endTime: format(result.data.endTime, "yyyy-MM-dd'T'HH:mm:ss"),
+      };
+
+      await mutateAsync(payload);
+    },
   });
 
   return (

@@ -67,6 +67,17 @@ class FieldRestController {
         return fieldService.getFieldsWithNonFilters(pageable);
     }
 
+    @GetMapping(path = "/owned", produces = "application/json")
+    @Operation(summary = "Get fields owned by the authenticated user")
+    @ApiResponse(responseCode = "200", description = "Owned fields retrieved successfully")
+    @PreAuthorize("hasRole('ADMIN')")
+    Page<FieldDTO> getOwnedFields(
+            @Valid @ParameterObject Pageable pageable,
+            @AuthenticationPrincipal JwtUserDetails userDetails
+    ) {
+        return fieldService.getOwnedFields(pageable, userDetails);
+    }
+
     @PostMapping(produces = "application/json", consumes = "multipart/form-data")
     @Operation(summary = "Create a new field")
     @ResponseStatus(HttpStatus.CREATED)
@@ -100,6 +111,28 @@ class FieldRestController {
             @AuthenticationPrincipal JwtUserDetails userDetails
     ) throws ItemNotFoundException {
         fieldService.deleteField(id, userDetails);
+    }
+
+    @PutMapping(path = "/{id}", produces = "application/json", consumes = "multipart/form-data")
+    @Operation(summary = "Update a field by ID")
+    @ResponseStatus(HttpStatus.OK)
+    @ApiResponse(responseCode = "200", description = "Field updated successfully")
+    @ApiResponse(responseCode = "404", description = "Field not found", content = @Content)
+    @ApiResponse(responseCode = "400", description = "Invalid field data supplied", content = @Content)
+    @PreAuthorize("hasRole('ADMIN')")
+    FieldDTO updateField(
+            @PathVariable("id") @Parameter(description = "ID of the field to update") Long id,
+            @RequestParam("field")
+            @Parameter(
+                    description = "FieldCreateDTO JSON payload",
+                    schema = @Schema(type = "string", format = "json", implementation = FieldCreateDTO.class)
+            ) String fieldJson,
+            @RequestPart(value = "images", required = false) List<MultipartFile> images,
+            @AuthenticationPrincipal JwtUserDetails userDetails
+    ) throws ItemNotFoundException, IllegalArgumentException, IOException {
+        ObjectMapper objectMapper = new ObjectMapper();
+        FieldCreateDTO fieldCreate = objectMapper.readValue(fieldJson, FieldCreateDTO.class);
+        return fieldService.updateField(id, fieldCreate, images, userDetails);
     }
 
     // --- Reviews Endpoints

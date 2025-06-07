@@ -5,8 +5,14 @@ import { MainScreen } from "@/screens/MainScreen";
 import { SignupScreen } from "@/screens/SignupScreen";
 import { CreateFieldScreen } from "@/screens/CreateFieldScreen"; 
 import { useToken } from "@/services/TokenContext";
+import OpenMatchesScreen from "@/screens/OpenMatchesScreen";
 import { FieldsScreen } from "@/screens/FieldsScreen";
 import { MatchScreen } from "./screens/MatchScreen";
+import { AdminHomePage } from "./screens/AdminHomePage";
+import { PlayerHomePage } from "./screens/PlayerHomePage";
+import { ForgotPasswordScreen } from "@/screens/ForgotPasswordScreen.tsx";
+import { ResetPasswordScreen } from "@/screens/ResetPasswordScreen.tsx";
+
 export const Navigation = () => {
   const [tokenState] = useToken();
   switch (tokenState.state) {
@@ -22,8 +28,17 @@ export const Navigation = () => {
           <Route path="/fields">
             <FieldsScreen />
           </Route>
+          <Route path="/open-matches">
+            <OpenMatchesScreen />
+          </Route>
           <Route path="/match">
             <MatchScreen />
+          </Route>
+          <Route path="/admin">
+            <AdminHomePage />
+          </Route>
+          <Route path="/player">
+            <PlayerHomePage />
           </Route>
           <Route>
             <Redirect href="/" />
@@ -41,6 +56,12 @@ export const Navigation = () => {
           </Route>
           <Route path="/signup">
             <SignupScreen />
+          </Route>
+          <Route path="/forgot-password">
+            <ForgotPasswordScreen />
+          </Route>
+          <Route path="/reset-password">
+            <ResetPasswordScreen />
           </Route>
           <Route>
             <Redirect href="/signup" />

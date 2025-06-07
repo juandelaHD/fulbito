@@ -19,4 +19,12 @@ public record FieldCreateDTO(
     public Field asField(Long id, User owner) {
         return new Field(id, this.name, this.grassType, this.illuminated, new Location(this.zone, this.address), owner);
     }
+
+    public Field adUpdatedField(Field existing) {
+        existing.setName(this.name().toLowerCase());
+        existing.setGrassType(this.grassType());
+        existing.setIlluminated(this.illuminated());
+        existing.setLocation(new Location(this.zone().toLowerCase(), this.address().toLowerCase()));
+        return existing;
+    }
 }

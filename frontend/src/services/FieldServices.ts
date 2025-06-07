@@ -85,6 +85,15 @@ export function useGetFields(filters: GetFieldsRequest) {
 
         console.log("Fields response:", json);
 
+        const parsed = GetFieldsResponseSchema.parse(json);
+
+        if (parsed.content.length === 0) {
+        toast("No fields matched your search.", {
+            icon: "ℹ️",
+            duration: 4000,
+        });
+        }
+
         if (!response.ok) {
           toast.error("Failed to fetch fields. Please try again later.");
           throw new Error(json.message || "Unknown error");

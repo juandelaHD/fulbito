@@ -19,6 +19,7 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -132,5 +133,27 @@ class ImageServiceTest {
         );
 
         assertEquals("Failed to find image with id '1'", exception.getMessage());
+    }
+
+    @Test
+    void deleteImage_whenImageNotFound_throwsItemNotFoundException() {
+        when(imageRepository.findById(anyLong())).thenReturn(Optional.empty());
+
+        ItemNotFoundException exception = assertThrows(ItemNotFoundException.class, () ->
+            imageService.deleteImage(1L)
+        );
+
+        assertEquals("Failed to find image with id '1'", exception.getMessage());
+    }
+
+    @Test
+    void deleteImage_whenImageExists_deletesImage() throws ItemNotFoundException {
+        Image image = new Image(new byte[]{1, 2, 3}, owner);
+        image.setId(1L);
+
+        when(imageRepository.findById(anyLong())).thenReturn(Optional.of(image));
+
+        imageService.deleteImage(1L);
+        verify(imageRepository).delete(image);
     }
 }
