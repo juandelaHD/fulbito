@@ -5,10 +5,10 @@ import ar.uba.fi.ingsoft1.football5.common.exception.UserNotFoundException;
 import ar.uba.fi.ingsoft1.football5.config.security.JwtUserDetails;
 import ar.uba.fi.ingsoft1.football5.fields.Field;
 import ar.uba.fi.ingsoft1.football5.fields.FieldService;
+import ar.uba.fi.ingsoft1.football5.images.AvatarImage;
 import ar.uba.fi.ingsoft1.football5.user.User;
 import ar.uba.fi.ingsoft1.football5.user.UserService;
 import ar.uba.fi.ingsoft1.football5.user.Role;
-import ar.uba.fi.ingsoft1.football5.images.Image;
 
 import ar.uba.fi.ingsoft1.football5.user.email.EmailSenderService;
 import org.junit.jupiter.api.BeforeEach;
@@ -74,7 +74,7 @@ class MatchServiceTest {
  
     @Test
     void testJoinOpenMatch_successful() throws Exception {
-        Image mockAvatar = mock(Image.class);
+        AvatarImage mockAvatar = mock(AvatarImage.class);
         when(mockAvatar.getId()).thenReturn(123L);
         user.setAvatar(mockAvatar);
 
@@ -165,7 +165,7 @@ class MatchServiceTest {
 
     @Test
     void testJoinOpenMatch_saveIsCalled() throws Exception {
-        Image mockAvatar = mock(Image.class);
+        AvatarImage mockAvatar = mock(AvatarImage.class);
         when(mockAvatar.getId()).thenReturn(123L);
         user.setAvatar(mockAvatar);
 
