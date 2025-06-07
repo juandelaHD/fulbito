@@ -1,6 +1,7 @@
 package ar.uba.fi.ingsoft1.football5.images;
 
 import ar.uba.fi.ingsoft1.football5.common.exception.ItemNotFoundException;
+import ar.uba.fi.ingsoft1.football5.config.security.JwtUserDetails;
 import ar.uba.fi.ingsoft1.football5.fields.Field;
 import ar.uba.fi.ingsoft1.football5.user.User;
 import org.springframework.beans.factory.annotation.Value;
@@ -19,12 +20,16 @@ import java.util.List;
 public class ImageService {
 
     private final ImageRepository imageRepository;
+    private final AvatarImageService avatarImageService;
+    private final FieldImageService fieldImageService;
 
     @Value("${app.images.path}")
     private String storagePath;
 
-    public ImageService(ImageRepository imageRepository) {
+    public ImageService(ImageRepository imageRepository, AvatarImageService avatarImageService, FieldImageService fieldImageService) {
         this.imageRepository = imageRepository;
+        this.avatarImageService = avatarImageService;
+        this.fieldImageService = fieldImageService;
     }
 
     public void saveImages(Field field, List<MultipartFile> images) throws IOException {
@@ -42,8 +47,8 @@ public class ImageService {
         byte[] data;
 
         if (file == null || file.isEmpty()) {
-            Path path_img = Paths.get(storagePath, "default_profile.webp");
-            data = Files.readAllBytes(path_img);
+            Path pathImg = Paths.get(storagePath, "default_profile.webp");
+            data = Files.readAllBytes(pathImg);
         } else {
             data = file.getBytes();
         }
@@ -62,9 +67,13 @@ public class ImageService {
                 .orElseThrow(() -> new ItemNotFoundException("image", id));
     }
 
-    public void deleteImage(Long id) throws ItemNotFoundException {
+    public void deleteImage(Long id, JwtUserDetails userDetails) throws ItemNotFoundException {
         Image image = imageRepository.findById(id)
                 .orElseThrow(() -> new ItemNotFoundException("image", id));
+
+        avatarImageService.validateAvatarOwnership(image, userDetails);
+        fieldImageService.validateFieldImageOwnership(image, userDetails);
+
         imageRepository.delete(image);
     }
 }

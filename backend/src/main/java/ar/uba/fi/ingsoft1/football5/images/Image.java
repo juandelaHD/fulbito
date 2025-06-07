@@ -16,12 +16,12 @@ public class Image {
     private byte[] data;
 
     @JsonBackReference("field-image")
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne
     @JoinColumn(name = "field_id")
     private Field field;
 
     @JsonBackReference("user-image")
-    @OneToOne(fetch = FetchType.LAZY)
+    @OneToOne
     @JoinColumn(name = "user_id")
     private User user;
 

@@ -1,6 +1,7 @@
 package ar.uba.fi.ingsoft1.football5.images;
 
 import ar.uba.fi.ingsoft1.football5.common.exception.ItemNotFoundException;
+import ar.uba.fi.ingsoft1.football5.config.security.JwtUserDetails;
 import ar.uba.fi.ingsoft1.football5.fields.Field;
 import ar.uba.fi.ingsoft1.football5.fields.GrassType;
 import ar.uba.fi.ingsoft1.football5.fields.Location;
@@ -29,10 +30,19 @@ class ImageServiceTest {
     private ImageRepository imageRepository;
 
     @Mock
-    private User owner;
+    private AvatarImageService avatarImageService;
+
+    @Mock
+    private FieldImageService fieldImageService;
 
     @InjectMocks
     private ImageService imageService;
+
+    @Mock
+    private JwtUserDetails userDetails;
+
+    @Mock
+    private User owner;
 
     @Test
     void saveImages_whenImagesIsNull_doNotSaveAnything() throws IOException {
@@ -140,7 +150,7 @@ class ImageServiceTest {
         when(imageRepository.findById(anyLong())).thenReturn(Optional.empty());
 
         ItemNotFoundException exception = assertThrows(ItemNotFoundException.class, () ->
-            imageService.deleteImage(1L)
+            imageService.deleteImage(1L, userDetails)
         );
 
         assertEquals("Failed to find image with id '1'", exception.getMessage());
@@ -153,7 +163,7 @@ class ImageServiceTest {
 
         when(imageRepository.findById(anyLong())).thenReturn(Optional.of(image));
 
-        imageService.deleteImage(1L);
+        imageService.deleteImage(1L, userDetails);
         verify(imageRepository).delete(image);
     }
 }
