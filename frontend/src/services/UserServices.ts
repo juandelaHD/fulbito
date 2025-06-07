@@ -4,7 +4,9 @@ import { BASE_API_URL } from "@/config/app-query-client";
 import { useToken } from "@/services/TokenContext";
 import { LoginRequest, LoginResponseSchema } from "@/models/Login";
 import { SignupRequest, SignupResponseSchema } from "@/models/Signup";
+import { ForgotPasswordRequest, ForgotPasswordRequestSchema, ResetPasswordRequest, ResetPasswordRequestSchema } from "@/models/PasswordReset";
 import {handleErrorResponse} from "@/services/ApiUtils.ts";
+
 
 export function useLogin() {
   const [, setToken] = useToken();
@@ -77,4 +79,33 @@ export async function signupService(req: SignupRequest) {
   const json = await response.json();
   toast.success("User created successfully!");
   return SignupResponseSchema.parse(json);
+}
+
+export async function forgotPasswordService(req: ForgotPasswordRequest) {
+  // Validar antes de enviar
+  ForgotPasswordRequestSchema.parse(req);
+
+  const response = await fetch(`${BASE_API_URL}/sessions/forgot-password`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(req),
+  });
+
+  if (!response.ok) {
+    await handleErrorResponse(response, "in forgot password");
+  }
+}
+
+export async function resetPasswordService(req: ResetPasswordRequest) {
+  ResetPasswordRequestSchema.parse(req);
+
+  const response = await fetch(`${BASE_API_URL}/sessions/reset-password`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(req),
+  });
+
+  if (!response.ok) {
+    await handleErrorResponse(response, "in reset password");
+  }
 }

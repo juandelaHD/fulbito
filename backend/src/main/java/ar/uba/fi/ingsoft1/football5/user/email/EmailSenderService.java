@@ -41,4 +41,14 @@ public class EmailSenderService {
     public void sendMailToVerifyMatch(String recipientEmailAddress, LocalDate date, LocalDateTime startDate, LocalDateTime endDate){
         this.sendMail(recipientEmailAddress, new MatchConfirmationMailWriter(date,startDate,endDate));
     }
+
+    public void sendPasswordResetMail(String recipientEmailAddress, String token) {
+        this.sendMail(recipientEmailAddress, new PasswordResetMailWriter(token));
+    }
+
+    public void sendPasswordChangedMail(String recipientEmailAddress) {
+        this.sendMail(recipientEmailAddress, new PasswordChangeMailWriter());
+    }
+
+
 }
