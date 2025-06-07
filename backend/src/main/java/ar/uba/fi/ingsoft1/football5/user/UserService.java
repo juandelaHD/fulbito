@@ -77,7 +77,7 @@ public class UserService implements UserDetailsService {
         user.setEmailConfirmed(false);
 
         User savedUser = userRepository.save(user);
-        imageService.saveImage(savedUser, avatar);
+        imageService.saveAvatarImage(savedUser, avatar);
 
         String token = UUID.randomUUID().toString();
         user.setEmailConfirmationToken(token);
