@@ -33,7 +33,7 @@ public class ImageController {
     @ApiResponse(responseCode = "400", description = "Invalid image Id supplied", content = @Content)
     @ApiResponse(responseCode = "404", description = "Image not found", content = @Content)
     public ResponseEntity<byte[]> getImage(@Valid @PathVariable @Positive Long id
-    )  throws ItemNotFoundException {
+    ) {
         try {
             // Attempt to retrieve the image data
             byte[] imageData = imageService.getImageData(id);

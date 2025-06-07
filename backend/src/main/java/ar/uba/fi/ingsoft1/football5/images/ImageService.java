@@ -3,7 +3,10 @@ package ar.uba.fi.ingsoft1.football5.images;
 import ar.uba.fi.ingsoft1.football5.common.exception.ItemNotFoundException;
 import ar.uba.fi.ingsoft1.football5.config.security.JwtUserDetails;
 import ar.uba.fi.ingsoft1.football5.fields.Field;
+import ar.uba.fi.ingsoft1.football5.fields.FieldRepository;
 import ar.uba.fi.ingsoft1.football5.user.User;
+import ar.uba.fi.ingsoft1.football5.user.UserRepository;
+import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,31 +22,36 @@ import java.util.List;
 @Transactional
 public class ImageService {
 
+    private final String storagePath;
     private final ImageRepository imageRepository;
-    private final AvatarImageService avatarImageService;
-    private final FieldImageService fieldImageService;
+    private final UserRepository userRepository;
+    private final FieldRepository fieldRepository;
 
-    @Value("${app.images.path}")
-    private String storagePath;
-
-    public ImageService(ImageRepository imageRepository, AvatarImageService avatarImageService, FieldImageService fieldImageService) {
-        this.imageRepository = imageRepository;
-        this.avatarImageService = avatarImageService;
-        this.fieldImageService = fieldImageService;
+    @PostConstruct
+    public void injectRepositories() {
+        AvatarImage.injectRepository(userRepository);
+        FieldImage.injectRepositories(fieldRepository, userRepository);
     }
 
-    public void saveImages(Field field, List<MultipartFile> images) throws IOException {
+    public ImageService(@Value("${app.images.path}") String storagePath, ImageRepository imageRepository, UserRepository userRepository, FieldRepository fieldRepository) {
+        this.storagePath = storagePath;
+        this.imageRepository = imageRepository;
+        this.userRepository = userRepository;
+        this.fieldRepository = fieldRepository;
+    }
+
+    public void saveFieldImages(Field field, List<MultipartFile> images) throws IOException {
         if (images != null) {
             for (MultipartFile file : images) {
                 byte[] data = file.getBytes();
-                Image image = new Image(data, field);
+                FieldImage image = new FieldImage(data, field);
                 image = imageRepository.save(image);
                 field.getImages().add(image);
             }
         }
     }
 
-    public void saveImage(User user, MultipartFile file) throws IOException {
+    public void saveAvatarImage(User user, MultipartFile file) throws IOException {
         byte[] data;
 
         if (file == null || file.isEmpty()) {
@@ -53,7 +61,7 @@ public class ImageService {
             data = file.getBytes();
         }
 
-        Image image = new Image(data, user);
+        AvatarImage image = new AvatarImage(data, user);
         image = imageRepository.save(image);
         user.setAvatar(image);
     }
@@ -71,8 +79,7 @@ public class ImageService {
         Image image = imageRepository.findById(id)
                 .orElseThrow(() -> new ItemNotFoundException("image", id));
 
-        avatarImageService.validateAvatarOwnership(image, userDetails);
-        fieldImageService.validateFieldImageOwnership(image, userDetails);
+        image.validateOwnership(userDetails);
 
         imageRepository.delete(image);
     }

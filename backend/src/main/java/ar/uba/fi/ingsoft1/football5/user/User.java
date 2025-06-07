@@ -1,5 +1,6 @@
 package ar.uba.fi.ingsoft1.football5.user;
 
+import ar.uba.fi.ingsoft1.football5.images.AvatarImage;
 import ar.uba.fi.ingsoft1.football5.images.Image;
 import ar.uba.fi.ingsoft1.football5.matches.Match;
 import com.fasterxml.jackson.annotation.JsonBackReference;
@@ -35,7 +36,7 @@ public class User implements UserDetails, UserCredentials {
 
     @JsonManagedReference("user-image")
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-    private Image avatar;
+    private AvatarImage avatar;
 
     @Column(nullable = false)
     private String zone;
@@ -133,7 +134,7 @@ public class User implements UserDetails, UserCredentials {
         return avatar;
     }
 
-    public void setAvatar(Image avatar) {
+    public void setAvatar(AvatarImage avatar) {
         this.avatar = avatar;
     }
 

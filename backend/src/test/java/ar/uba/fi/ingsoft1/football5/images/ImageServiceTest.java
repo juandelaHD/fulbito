@@ -3,9 +3,12 @@ package ar.uba.fi.ingsoft1.football5.images;
 import ar.uba.fi.ingsoft1.football5.common.exception.ItemNotFoundException;
 import ar.uba.fi.ingsoft1.football5.config.security.JwtUserDetails;
 import ar.uba.fi.ingsoft1.football5.fields.Field;
+import ar.uba.fi.ingsoft1.football5.fields.FieldRepository;
 import ar.uba.fi.ingsoft1.football5.fields.GrassType;
 import ar.uba.fi.ingsoft1.football5.fields.Location;
 import ar.uba.fi.ingsoft1.football5.user.User;
+import ar.uba.fi.ingsoft1.football5.user.UserRepository;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -15,9 +18,15 @@ import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.net.URISyntaxException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
+import static ar.uba.fi.ingsoft1.football5.user.Role.USER;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.verify;
@@ -29,14 +38,14 @@ class ImageServiceTest {
     @Mock
     private ImageRepository imageRepository;
 
-    @Mock
-    private AvatarImageService avatarImageService;
-
-    @Mock
-    private FieldImageService fieldImageService;
-
     @InjectMocks
     private ImageService imageService;
+
+    @Mock
+    private UserRepository userRepository;
+
+    @Mock
+    private FieldRepository fieldRepository;
 
     @Mock
     private JwtUserDetails userDetails;
@@ -44,49 +53,60 @@ class ImageServiceTest {
     @Mock
     private User owner;
 
+    private String storagePath;
+
+    @BeforeEach
+    void setUp() throws URISyntaxException {
+        Path defaultImgPath = Paths.get(Objects.requireNonNull(getClass().getClassLoader()
+                .getResource("default_profile.webp")).toURI());
+        storagePath = defaultImgPath.getParent().toString();
+
+        imageService = new ImageService(storagePath, imageRepository, userRepository, fieldRepository);
+
+        AvatarImage.injectRepository(userRepository);
+        FieldImage.injectRepositories(fieldRepository, userRepository);
+    }
+
     @Test
-    void saveImages_whenImagesIsNull_doNotSaveAnything() throws IOException {
+    void saveFieldImages_whenFieldImagesIsNull_doNotSaveAnything() throws IOException {
         Field field = new Field(1L, "field 1", GrassType.NATURAL_GRASS, true,
                 new Location("zone b", "address 2"), owner);
 
-        imageService.saveImages(field, null);
-
+        imageService.saveFieldImages(field, null);
         assertTrue(field.getImages().isEmpty());
     }
 
     @Test
-    void saveImages_whenImagesIsEmpty_doNotSaveAnything() throws IOException {
+    void saveFieldImages_whenFieldImagesIsEmpty_doNotSaveAnything() throws IOException {
         Field field = new Field(1L, "field 1", GrassType.NATURAL_GRASS, true,
                 new Location("zone b", "address 2"), owner);
 
-        imageService.saveImages(field, List.of());
-
+        imageService.saveFieldImages(field, List.of());
         assertTrue(field.getImages().isEmpty());
     }
 
     @Test
-    void saveImages_whenOneImage_saveImage() throws IOException {
+    void saveFieldImages_whenOneFieldImage_saveFieldImage() throws IOException {
         Field field = new Field(1L, "field 1", GrassType.NATURAL_GRASS, true,
                 new Location("zone b", "address 2"), owner);
 
         byte[] imageData = new byte[]{1, 2, 3};
         MultipartFile file = new MockMultipartFile("file", imageData);
 
-        Image image = new Image(imageData, field);
+        FieldImage image = new FieldImage(imageData, field);
         image.setId(1L);
         when(imageRepository.save(any())).thenReturn(image);
 
-        imageService.saveImages(field, List.of(file));
+        imageService.saveFieldImages(field, List.of(file));
 
         assertEquals(1, field.getImages().size());
-        Image firstImage = field.getImages().getFirst();
-        assertArrayEquals(imageData, firstImage.getData());
-        assertEquals(1L, firstImage.getId());
-        assertEquals(field, firstImage.getField());
+
+        FieldImage firstImage = field.getImages().getFirst();
+        assertEquals(image, firstImage);
     }
 
     @Test
-    void saveImages_whenManyImages_saveImages() throws IOException {
+    void saveFieldImages_whenManyFieldImages_saveFieldImages() throws IOException {
         Field field = new Field(1L, "field 1", GrassType.NATURAL_GRASS, true,
                 new Location("zone b", "address 2"), owner);
 
@@ -96,35 +116,80 @@ class ImageServiceTest {
         MultipartFile file1 = new MockMultipartFile("file1", imageData1);
         MultipartFile file2 = new MockMultipartFile("file2", imageData2);
 
-        Image image1 = new Image(imageData1, field);
+        FieldImage image1 = new FieldImage(imageData1, field);
         image1.setId(1L);
 
-        Image image2 = new Image(imageData2, field);
+        FieldImage image2 = new FieldImage(imageData2, field);
         image2.setId(2L);
 
         when(imageRepository.save(any(Image.class)))
                 .thenReturn(image1)
                 .thenReturn(image2);
 
-        imageService.saveImages(field, List.of(file1, file2));
+        imageService.saveFieldImages(field, List.of(file1, file2));
 
         assertEquals(2, field.getImages().size());
 
-        Image firstImage = field.getImages().getFirst();
-        assertArrayEquals(imageData1, firstImage.getData());
-        assertEquals(1L, firstImage.getId());
-        assertEquals(field, firstImage.getField());
+        FieldImage firstImage = field.getImages().getFirst();
+        assertEquals(image1, firstImage);
 
-        Image secondImage = field.getImages().get(1);
-        assertArrayEquals(imageData2, secondImage.getData());
-        assertEquals(2L, secondImage.getId());
-        assertEquals(field, secondImage.getField());
+        FieldImage secondImage = field.getImages().get(1);
+        assertEquals(image2, secondImage);
     }
 
     @Test
-    void getImageData_whenImageExists_returnsImageData() throws ItemNotFoundException {
+    void saveAvatarImage_whenAvatarImageIsNull_saveDefaultAvatarImage() throws IOException {
+        User user = new User("test-user", "test", "test", "F", "Zone", 22, "", USER);
+        Path pathImg = Paths.get(storagePath, "default_profile.webp");
+        byte[] data = Files.readAllBytes(pathImg);
+
+        AvatarImage avatarImage = new AvatarImage(data, user);
+
+        when(imageRepository.save(any())).thenReturn(avatarImage);
+
+        imageService.saveAvatarImage(user, null);
+
+        assertEquals(avatarImage, user.getAvatar());
+    }
+
+    @Test
+    void saveAvatarImage_whenAvatarImage_saveAvatarImage() throws IOException {
+        User user = new User("test-user", "test", "test", "F", "Zone", 22, "", USER);
+
         byte[] imageData = new byte[]{1, 2, 3};
-        Image image = new Image(imageData, owner);
+        MultipartFile file = new MockMultipartFile("file", imageData);
+
+        AvatarImage avatar = new AvatarImage(imageData, user);
+        avatar.setId(1L);
+        when(imageRepository.save(any())).thenReturn(avatar);
+
+        imageService.saveAvatarImage(user, file);
+
+        assertEquals(avatar, user.getAvatar());
+    }
+
+    @Test
+     void getImageData_whenFieldImageExists_returnsFieldImageData() throws ItemNotFoundException {
+        Field field = new Field(1L, "field 1", GrassType.NATURAL_GRASS, true,
+                new Location("zone b", "address 2"), owner);
+
+        byte[] imageData = new byte[]{1, 2, 3};
+        FieldImage image = new FieldImage(imageData, field);
+        image.setId(1L);
+
+        when(imageRepository.findById(anyLong())).thenReturn(Optional.of(image));
+
+        byte[] result = imageService.getImageData(1L);
+
+        assertArrayEquals(imageData, result);
+    }
+
+    @Test
+    void getImageData_whenAvatarImageExists_returnsAvatarImageData() throws ItemNotFoundException {
+        User user = new User("test-user", "test", "test", "F", "Zone", 22, "", USER);
+
+        byte[] imageData = new byte[]{1, 2, 3};
+        AvatarImage image = new AvatarImage(imageData, user);
         image.setId(1L);
 
         when(imageRepository.findById(anyLong())).thenReturn(Optional.of(image));
@@ -157,11 +222,36 @@ class ImageServiceTest {
     }
 
     @Test
-    void deleteImage_whenImageExists_deletesImage() throws ItemNotFoundException {
-        Image image = new Image(new byte[]{1, 2, 3}, owner);
+    void deleteImage_whenAvatarImageExists_deletesAvatarImage() throws ItemNotFoundException {
+        User user = new User("test-user", "test", "test", "F", "Zone", 22, "", USER);
+
+        AvatarImage image = new AvatarImage(new byte[]{1, 2, 3}, user);
         image.setId(1L);
 
         when(imageRepository.findById(anyLong())).thenReturn(Optional.of(image));
+
+        when(userDetails.username()).thenReturn("test-user");
+        when(userRepository.findByUsername("test-user")).thenReturn(Optional.of(user));
+
+        imageService.deleteImage(1L, userDetails);
+        verify(imageRepository).delete(image);
+    }
+
+    @Test
+    void deleteImage_whenFieldImageExists_deletesFieldImage() throws ItemNotFoundException {
+        Field field = new Field(1L, "field 1", GrassType.NATURAL_GRASS, true,
+                new Location("zone b", "address 2"), owner);
+
+        FieldImage image = new FieldImage(new byte[]{1, 2, 3}, field);
+        image.setId(1L);
+
+        when(imageRepository.findById(anyLong())).thenReturn(Optional.of(image));
+
+        when(userDetails.username()).thenReturn("test-user");
+        when(owner.getUsername()).thenReturn("test-user");
+        when(userRepository.findByUsername("test-user")).thenReturn(Optional.of(owner));
+
+        when(fieldRepository.findById(1L)).thenReturn(Optional.of(field));
 
         imageService.deleteImage(1L, userDetails);
         verify(imageRepository).delete(image);

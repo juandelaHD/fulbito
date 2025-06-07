@@ -51,7 +51,7 @@ public class FieldService {
 
         User owner = userService.loadUserByUsername(userDetails.username());
         Field field = fieldRepository.save(fieldCreate.asField(owner));
-        imageService.saveImages(field, images);
+        imageService.saveFieldImages(field, images);
 
         return new FieldDTO(field);
     }
@@ -95,7 +95,7 @@ public class FieldService {
         validateUniqueLocation(fieldCreate, id);
 
         Field saved = fieldRepository.save(fieldCreate.adUpdatedField(field));
-        imageService.saveImages(saved, images);
+        imageService.saveFieldImages(saved, images);
         return new FieldDTO(saved);
     }
 
