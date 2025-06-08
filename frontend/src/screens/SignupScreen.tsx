@@ -4,7 +4,7 @@ import { useSignup } from "@/services/UserServices";
 import { SignupRequestSchema } from "@/models/Signup";
 import { toast } from "react-hot-toast";
 import { FileInput } from "@/components/form-components/FileInput/FileInput";
-import {Link, useLocation} from "wouter";
+import {useLocation} from "wouter";
 
 const fieldLabels: Record<string, string> = {
   firstName: "First Name",
@@ -157,11 +157,11 @@ export const SignupScreen = () => {
                   </formData.AppField>
                   <formData.AppField name="avatar">
                     {(field) => (
-                      <FileInput
-                        label="Avatar"
-                        accept="image/*"
-                        onChange={(file) => field.handleChange(() => file)}
-                      />
+                        <FileInput
+                            label="Avatar"
+                            accept="image/*"
+                            onChange={(file) => field.handleChange(() => file)}
+                        />
                     )}
                   </formData.AppField>
                 </formData.FormContainer>
@@ -170,9 +170,9 @@ export const SignupScreen = () => {
           </div>
           <div className="text-center text-sm font-light text-green-800 mt-4">
             Already have an account?{" "}
-            <Link href="/login" className="font-medium text-green-700 hover:underline">
-              Log in
-            </Link>
+            <a href="/login" className="font-medium text-green-700 hover:underline">
+              Log In
+            </a>
           </div>
         </section>
       </CommonLayout>
