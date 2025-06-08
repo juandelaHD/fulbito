@@ -143,7 +143,7 @@ public class FieldService {
         // TODO: When adding schedules, we must check that the match is not scheduled in the future (SCHEDULED + Future Time)
     }
 
-    private void validateOwnership(Field field, JwtUserDetails userDetails) {
+    public void validateOwnership(Field field, JwtUserDetails userDetails) {
         if (!field.getOwner().getUsername().equalsIgnoreCase(userDetails.username())) {
             throw new AccessDeniedException(String.format("User does not have access to field with id '%s'.", field.getId()));
         }

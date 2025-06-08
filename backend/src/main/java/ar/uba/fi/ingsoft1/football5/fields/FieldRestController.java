@@ -6,6 +6,9 @@ import ar.uba.fi.ingsoft1.football5.fields.filters.FieldFiltersDTO;
 import ar.uba.fi.ingsoft1.football5.fields.reviews.ReviewCreateDTO;
 import ar.uba.fi.ingsoft1.football5.fields.reviews.ReviewDTO;
 import ar.uba.fi.ingsoft1.football5.fields.reviews.ReviewService;
+import ar.uba.fi.ingsoft1.football5.fields.schedules.ScheduleCreateDTO;
+import ar.uba.fi.ingsoft1.football5.fields.schedules.ScheduleDTO;
+import ar.uba.fi.ingsoft1.football5.fields.schedules.ScheduleService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -34,11 +37,13 @@ class FieldRestController {
 
     private final FieldService fieldService;
     private final ReviewService reviewService;
+    private final ScheduleService scheduleService;
 
     @Autowired
-    FieldRestController(FieldService fieldService, ReviewService reviewService) {
+    FieldRestController(FieldService fieldService, ReviewService reviewService, ScheduleService scheduleService) {
         this.fieldService = fieldService;
         this.reviewService = reviewService;
+        this.scheduleService = scheduleService;
     }
 
     @GetMapping(path = "/filters", produces = "application/json")
@@ -162,6 +167,35 @@ class FieldRestController {
             @AuthenticationPrincipal JwtUserDetails userDetails
     ) throws ItemNotFoundException {
         return reviewService.createReview(reviewCreateDTO, fieldId, userDetails);
+    }
+
+    // --- Schedules endpoints
+
+    @PostMapping(path = "/{id}/schedules", produces = "application/json")
+    @Operation(summary = "Create a schedule for a field")
+    @ResponseStatus(HttpStatus.CREATED)
+    @ApiResponse(responseCode = "201", description = "Schedule created successfully")
+    @ApiResponse(responseCode = "404", description = "Field not found", content = @Content)
+    @ApiResponse(responseCode = "400", description = "Invalid schedule data supplied", content = @Content)
+    @PreAuthorize("hasRole('ADMIN')")
+    List<ScheduleDTO> createSchedule(
+            @PathVariable("id") @Parameter(description = "ID of the field to schedule") Long fieldId,
+            @Valid @RequestBody ScheduleCreateDTO scheduleCreate,
+            @AuthenticationPrincipal JwtUserDetails userDetails
+    ) throws ItemNotFoundException {
+        return scheduleService.createSchedule(fieldId, scheduleCreate, userDetails);
+    }
+
+    @GetMapping(path = "/{id}/schedules", produces = "application/json")
+    @Operation(summary = "Get schedules for a field by ID")
+    @ResponseStatus(HttpStatus.OK)
+    @ApiResponse(responseCode = "200", description = "Schedules retrieved successfully")
+    @ApiResponse(responseCode = "404", description = "Field not found", content = @Content)
+    Page<List<ScheduleDTO>> getSchedulesByFieldId(
+            @Valid @ParameterObject Pageable pageable,
+            @PathVariable("id") @Parameter(description = "ID of the field") Long fieldId
+    ) throws ItemNotFoundException {
+        return scheduleService.getSchedulesByFieldId(fieldId, pageable);
     }
 }
 
