@@ -149,7 +149,8 @@ class FieldServiceTest {
                 fieldService.deleteField(1L, userDetails)
         );
 
-        assertEquals("Field with id '1' cannot be updated/deleted because it has active matches.", exception.getMessage());
+        assertEquals("Field with id '1' cannot be deleted because it has active matches, " +
+                "but you can disable the field.", exception.getMessage());
     }
 
     @Test
