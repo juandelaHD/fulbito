@@ -61,18 +61,13 @@ export function useGetFields(filters: GetFieldsRequest) {
     queryFn: async ({ queryKey }) => {
     const [, rawFilters] = queryKey;
     const filters = rawFilters as GetFieldsRequest;
-
-    console.log("Requesting fields with filters:", filters);
-
     const params = new URLSearchParams();
     Object.entries(filters).forEach(([key, value]) => {
         if (value !== undefined && value !== "") {
         params.append(key, String(value));
         }
     });
-
       const url = `${BASE_API_URL}/fields/filters?${params.toString()}`;
-
       try {
         const response = await fetch(url, {
           headers: {
@@ -80,25 +75,18 @@ export function useGetFields(filters: GetFieldsRequest) {
             Accept: "application/json",
           },
         });
-
         const json = await response.json();
-
-        console.log("Fields response:", json);
-
         const parsed = GetFieldsResponseSchema.parse(json);
-
         if (parsed.content.length === 0) {
         toast("No fields matched your search.", {
             icon: "ℹ️",
             duration: 4000,
         });
         }
-
         if (!response.ok) {
           toast.error("Failed to fetch fields. Please try again later.");
           throw new Error(json.message || "Unknown error");
         }
-
         return GetFieldsResponseSchema.parse(json);
       } catch (err) {
         console.error("Error fetching fields:", err);
@@ -109,11 +97,9 @@ export function useGetFields(filters: GetFieldsRequest) {
   });
 }
 
-export function useAvailableFields() {
-  const [fields, setFields] = useState<{ id: number; name: string }[]>([]);
+export function useAvailableFields(token: string) {
+  const [fields, setFields] = useState<Record<number, string>>({});
   const [loadingFields, setLoadingFields] = useState(true);
-  const [tokenState] = useToken();
-  const token = tokenState.state === "LOGGED_IN" ? tokenState.accessToken : "";
 
   useEffect(() => {
     const fetchFields = async () => {
@@ -123,7 +109,11 @@ export function useAvailableFields() {
         });
         if (!res.ok) throw new Error("Error fetching fields");
         const data = await res.json();
-        setFields(data.content.map((f: any) => ({ id: f.id, name: f.name })));
+        const dict: Record<number, string> = {};
+        data.content.forEach((f: any) => {
+          dict[f.id] = f.name;
+        });
+        setFields(dict)
       } catch (e) {
         toast.error("Error loading fields");
       } finally {
@@ -134,4 +124,23 @@ export function useAvailableFields() {
   }, [token]);
 
   return { fields, loadingFields };
+}
+
+
+export type ScheduleSlot = {
+  id: number;
+  start: string; // "HH:mm"
+  end: string;   // "HH:mm"
+  available: boolean;
+};
+
+export async function getFieldSchedulesService(fieldId: number, date: string, token: string): Promise<ScheduleSlot[]> {
+  const res = await fetch(`${BASE_API_URL}/fields/${fieldId}/schedules/slots?date=${date}`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+      Accept: "application/json",
+    },
+  });
+  if (!res.ok) throw new Error("Error fetching schedules");
+  return await res.json();
 }
