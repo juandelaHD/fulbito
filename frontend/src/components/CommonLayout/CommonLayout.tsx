@@ -49,6 +49,9 @@ const LoggedInLinks = () => {
             <Link className={styles.navLink} href="/fields/new">
                 Create Field
             </Link>
+            <Link className={styles.navLink} href="/fields/management">
+                Manage Field
+            </Link>
             <Link className={styles.navLink} href="/fields">
                 View Fields
             </Link>

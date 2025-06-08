@@ -135,3 +135,37 @@ export function useAvailableFields() {
 
   return { fields, loadingFields };
 }
+
+export function useGetOwnedFields() {
+    const [tokenState] = useToken();
+    const token = tokenState.state === "LOGGED_IN" ? tokenState.accessToken : "";
+
+    return useQuery<GetFieldsResponse, Error>({
+        queryKey: ["ownedFields"],
+        queryFn: async () => {
+        const response = await fetch(`${BASE_API_URL}/fields/owned`, {
+            headers: {
+            Authorization: `Bearer ${token}`,
+            Accept: "application/json",
+            },
+        });
+
+        if (!response.ok) {
+            await handleErrorResponse(response, "fetching owned fields");
+        }
+
+        const json = await response.json();
+        const parsed =  GetFieldsResponseSchema.parse(json);
+        console.log("Owned fields response:", parsed);
+
+        if (parsed.content.length === 0) {
+            toast("You don't have any field yet", {
+                icon: "ℹ️",
+                duration: 4000,
+            });
+        }
+
+        return parsed;
+        }
+    });
+}
