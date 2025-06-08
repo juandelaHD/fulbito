@@ -10,7 +10,8 @@ public record FieldCreateDTO(
         @NotNull GrassType grassType,
         @NotNull Boolean illuminated,
         @NotBlank @Size(min = 1, max = 100) String zone,
-        @NotBlank @Size(min = 1, max = 100) String address
+        @NotBlank @Size(min = 1, max = 100) String address,
+        @NotNull Boolean enabled
 ) {
     public Field asField(User owner) {
         return this.asField(null, owner);
@@ -20,11 +21,12 @@ public record FieldCreateDTO(
         return new Field(id, this.name, this.grassType, this.illuminated, new Location(this.zone, this.address), owner);
     }
 
-    public Field adUpdatedField(Field existing) {
+    public Field asUpdatedField(Field existing) {
         existing.setName(this.name().toLowerCase());
         existing.setGrassType(this.grassType());
         existing.setIlluminated(this.illuminated());
         existing.setLocation(new Location(this.zone().toLowerCase(), this.address().toLowerCase()));
+        existing.setEnabled(this.enabled());
         return existing;
     }
 }

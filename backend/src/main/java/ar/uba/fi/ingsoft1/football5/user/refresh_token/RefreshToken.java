@@ -1,11 +1,7 @@
 package ar.uba.fi.ingsoft1.football5.user.refresh_token;
 
 import ar.uba.fi.ingsoft1.football5.user.User;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
+import jakarta.persistence.*;
 
 import java.time.Instant;
 

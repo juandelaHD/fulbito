@@ -6,10 +6,9 @@ import ar.uba.fi.ingsoft1.football5.config.security.JwtUserDetails;
 import ar.uba.fi.ingsoft1.football5.fields.Field;
 import ar.uba.fi.ingsoft1.football5.fields.FieldService;
 import ar.uba.fi.ingsoft1.football5.images.AvatarImage;
+import ar.uba.fi.ingsoft1.football5.user.Role;
 import ar.uba.fi.ingsoft1.football5.user.User;
 import ar.uba.fi.ingsoft1.football5.user.UserService;
-import ar.uba.fi.ingsoft1.football5.user.Role;
-
 import ar.uba.fi.ingsoft1.football5.user.email.EmailSenderService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -24,9 +23,8 @@ import java.util.Optional;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.anyString;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -190,6 +188,7 @@ class MatchServiceTest {
     void testCreateOpenMatch_successful() throws Exception {
         Field field = mock(Field.class);
         when(field.getId()).thenReturn(1L);
+        when(field.isEnabled()).thenReturn(true);
 
         when(fieldService.loadFieldById(1L)).thenReturn(field);
         when(fieldService.validateFieldAvailability(anyLong(), any(), any(), any())).thenReturn(true);
@@ -250,10 +249,35 @@ class MatchServiceTest {
 
         assertEquals("Start time must be before end time", ex.getMessage());
     }
- 
+
     @Test
-    void testCreateOpenMatch_fieldUnavailable_throwsException() throws Exception{
+    void testCreateOpenMatch_fieldIsDisabled_throwsException() throws Exception{
         Field field = mock(Field.class);
+        when(field.isEnabled()).thenReturn(false);
+
+        when(fieldService.loadFieldById(1L)).thenReturn(field);
+
+        MatchCreateDTO dto = new MatchCreateDTO(
+                MatchType.OPEN,
+                1L,
+                5,
+                10,
+                LocalDate.now().plusDays(1),
+                LocalDateTime.now().plusHours(1),
+                LocalDateTime.now().plusHours(2)
+        );
+
+        Exception ex = assertThrows(IllegalArgumentException.class, () -> {
+            matchService.createOpenMatch(dto, userDetails);
+        });
+
+        assertEquals("Field is not enabled for matches", ex.getMessage());
+    }
+
+    @Test
+    void testCreateOpenMatch_fieldUnavailableForDateAndTime_throwsException() throws Exception{
+        Field field = mock(Field.class);
+        when(field.isEnabled()).thenReturn(true);
 
         when(fieldService.loadFieldById(1L)).thenReturn(field);
         when(fieldService.validateFieldAvailability(any(), any(), any(), any())).thenReturn(false);

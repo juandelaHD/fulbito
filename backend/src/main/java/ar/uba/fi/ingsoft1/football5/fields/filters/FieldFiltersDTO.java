@@ -8,5 +8,6 @@ public record FieldFiltersDTO(
         String address,
         GrassType grassType,
         Boolean illuminated,
-        Boolean hasOpenScheduledMatch
+        Boolean hasOpenScheduledMatch,
+        Boolean enabled
 ) {}

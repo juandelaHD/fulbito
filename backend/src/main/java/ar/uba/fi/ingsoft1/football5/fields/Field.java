@@ -51,6 +51,9 @@ public class Field {
     @OneToMany(mappedBy = "field", cascade = CascadeType.ALL,  orphanRemoval = true)
     private List<Schedule> schedules = new ArrayList<>();
 
+    @Column
+    private boolean enabled = true;
+
     protected Field() {}
 
     public Field(Long id, String name, GrassType grassType, Boolean illuminated, Location location, User owner) {
@@ -112,6 +115,14 @@ public class Field {
 
     public List<Match> getMatches() {
         return matches;
+    }
+
+    public void setEnabled(boolean enabled) {
+        this.enabled = enabled;
+    }
+
+    public boolean isEnabled() {
+        return enabled;
     }
 
     public List<Schedule> getSchedules() {

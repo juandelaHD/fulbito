@@ -18,6 +18,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.AccessDeniedException;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -53,14 +54,14 @@ class FieldServiceTest {
     @Test
     void createField_whenNotUniqueName_throwsIllegalArgumentException() {
         FieldCreateDTO fieldCreateDTO = new FieldCreateDTO("field 1", GrassType.NATURAL_GRASS, true,
-                "zone a", "address 1");
+                "zone a", "address 1", true);
 
         when(fieldRepository.findByName(fieldCreateDTO.name()))
                 .thenReturn(Optional.of(new Field(1L, "field 1", GrassType.NATURAL_GRASS, true,
                         new Location("zone b", "address 2"), owner)));
 
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () ->
-            fieldService.createField(fieldCreateDTO, List.of(), userDetails)
+                fieldService.createField(fieldCreateDTO, List.of(), userDetails)
         );
 
         assertEquals("Field with name 'field 1' already exists.", exception.getMessage());
@@ -69,7 +70,7 @@ class FieldServiceTest {
     @Test
     void createField_whenNotUniqueLocation_throwsIllegalArgumentException() {
         FieldCreateDTO fieldCreateDTO = new FieldCreateDTO("field 1", GrassType.NATURAL_GRASS, true,
-                "zone a", "address 1");
+                "zone a", "address 1", true);
 
         when(fieldRepository.findByName(fieldCreateDTO.name())).thenReturn(Optional.empty());
         when(fieldRepository.findByLocationZoneAndLocationAddress(fieldCreateDTO.zone(), fieldCreateDTO.address()))
@@ -77,7 +78,7 @@ class FieldServiceTest {
                         new Location("zone a", "address 1"), owner)));
 
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () ->
-            fieldService.createField(fieldCreateDTO, List.of(), userDetails)
+                fieldService.createField(fieldCreateDTO, List.of(), userDetails)
         );
 
         assertEquals("Field with location 'zone a, address 1' already exists.", exception.getMessage());
@@ -86,7 +87,7 @@ class FieldServiceTest {
     @Test
     void createField_whenValidationsPassed_returnsCreatedField() throws IOException {
         FieldCreateDTO fieldCreateDTO = new FieldCreateDTO("field 1", GrassType.NATURAL_GRASS, true,
-                "zone a", "address 1");
+                "zone a", "address 1", true);
         Field savedField = new Field(1L, fieldCreateDTO.name(), fieldCreateDTO.grassType(),
                 fieldCreateDTO.illuminated(), new Location(fieldCreateDTO.zone(), fieldCreateDTO.address()), owner);
 
@@ -112,7 +113,7 @@ class FieldServiceTest {
         when(fieldRepository.findById(1L)).thenReturn(Optional.empty());
 
         ItemNotFoundException exception = assertThrows(ItemNotFoundException.class, () ->
-            fieldService.deleteField(1L, userDetails)
+                fieldService.deleteField(1L, userDetails)
         );
 
         assertEquals("Failed to find field with id '1'", exception.getMessage());
@@ -128,7 +129,7 @@ class FieldServiceTest {
         when(userDetails.username()).thenReturn("other-user");
 
         AccessDeniedException exception = assertThrows(AccessDeniedException.class, () ->
-            fieldService.deleteField(1L, userDetails)
+                fieldService.deleteField(1L, userDetails)
         );
 
         assertEquals("User does not have access to field with id '1'.", exception.getMessage());
@@ -142,23 +143,25 @@ class FieldServiceTest {
         when(owner.getUsername()).thenReturn("owner-user");
         when(userDetails.username()).thenReturn("owner-user");
         when(fieldRepository.findById(1L)).thenReturn(Optional.of(field));
-        when(matchRepository.findByFieldAndStatus(field, MatchStatus.SCHEDULED)).thenReturn(List.of(mock(Match.class)));
+        when(matchRepository.findByFieldAndStatusAndStartTimeAfter(eq(field), eq(MatchStatus.SCHEDULED), any(LocalDateTime.class))).thenReturn(List.of(mock(Match.class)));
 
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () ->
-            fieldService.deleteField(1L, userDetails)
+                fieldService.deleteField(1L, userDetails)
         );
 
-        assertEquals("Field with id '1' cannot be deleted because it has active matches.", exception.getMessage());
+        assertEquals("Field with id '1' cannot be deleted because it has active matches, " +
+                "but you can disable the field.", exception.getMessage());
     }
+
     @Test
-    void deleteField_whenUserIsOwner_deletesField() throws ItemNotFoundException {
+    void deleteField_whenValidationsPassed_deletesField() throws ItemNotFoundException {
         Field field = new Field(1L, "field 1", GrassType.NATURAL_GRASS, true,
                 new Location("zone a", "address 1"), owner);
 
         when(fieldRepository.findById(1L)).thenReturn(Optional.of(field));
         when(owner.getUsername()).thenReturn("owner-user");
         when(userDetails.username()).thenReturn("owner-user");
-        when(matchRepository.findByFieldAndStatus(field, MatchStatus.SCHEDULED)).thenReturn(List.of());
+        when(matchRepository.findByFieldAndStatusAndStartTimeAfter(eq(field), eq(MatchStatus.SCHEDULED), any(LocalDateTime.class))).thenReturn(List.of());
 
         fieldService.deleteField(1L, userDetails);
         verify(fieldRepository).delete(field);
@@ -169,8 +172,8 @@ class FieldServiceTest {
         when(fieldRepository.findById(1L)).thenReturn(Optional.empty());
 
         ItemNotFoundException exception = assertThrows(ItemNotFoundException.class, () ->
-            fieldService.updateField(1L, new FieldCreateDTO("field 1", GrassType.NATURAL_GRASS, true,
-                    "zone a", "address 1"), List.of(), userDetails)
+                fieldService.updateField(1L, new FieldCreateDTO("field 1", GrassType.NATURAL_GRASS, true,
+                        "zone a", "address 1", true), List.of(), userDetails)
         );
 
         assertEquals("Failed to find field with id '1'", exception.getMessage());
@@ -186,8 +189,8 @@ class FieldServiceTest {
         when(userDetails.username()).thenReturn("other-user");
 
         AccessDeniedException exception = assertThrows(AccessDeniedException.class, () ->
-            fieldService.updateField(1L, new FieldCreateDTO("field 1", GrassType.NATURAL_GRASS, true,
-                    "zone a", "address 1"), List.of(), userDetails)
+                fieldService.updateField(1L, new FieldCreateDTO("field 1", GrassType.NATURAL_GRASS, true,
+                        "zone a", "address 1", true), List.of(), userDetails)
         );
 
         assertEquals("User does not have access to field with id '1'.", exception.getMessage());
@@ -205,8 +208,8 @@ class FieldServiceTest {
         when(owner.getUsername()).thenReturn("owner-user");
 
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () ->
-            fieldService.updateField(1L, new FieldCreateDTO("field 1", GrassType.NATURAL_GRASS, true,
-                    "zone a", "address 1"), List.of(), userDetails)
+                fieldService.updateField(1L, new FieldCreateDTO("field 1", GrassType.NATURAL_GRASS, true,
+                        "zone a", "address 1", true), List.of(), userDetails)
         );
 
         assertEquals("Field with name 'field 1' already exists.", exception.getMessage());
@@ -226,8 +229,8 @@ class FieldServiceTest {
         when(owner.getUsername()).thenReturn("owner-user");
 
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () ->
-            fieldService.updateField(1L, new FieldCreateDTO("field 1", GrassType.NATURAL_GRASS, true,
-                    "zone a", "address 1"), List.of(), userDetails)
+                fieldService.updateField(1L, new FieldCreateDTO("field 1", GrassType.NATURAL_GRASS, true,
+                        "zone a", "address 1", true), List.of(), userDetails)
         );
 
         assertEquals("Field with location 'zone a, address 1' already exists.", exception.getMessage());
@@ -238,7 +241,7 @@ class FieldServiceTest {
         Field field = new Field(1L, "field 1", GrassType.NATURAL_GRASS, true,
                 new Location("zone a", "address 1"), owner);
         FieldCreateDTO fieldCreateDTO = new FieldCreateDTO("field 1", GrassType.NATURAL_GRASS, true,
-                "zone a", "address 1");
+                "zone a", "address 1", true);
 
         when(fieldRepository.findById(1L)).thenReturn(Optional.of(field));
         when(fieldRepository.findByName(fieldCreateDTO.name())).thenReturn(Optional.empty());

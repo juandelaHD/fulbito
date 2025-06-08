@@ -1,14 +1,10 @@
 package ar.uba.fi.ingsoft1.football5.user;
 
-import ar.uba.fi.ingsoft1.football5.user.password_reset_token.ForgotPasswordRequestDTO;
-import ar.uba.fi.ingsoft1.football5.user.password_reset_token.ResetPasswordDTO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.HttpStatus;
 import org.springframework.lang.NonNull;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.Map;
 
 @RestController
 @RequestMapping("/users")

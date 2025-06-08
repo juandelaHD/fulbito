@@ -18,9 +18,9 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springdoc.core.annotations.ParameterObject;
-import org.springframework.data.domain.Pageable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -57,9 +57,10 @@ class FieldRestController {
             @RequestParam(value = "address", required = false) String address,
             @RequestParam(value = "grassType", required = false) GrassType grassType,
             @RequestParam(value = "isIlluminated", required = false) Boolean isIlluminated,
-            @RequestParam(value = "hasOpenScheduledMatch", required = false) Boolean hasOpenScheduledMatch
+            @RequestParam(value = "hasOpenScheduledMatch", required = false) Boolean hasOpenScheduledMatch,
+            @RequestParam(value = "isEnabled", required = false) Boolean isEnabled
     ) {
-        FieldFiltersDTO filters = new FieldFiltersDTO(name, zone, address, grassType, isIlluminated, hasOpenScheduledMatch);
+        FieldFiltersDTO filters = new FieldFiltersDTO(name, zone, address, grassType, isIlluminated, hasOpenScheduledMatch, isEnabled);
         return fieldService.getFieldsWithFilters(pageable, userDetails, filters);
     }
 
