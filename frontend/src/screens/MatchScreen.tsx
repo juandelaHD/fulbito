@@ -1,14 +1,12 @@
 import { useAppForm } from "@/config/use-app-form";
 import { CommonLayout } from "@/components/CommonLayout/CommonLayout";
-import { toast } from "react-hot-toast";
 import { CreateMatchSchema } from "@/models/CreateMatch";
-import { useCreateMatch } from "@/services/MatchServices";
+import { useCreateMatch } from "@/services/MatchesServices";
+import { useAvailableFields } from "@/services/FieldServices";
 import "react-datepicker/dist/react-datepicker.css";
+import { toast } from "react-hot-toast";
 import DatePicker from "react-datepicker";
-import { format } from "date-fns"; 
-
-// TODO: Reemplazá esto por una forma real de obtener el usuario autenticado
-const organizerId = 1;
+import { format } from "date-fns";
 
 const matchLabels: Record<string, string> = {
   matchType: "Match Type",
@@ -20,26 +18,17 @@ const matchLabels: Record<string, string> = {
   endTime: "End Time",
 };
 
-// MOCK FIELDS
-const mockFields = [
-  { id: 1, name: "Serrano Corner" },
-  { id: 2, name: "Grun" },
-  { id: 3, name: "Centenera Sports" },
-  { id: 4, name: "Marangoni" },
-  { id: 5, name: "Futbol Retiro" },
-  { id: 6, name: "San Isidro Futbol" },
-  { id: 7, name: "Futbol Junin" },
-];
-
 export const MatchScreen = () => {
-  const { mutate } = useCreateMatch();
+  const { mutateAsync } = useCreateMatch();
+
+  const { fields, loadingFields} = useAvailableFields();
 
   const formData = useAppForm({
     defaultValues: {
       matchType: "OPEN",
       fieldId: "",
-      minPlayers: 1,
-      maxPlayers: 10,
+      minPlayers: "1",
+      maxPlayers: "10",
       date: new Date(),
       startTime: new Date(),
       endTime: new Date(),
@@ -61,20 +50,26 @@ export const MatchScreen = () => {
       },
     },
     onSubmit: async ({ value }) => {
-        const result = CreateMatchSchema.safeParse(value);
-        if (!result.success) return;
+      const result = CreateMatchSchema.safeParse(value);
+      if (!result.success) return;
 
-        const payload = {
-          ...result.data,
-          organizerId,
-          fieldId: parseInt(result.data.fieldId, 10),
-          date: format(result.data.date, "yyyy-MM-dd"),
-          startTime: format(result.data.startTime, "yyyy-MM-dd'T'HH:mm:ss"),
-          endTime: format(result.data.endTime, "yyyy-MM-dd'T'HH:mm:ss"),
-        };
+      const fieldId = parseInt(result.data.fieldId, 10);
 
-        mutate(payload);
-      },
+      if (isNaN(fieldId)) {
+        toast.error("Please select a field.", { duration: 5000 });
+        return;
+      }
+
+      const payload = {
+        ...result.data,
+        fieldId,
+        date: format(result.data.date, "yyyy-MM-dd"),
+        startTime: format(result.data.startTime, "yyyy-MM-dd'T'HH:mm:ss"),
+        endTime: format(result.data.endTime, "yyyy-MM-dd'T'HH:mm:ss"),
+      };
+
+      await mutateAsync(payload);
+    },
   });
 
   return (
@@ -102,19 +97,42 @@ export const MatchScreen = () => {
               {(field) => (
                 <field.SelectField
                   label="Field"
-                  options={mockFields.map((f) => ({ label: f.name, value: f.id.toString() }))}
+                  options={
+                    loadingFields
+                      ? [{ label: "No available fields", value: "" }]
+                      : [
+                        { label: "Select...", value: "" },
+                        ...fields.map((f) => ({
+                          label: f.name,
+                          value: f.id.toString(),
+                        })),
+                      ]
+                  }
                 />
               )}
             </formData.AppField>
 
             {/* Min / Max Players */}
             <formData.AppField name="minPlayers">
-              {(field) => <field.TextField label="Min Players" type="number" />}
+              {(field) => (
+                <field.TextField
+                  label="Min Players"
+                  type="number"
+                  value={String(field.state.value)}
+                  onChange={(e) => field.setValue(e.target.value)}
+                />
+              )}
             </formData.AppField>
             <formData.AppField name="maxPlayers">
-              {(field) => <field.TextField label="Max Players" type="number" />}
+              {(field) => (
+                <field.TextField
+                  label="Max Players"
+                  type="number"
+                  value={String(field.state.value)}
+                  onChange={(e) => field.setValue(e.target.value)}
+                />
+              )}
             </formData.AppField>
-
             {/* Date */}
             <formData.AppField name="date">
               {(field) => (
