@@ -93,7 +93,7 @@ export function ManageFieldsTable() {
       <>
         {isLoading && <div>Loading fields...</div>}
         {isError && <div className="text-red-500">Error loading fields</div>}
-      {!isLoading && data && <Table columns={columns} data={data.content.map(mapFieldDTOtoField)} />}
+        {!isLoading && data && <Table columns={columns} data={data.content.map(mapFieldDTOtoField)} />}
     </>
   );
 }

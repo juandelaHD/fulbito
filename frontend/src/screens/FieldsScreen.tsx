@@ -7,7 +7,6 @@ import { useGetFields } from "@/services/FieldServices";
 import {GetFieldsRequest} from "@/models/GetFields.ts";
 
 import type { Field as FieldForTable } from "@/components/tables/FieldsTable";
-import {BASE_API_URL} from "@/config/app-query-client.ts";
 
 export const FieldsScreen = () => {
   const [filters, setFilters] = useState<FieldsFilters>({
@@ -68,10 +67,6 @@ export const FieldsScreen = () => {
 
   const rowsForTable: FieldForTable[] = fetchedFields?.content?.map((item) => {
     const idNum = Number(item.id);
-    const photoUrl =
-        item.imagesUrls && item.imagesUrls.length > 0
-            ? `${BASE_API_URL}${item.imagesUrls[0]}`
-            : "";
 
     return {
       id: idNum,
@@ -85,7 +80,7 @@ export const FieldsScreen = () => {
       lighting: item.illuminated ? "Illuminated" : "No lighting",
       zone: item.location.zone,
       address: item.location.address,
-      photos: photoUrl,
+      imageUrl: Array.isArray(item.imagesUrls) && item.imagesUrls.length > 0 ? item.imagesUrls[0] : undefined,
     };
   }) || [];
 
