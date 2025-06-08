@@ -53,6 +53,9 @@ class MatchServiceTest {
     @Mock
     private User user;
 
+    @Mock
+    private AvatarImage avatarImage;
+
     @InjectMocks
     private MatchService matchService;
 
@@ -70,13 +73,16 @@ class MatchServiceTest {
         openMatch.setMaxPlayers(2);
         openMatch.setMinPlayers(1);
         user = new User("testuser", "Test", "User", "M", "Zone1", 25, "pass123", Role.USER);
+        user.setAvatar(avatarImage);
     }
  
     @Test
     void testJoinOpenMatch_successful() throws Exception {
         AvatarImage mockAvatar = mock(AvatarImage.class);
+        User organizer = mock(User.class);
         when(mockAvatar.getId()).thenReturn(123L);
-        user.setAvatar(mockAvatar);
+        when(organizer.getAvatar()).thenReturn(mockAvatar);
+        openMatch.setOrganizer(organizer);
 
         when(userDetails.username()).thenReturn("testuser");
         when(matchRepository.findById(1L)).thenReturn(Optional.of(openMatch));
@@ -166,8 +172,10 @@ class MatchServiceTest {
     @Test
     void testJoinOpenMatch_saveIsCalled() throws Exception {
         AvatarImage mockAvatar = mock(AvatarImage.class);
+        User organizer = mock(User.class);
         when(mockAvatar.getId()).thenReturn(123L);
-        user.setAvatar(mockAvatar);
+        when(organizer.getAvatar()).thenReturn(mockAvatar);
+        openMatch.setOrganizer(organizer);
 
         when(userDetails.username()).thenReturn("testuser");
         when(matchRepository.findById(1L)).thenReturn(Optional.of(openMatch));
@@ -188,6 +196,7 @@ class MatchServiceTest {
 
         when(userDetails.username()).thenReturn("testuser");
         when(userService.loadUserByUsername("testuser")).thenReturn(user);
+        when(avatarImage.getId()).thenReturn(123L);
 
         MatchCreateDTO dto = new MatchCreateDTO(
                 MatchType.OPEN,

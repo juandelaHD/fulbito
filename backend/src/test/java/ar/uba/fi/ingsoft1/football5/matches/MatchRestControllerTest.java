@@ -60,7 +60,7 @@ class MatchRestControllerTest {
 
         organizer = new UserDTO(
                         1L, "Test", "User", "testuser",
-                        1L, "Zone", 25, "M",
+                        "/images/1", "Zone", 25, "M",
                         Role.ADMIN, true);
 
         match = new MatchDTO(

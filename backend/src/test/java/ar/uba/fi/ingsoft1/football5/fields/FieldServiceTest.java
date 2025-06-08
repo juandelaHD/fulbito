@@ -104,7 +104,7 @@ class FieldServiceTest {
         assertEquals(fieldCreateDTO.illuminated(), fieldDTO.illuminated());
         assertEquals(fieldCreateDTO.zone(), fieldDTO.location().zone());
         assertEquals(fieldCreateDTO.address(), fieldDTO.location().address());
-        assertEquals(List.of(), fieldDTO.imageIds());
+        assertEquals(List.of(), fieldDTO.imagesUrls());
     }
 
     @Test
@@ -255,7 +255,7 @@ class FieldServiceTest {
         assertEquals(fieldCreateDTO.illuminated(), fieldDTO.illuminated());
         assertEquals(fieldCreateDTO.zone(), fieldDTO.location().zone());
         assertEquals(fieldCreateDTO.address(), fieldDTO.location().address());
-        assertEquals(List.of(), fieldDTO.imageIds());
+        assertEquals(List.of(), fieldDTO.imagesUrls());
     }
 
     @Test
