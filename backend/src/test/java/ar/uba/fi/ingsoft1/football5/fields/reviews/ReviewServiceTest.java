@@ -6,6 +6,7 @@ import ar.uba.fi.ingsoft1.football5.config.security.JwtUserDetails;
 import ar.uba.fi.ingsoft1.football5.fields.Field;
 import ar.uba.fi.ingsoft1.football5.fields.FieldService;
 import ar.uba.fi.ingsoft1.football5.matches.Match;
+import ar.uba.fi.ingsoft1.football5.matches.MatchStatus;
 import ar.uba.fi.ingsoft1.football5.user.User;
 import ar.uba.fi.ingsoft1.football5.user.UserService;
 import org.junit.jupiter.api.Test;
@@ -17,6 +18,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
+import java.time.LocalDateTime;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -44,6 +46,9 @@ class ReviewServiceTest {
 
     @Mock
     private Field field;
+
+    @Mock
+    private Match match;
 
     @InjectMocks
     private ReviewService reviewServiceTest;
@@ -122,7 +127,6 @@ class ReviewServiceTest {
     void createField_whenUserHasNotPlayedInTheField_throwsIllegalArgumentException() throws ItemNotFoundException {
         Long fieldId = 1L;
         ReviewCreateDTO reviewCreateDTO = new ReviewCreateDTO(10, "Great field!");
-        Match match = mock(Match.class);
         Field anotherField = mock(Field.class);
 
         when(match.getField()).thenReturn(anotherField);
@@ -136,7 +140,7 @@ class ReviewServiceTest {
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () ->
             reviewServiceTest.createReview(reviewCreateDTO, fieldId, userDetails)
         );
-        assertEquals("User must have played at least one match in the field to review it.", exception.getMessage());
+        assertEquals("User must have played a past scheduled match in this field to review it.", exception.getMessage());
     }
 
     @Test
@@ -144,9 +148,10 @@ class ReviewServiceTest {
         Long fieldId = 1L;
         ReviewCreateDTO reviewCreateDTO = new ReviewCreateDTO(10, "Great field!");
         Review review = new Review(reviewCreateDTO.rating(), reviewCreateDTO.comment(), field, user);
-        Match match = mock(Match.class);
 
         when(match.getField()).thenReturn(field);
+        when(match.getStatus()).thenReturn(MatchStatus.SCHEDULED);
+        when(match.getStartTime()).thenReturn(LocalDateTime.now().minusDays(1)); // Simulate a past match
         when(field.getId()).thenReturn(1L);
 
         when(userDetails.username()).thenReturn("testUser");

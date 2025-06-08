@@ -10,6 +10,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.sql.Timestamp;
+
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.mockito.Mockito.when;
 
@@ -29,6 +31,8 @@ class FieldHasOpenScheduledMatchSpecTest {
     private Path<MatchType> mockTypePath;
     @Mock
     private Path<MatchStatus> mockStatusPath;
+    @Mock
+    private Path<Timestamp> mockStartTimePath;
 
     @Mock
     private Predicate mockConjunctionPredicate;
@@ -36,6 +40,8 @@ class FieldHasOpenScheduledMatchSpecTest {
     private Predicate mockTypePredicate;
     @Mock
     private Predicate mockStatusPredicate;
+    @Mock
+    private Predicate mockStartTimePredicate;
     @Mock
     private Predicate mockAndPredicate;
 
@@ -64,9 +70,11 @@ class FieldHasOpenScheduledMatchSpecTest {
         when(mockRoot.<Field, Match>join("matches", JoinType.INNER)).thenReturn(mockJoin);
         when(mockJoin.<MatchType>get("type")).thenReturn(mockTypePath);
         when(mockJoin.<MatchStatus>get("status")).thenReturn(mockStatusPath);
+        when(mockJoin.<Timestamp>get("startTime")).thenReturn(mockStartTimePath);
         when(mockCb.equal(mockTypePath, MatchType.OPEN)).thenReturn(mockTypePredicate);
         when(mockCb.equal(mockStatusPath, MatchStatus.SCHEDULED)).thenReturn(mockStatusPredicate);
-        when(mockCb.and(mockTypePredicate, mockStatusPredicate)).thenReturn(mockAndPredicate);
+        when(mockCb.greaterThan(mockStartTimePath, mockCb.currentTimestamp())).thenReturn(mockStartTimePredicate);
+        when(mockCb.and(mockTypePredicate, mockStatusPredicate, mockStartTimePredicate)).thenReturn(mockAndPredicate);
 
         Predicate result = spec.toPredicate(mockRoot, mockQuery, mockCb);
         assertSame(mockAndPredicate, result);
