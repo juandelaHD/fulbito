@@ -173,16 +173,16 @@ class FieldRestController {
 
     @PostMapping(path = "/{id}/schedules", produces = "application/json")
     @Operation(summary = "Create a schedule for a field")
-    @ResponseStatus(HttpStatus.CREATED)
     @ApiResponse(responseCode = "201", description = "Schedule created successfully")
     @ApiResponse(responseCode = "404", description = "Field not found", content = @Content)
     @ApiResponse(responseCode = "400", description = "Invalid schedule data supplied", content = @Content)
+    @ResponseStatus(HttpStatus.CREATED)
     @PreAuthorize("hasRole('ADMIN')")
     List<ScheduleDTO> createSchedule(
             @PathVariable("id") @Parameter(description = "ID of the field to schedule") Long fieldId,
             @Valid @RequestBody ScheduleCreateDTO scheduleCreate,
             @AuthenticationPrincipal JwtUserDetails userDetails
-    ) throws ItemNotFoundException {
+    ) throws ItemNotFoundException, IllegalArgumentException {
         return scheduleService.createSchedule(fieldId, scheduleCreate, userDetails);
     }
 
@@ -191,7 +191,7 @@ class FieldRestController {
     @ResponseStatus(HttpStatus.OK)
     @ApiResponse(responseCode = "200", description = "Schedules retrieved successfully")
     @ApiResponse(responseCode = "404", description = "Field not found", content = @Content)
-    Page<List<ScheduleDTO>> getSchedulesByFieldId(
+    Page<ScheduleDTO> getSchedulesByFieldId(
             @Valid @ParameterObject Pageable pageable,
             @PathVariable("id") @Parameter(description = "ID of the field") Long fieldId
     ) throws ItemNotFoundException {

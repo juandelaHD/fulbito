@@ -1,5 +1,6 @@
 package ar.uba.fi.ingsoft1.football5.fields.schedules;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotEmpty;
@@ -11,39 +12,31 @@ import java.time.LocalTime;
 import java.util.List;
 
 public record ScheduleCreateDTO(
-        @NotNull(message = "startDate cannot be null")
+        @NotNull
+        @Schema(type = "string", format = "date", example = "2025-06-08")
         LocalDate startDate,
 
-        @NotNull(message = "endDate cannot be null")
+        @NotNull
+        @Schema(type = "string", format = "date", example = "2025-06-08")
         LocalDate endDate,
 
-        @NotNull(message = "openingTime cannot be null")
+        @NotNull
+        @Schema(type = "string", format = "time", example = "09:00")
         LocalTime openingTime,
 
-        @NotNull(message = "closingTime cannot be null")
+        @NotNull
+        @Schema(type = "string", format = "time", example = "18:00")
         LocalTime closingTime,
 
-        @NotNull(message = "slotDurationMinutes cannot be null")
-        @Min(value = 30, message = "slotDurationMinutes must be at least 30 minutes")
-        @Max(value = 120, message = "slotDurationMinutes must be at most 120 minutes")
+        @NotNull
+        @Min(30) @Max(120)
         Integer slotDurationMinutes,
 
-        @NotNull(message = "breakDurationMinutes cannot be null")
-        @Min(value = 0, message = "breakDurationMinutes cannot be negative")
+        @NotNull
+        @Min(0)
         Integer breakDurationMinutes,
 
-        @NotEmpty(message = "daysOfWeek cannot be empty")
+        @NotEmpty
+        @Schema(example = "[\"MONDAY\", \"WEDNESDAY\"]")
         List<DayOfWeek> daysOfWeek
-) {
-    public ScheduleCreateDTO {
-        if (startDate.isAfter(endDate)) {
-            throw new IllegalArgumentException("Start date must be before end date");
-        }
-        if (startDate.isBefore(LocalDate.now())) {
-            throw new IllegalArgumentException("Start date cannot be in the past");
-        }
-        if (openingTime.isAfter(closingTime)) {
-            throw new IllegalArgumentException("OpeningTime must be before ClosingTime");
-        }
-    }
-}
+) {}
