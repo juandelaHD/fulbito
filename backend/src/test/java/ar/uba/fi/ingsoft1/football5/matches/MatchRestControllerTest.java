@@ -60,9 +60,9 @@ class MatchRestControllerTest {
 
         organizer = new UserDTO(
                         1L, "Test", "User", "testuser",
-                        1L, "Zone", 25, "M",
+                        "1L", "Zone", 25, "M",
                         Role.ADMIN, true);
-
+                        
         match = new MatchDTO(
                 1L,
                 null,
