@@ -179,3 +179,26 @@ export function useGetOwnedFields() {
         }
     });
 }
+
+export function useDeleteField() {
+    const [tokenState] = useToken();
+    const token = tokenState.state === "LOGGED_IN" ? tokenState.accessToken : "";
+
+    return useMutation({
+        mutationFn: async (fieldId: number) => {
+            const response = await fetch(`${BASE_API_URL}/fields/${fieldId}`, {
+                method: "DELETE",
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    "Content-Type": "application/json",
+                },
+            });
+
+            if (!response.ok) {
+                await handleErrorResponse(response, "deleting field");
+            } else {
+                toast.success("Field deleted successfully", { duration: 5000 });
+            }
+        },
+    });
+}
