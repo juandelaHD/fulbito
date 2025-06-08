@@ -3,7 +3,7 @@ import { Redirect, Route, Switch } from "wouter";
 import { LoginScreen } from "@/screens/LoginScreen";
 import { MainScreen } from "@/screens/MainScreen";
 import { SignupScreen } from "@/screens/SignupScreen";
-import { CreateFieldScreen } from "@/screens/CreateFieldScreen"; 
+import { CreateFieldScreen } from "@/screens/CreateFieldScreen";
 import { useToken } from "@/services/TokenContext";
 import OpenMatchesScreen from "@/screens/OpenMatchesScreen";
 import { FieldsScreen } from "@/screens/FieldsScreen";
@@ -12,6 +12,7 @@ import { AdminHomePage } from "./screens/AdminHomePage";
 import { PlayerHomePage } from "./screens/PlayerHomePage";
 import { ForgotPasswordScreen } from "@/screens/ForgotPasswordScreen.tsx";
 import { ResetPasswordScreen } from "@/screens/ResetPasswordScreen.tsx";
+import {FieldsManagementScreen} from "@/screens/FieldManagementScreen.tsx";
 
 export const Navigation = () => {
   const [tokenState] = useToken();
@@ -22,6 +23,9 @@ export const Navigation = () => {
           <Route path="/">
             <MainScreen />
           </Route>
+            <Route path="/fields/management">
+                <FieldsManagementScreen />
+            </Route>
          <Route path="/fields/new">
             <CreateFieldScreen />
           </Route>
@@ -51,9 +55,6 @@ export const Navigation = () => {
           <Route path="/login">
             <LoginScreen />
           </Route>
-          <Route path="/fields">
-            <FieldsScreen />
-          </Route>
           <Route path="/signup">
             <SignupScreen />
           </Route>
@@ -64,7 +65,7 @@ export const Navigation = () => {
             <ResetPasswordScreen />
           </Route>
           <Route>
-            <Redirect href="/signup" />
+            <Redirect href="/login" />
           </Route>
         </Switch>
       );

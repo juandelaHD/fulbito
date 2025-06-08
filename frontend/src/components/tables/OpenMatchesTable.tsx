@@ -9,7 +9,7 @@ export type Match = {
   date: string           // "YYYY-MM-DD"
   startTime: string      // "HH:mm"
   endTime: string        // "HH:mm"
-  inscritos: number      // players.length
+  registered: number      // players.length
   minPlayers: number     // match.minPlayers
   maxPlayers: number     // match.maxPlayers
 }
@@ -26,37 +26,37 @@ export function OpenMatchesTable({ data, onJoin, joiningId }: OpenMatchesTablePr
   const columns: ColumnDef<Match>[] = [
     {
       accessorKey: "fieldName",
-      header: "Cancha",
+      header: "FieldName",
     },
     {
       accessorKey: "date",
-      header: "Fecha",
+      header: "Date",
     },
     {
-      id: "hora",
-      header: "Hora",
+      id: "hour",
+      header: "Hour",
       // Como la hora no está en un solo campo, usamos cell() para concatenar
       cell: ({ row }) => (
         <>{row.original.startTime} – {row.original.endTime}</>
       ),
     },
     {
-      id: "inscritos",
-      header: "Inscritos / Faltantes",
+      id: "registered",
+      header: "Registered & Remaining",
       cell: ({ row }) => {
-        const { inscritos, minPlayers } = row.original
-        const faltantes = minPlayers - inscritos
+        const { registered, maxPlayers } = row.original
+        const remaining = maxPlayers - registered
         return (
-          <>{inscritos} / {minPlayers} ({faltantes > 0 ? `${faltantes} faltan` : "Completado"})</>
+          <>{registered} / {maxPlayers} ({remaining > 0 ? `${remaining} remaining` : "Completed"})</>
         )
       },
     },
     {
       id: "actions",
-      header: "Acción",
+      header: "Action",
       cell: ({ row }) => {
         const m = row.original
-        const yaLleno = m.inscritos >= m.maxPlayers
+        const yaLleno = m.registered >= m.maxPlayers
 
         return (
           <button

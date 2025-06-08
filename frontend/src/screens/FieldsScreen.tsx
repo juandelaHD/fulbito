@@ -7,7 +7,6 @@ import { useGetFields } from "@/services/FieldServices";
 import {GetFieldsRequest} from "@/models/GetFields.ts";
 
 import type { Field as FieldForTable } from "@/components/tables/FieldsTable";
-import {BASE_API_URL} from "@/config/app-query-client.ts";
 
 export const FieldsScreen = () => {
   const [filters, setFilters] = useState<FieldsFilters>({
@@ -17,6 +16,7 @@ export const FieldsScreen = () => {
     grassType: "",
     isIlluminated: false,
     hasOpenScheduledMatch: false,
+    isEnabled: false
   });
 
   const {
@@ -37,6 +37,7 @@ export const FieldsScreen = () => {
         : undefined,
     isIlluminated: filters.isIlluminated || undefined,
     hasOpenScheduledMatch: filters.hasOpenScheduledMatch || undefined,
+    isEnabled: filters.isEnabled || undefined,
     page: 0,
     size: 50,
   } as GetFieldsRequest);
@@ -61,15 +62,11 @@ export const FieldsScreen = () => {
     };
 
     console.log("📦 Payload for field search:", payload);
-    await refetch(); 
+    await refetch();
   };
 
   const rowsForTable: FieldForTable[] = fetchedFields?.content?.map((item) => {
     const idNum = Number(item.id);
-    const photoUrl =
-        item.imageIds && item.imageIds.length > 0
-            ? `${BASE_API_URL}/images/${item.imageIds[0]}`
-            : "";
 
     return {
       id: idNum,
@@ -83,7 +80,7 @@ export const FieldsScreen = () => {
       lighting: item.illuminated ? "Illuminated" : "No lighting",
       zone: item.location.zone,
       address: item.location.address,
-      photos: photoUrl,
+      imageUrl: Array.isArray(item.imagesUrls) && item.imagesUrls.length > 0 ? item.imagesUrls[0] : undefined,
     };
   }) || [];
 
@@ -100,7 +97,7 @@ export const FieldsScreen = () => {
                 data={rowsForTable}
                 onReserve={(f) =>
                     toast.error(
-                        `⚠️ Reservations are not yet implemented for: ${f.name}`
+                        `⚠️ Reservations are not yet implemented for: ${f}`
                     )
                 }
             />

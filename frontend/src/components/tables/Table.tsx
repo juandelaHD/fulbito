@@ -61,7 +61,7 @@ export function Table<TData>({ columns, data, onRowClick }: TableProps<TData>) {
             <TableRow
               key={row.id}
               onClick={() => onRowClick?.(row.original)}
-              className={onRowClick ? "cursor-pointer hover:bg-muted" : ""}
+              className={`h-[40px] ${onRowClick ? "cursor-pointer hover:bg-muted" : ""}`}
             >
               {row.getVisibleCells().map((cell) => (
                 <TableCell key={cell.id}>
