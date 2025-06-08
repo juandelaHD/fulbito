@@ -10,6 +10,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @Service
@@ -54,5 +55,19 @@ public class ScheduleService {
 
         Page<Schedule> schedulePage = scheduleRepository.findByField(field, pageable);
         return schedulePage.map(ScheduleDTO::new);
+    }
+
+    public List<ScheduleSlotDTO> getScheduleSlotsByFieldAndDate(Long fieldId, LocalDate date) throws ItemNotFoundException {
+        Field field = fieldService.loadFieldById(fieldId);
+        List<Schedule> schedules = scheduleRepository.findByFieldAndDate(field, date);
+        return schedules.stream()
+                .filter(s -> s.getStatus() == ScheduleStatus.AVAILABLE)
+                .map(s -> new ScheduleSlotDTO(
+                        s.getId(),
+                        s.getStartTime().toString(),
+                        s.getEndTime().toString(),
+                        true
+                ))
+                .toList();
     }
 }

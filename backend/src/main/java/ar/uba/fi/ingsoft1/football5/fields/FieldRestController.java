@@ -9,6 +9,7 @@ import ar.uba.fi.ingsoft1.football5.fields.reviews.ReviewService;
 import ar.uba.fi.ingsoft1.football5.fields.schedules.ScheduleCreateDTO;
 import ar.uba.fi.ingsoft1.football5.fields.schedules.ScheduleDTO;
 import ar.uba.fi.ingsoft1.football5.fields.schedules.ScheduleService;
+import ar.uba.fi.ingsoft1.football5.fields.schedules.ScheduleSlotDTO;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -28,6 +29,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.time.LocalDate;
 import java.util.List;
 
 @RestController
@@ -197,6 +199,17 @@ class FieldRestController {
             @PathVariable("id") @Parameter(description = "ID of the field") Long fieldId
     ) throws ItemNotFoundException {
         return scheduleService.getSchedulesByFieldId(fieldId, pageable);
+    }
+
+    @GetMapping(path = "/{id}/schedules/slots", produces = "application/json")
+    @Operation(summary = "Get schedule slots for a field on a specific date")
+    @ResponseStatus(HttpStatus.OK)
+    List<ScheduleSlotDTO> getScheduleSlotsByFieldAndDate(
+            @PathVariable("id") Long fieldId,
+            @RequestParam("date") @Parameter(description = "Date in yyyy-MM-dd") String dateStr
+    ) throws ItemNotFoundException {
+        LocalDate date = LocalDate.parse(dateStr);
+        return scheduleService.getScheduleSlotsByFieldAndDate(fieldId, date);
     }
 }
 
