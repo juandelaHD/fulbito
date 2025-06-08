@@ -15,7 +15,7 @@ export type RawMatchDTO = {
       zone: string;
       address: string;
     };
-    imageIds: number[];
+    imagesUrls: string[];
   };
   organizer: {
     id: number;

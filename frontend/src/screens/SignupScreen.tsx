@@ -4,6 +4,7 @@ import { useSignup } from "@/services/UserServices";
 import { SignupRequestSchema } from "@/models/Signup";
 import { toast } from "react-hot-toast";
 import { FileInput } from "@/components/form-components/FileInput/FileInput";
+import { useLocation } from "wouter";
 
 const fieldLabels: Record<string, string> = {
   firstName: "First Name",
@@ -17,6 +18,7 @@ const fieldLabels: Record<string, string> = {
 };
 
 export const SignupScreen = () => {
+  const [, navigate] = useLocation();
   const { mutate } = useSignup();
 
   const formData = useAppForm({
@@ -67,7 +69,15 @@ export const SignupScreen = () => {
         avatar: result.data.avatar instanceof File ? result.data.avatar : null,
       };
 
-      mutate(payload);
+      mutate(payload, {
+        onSuccess: () => {
+          navigate("/login");
+        },
+        onError: (error) => {
+          console.error(error);
+        }
+      });
+
     },
   });
 

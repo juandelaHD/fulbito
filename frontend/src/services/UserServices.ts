@@ -7,6 +7,11 @@ import { SignupRequest, SignupResponseSchema } from "@/models/Signup";
 import { ForgotPasswordRequest, ForgotPasswordRequestSchema, ResetPasswordRequest, ResetPasswordRequestSchema } from "@/models/PasswordReset";
 import {handleErrorResponse} from "@/services/ApiUtils.ts";
 
+export function useSignup() {
+  return useMutation({
+    mutationFn: signupService,
+  });
+}
 
 export function useLogin() {
   const [, setToken] = useToken();
@@ -16,17 +21,6 @@ export function useLogin() {
       const tokenData = await loginService(req);
       setToken({ state: "LOGGED_IN", ...tokenData });
     }
-  });
-}
-
-export function useSignup() {
-  const [, setToken] = useToken();
-
-  return useMutation({
-    mutationFn: async (req: SignupRequest) => {
-      const tokenData = await signupService(req);
-      setToken({ state: "LOGGED_IN", ...tokenData });
-    },
   });
 }
 
@@ -77,7 +71,7 @@ export async function signupService(req: SignupRequest) {
   }
 
   const json = await response.json();
-  toast.success("User created successfully!");
+  toast.success("User created successfully! Please check your email to verify.", { duration: 5000 });
   return SignupResponseSchema.parse(json);
 }
 
