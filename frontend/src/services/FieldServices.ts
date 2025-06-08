@@ -61,18 +61,13 @@ export function useGetFields(filters: GetFieldsRequest) {
     queryFn: async ({ queryKey }) => {
     const [, rawFilters] = queryKey;
     const filters = rawFilters as GetFieldsRequest;
-
-    console.log("Requesting fields with filters:", filters);
-
     const params = new URLSearchParams();
     Object.entries(filters).forEach(([key, value]) => {
         if (value !== undefined && value !== "") {
         params.append(key, String(value));
         }
     });
-
       const url = `${BASE_API_URL}/fields/filters?${params.toString()}`;
-
       try {
         const response = await fetch(url, {
           headers: {
@@ -80,25 +75,18 @@ export function useGetFields(filters: GetFieldsRequest) {
             Accept: "application/json",
           },
         });
-
         const json = await response.json();
-
-        console.log("Fields response:", json);
-
         const parsed = GetFieldsResponseSchema.parse(json);
-
         if (parsed.content.length === 0) {
         toast("No fields matched your search.", {
             icon: "ℹ️",
             duration: 4000,
         });
         }
-
         if (!response.ok) {
           toast.error("Failed to fetch fields. Please try again later.");
           throw new Error(json.message || "Unknown error");
         }
-
         return GetFieldsResponseSchema.parse(json);
       } catch (err) {
         console.error("Error fetching fields:", err);
@@ -147,17 +135,12 @@ export type ScheduleSlot = {
 };
 
 export async function getFieldSchedulesService(fieldId: number, date: string, token: string): Promise<ScheduleSlot[]> {
-  console.log(fieldId);
-  console.log(date);
-  console.log(`Fetching schedules for field ${fieldId} on date ${date} with token ${token}`);
-  console.log(`Request URL: ${BASE_API_URL}/fields/${fieldId}/schedules/slots?date=${date}`);
   const res = await fetch(`${BASE_API_URL}/fields/${fieldId}/schedules/slots?date=${date}`, {
     headers: {
       Authorization: `Bearer ${token}`,
       Accept: "application/json",
     },
   });
-  console.log(res);
   if (!res.ok) throw new Error("Error fetching schedules");
   return await res.json();
 }

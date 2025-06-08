@@ -30,7 +30,6 @@ export const MatchScreen = () => {
   const [schedules, setSchedules] = useState<ScheduleSlot[]>([]);
   const [loadingSchedules, setLoadingSchedules] = useState(false);
   const [schedulesFetched, setSchedulesFetched] = useState(false);
-  console.log("fields:", fields);
 
   const formData = useAppForm({
     defaultValues: {
@@ -97,7 +96,6 @@ export const MatchScreen = () => {
     const fieldId = formData.store.state.values.fieldId;
     const date = formData.store.state.values.date;
 
-    console.log("Fetching schedules for fieldId:", fieldId, "on date:", format(date, "yyyy-MM-dd"));
     if (!fieldId || isNaN(Number(fieldId)) || Number(fieldId) <= 0) {
       toast.error("Please select a valid field.", { duration: 5000 });
       return;
@@ -105,22 +103,17 @@ export const MatchScreen = () => {
     setLoadingSchedules(true);
     setSchedulesFetched(false);
     try {
-      console.log("1")
-      console.log("The fieldId is:", fieldId);
       const result = await getFieldSchedulesService(
         Number(fieldId),
         format(date, "yyyy-MM-dd"),
         token
       );
-      console.log(result);
-      console.log("2")
       setSchedules(result.filter((s: ScheduleSlot) => s.available));
       setSchedulesFetched(true);
       if (result.filter((s: ScheduleSlot) => s.available).length === 0) {
         toast("No hours available for this field on the selected date.", { icon: "ℹ️", duration: 4000 });
       }
     } catch (e) {
-      console.log("Error fetching schedules:", e);
       toast.error("Error fetching schedules. Please try again later.", { duration: 5000 });
     } finally {
       setLoadingSchedules(false);
@@ -142,6 +135,28 @@ export const MatchScreen = () => {
                     { label: "Open", value: "OPEN" },
                     { label: "Close", value: "CLOSE" },
                   ]}
+                />
+              )}
+            </formData.AppField>
+
+            {/* Min / Max Players */}
+            <formData.AppField name="minPlayers">
+              {(field) => (
+                <field.TextField
+                  label="Min Players"
+                  type="number"
+                  value={field.state.value}
+                  onChange={(e) => field.setValue(Number(e.target.value))}
+                />
+              )}
+            </formData.AppField>
+            <formData.AppField name="maxPlayers">
+              {(field) => (
+                <field.TextField
+                  label="Max Players"
+                  type="number"
+                  value={field.state.value}
+                  onChange={(e) => field.setValue(Number(e.target.value))}
                 />
               )}
             </formData.AppField>
@@ -207,28 +222,6 @@ export const MatchScreen = () => {
                 )}
               </formData.AppField>
             )}
-
-            {/* Min / Max Players */}
-            <formData.AppField name="minPlayers">
-              {(field) => (
-                <field.TextField
-                  label="Min Players"
-                  type="number"
-                  value={field.state.value}
-                  onChange={(e) => field.setValue(Number(e.target.value))}
-                />
-              )}
-            </formData.AppField>
-            <formData.AppField name="maxPlayers">
-              {(field) => (
-                <field.TextField
-                  label="Max Players"
-                  type="number"
-                  value={field.state.value}
-                  onChange={(e) => field.setValue(Number(e.target.value))}
-                />
-              )}
-            </formData.AppField>
 
           </formData.FormContainer>
         </formData.AppForm>
