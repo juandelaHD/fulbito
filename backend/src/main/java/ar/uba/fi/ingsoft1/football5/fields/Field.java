@@ -48,7 +48,7 @@ public class Field {
     private List<Match> matches = new ArrayList<>();
 
     @Column
-    private boolean isEnabled = true;
+    private boolean enabled = true;
 
     protected Field() {}
 
@@ -114,10 +114,10 @@ public class Field {
     }
 
     public void setEnabled(boolean enabled) {
-        this.isEnabled = enabled;
+        this.enabled = enabled;
     }
 
     public boolean isEnabled() {
-        return isEnabled;
+        return enabled;
     }
 }

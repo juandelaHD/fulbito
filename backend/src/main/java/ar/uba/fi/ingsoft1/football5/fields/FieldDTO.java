@@ -9,7 +9,7 @@ public record FieldDTO(
         GrassType grassType,
         Boolean illuminated,
         Location location,
-        Boolean isEnabled,
+        Boolean enabled,
         List<String> imagesUrls,
         Map<String, Integer> matchesWithMissingPlayers
 ) {

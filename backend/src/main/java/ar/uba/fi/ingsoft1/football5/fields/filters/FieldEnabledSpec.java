@@ -9,18 +9,18 @@ import org.springframework.data.jpa.domain.Specification;
 
 public class FieldEnabledSpec implements Specification<Field> {
 
-    private final Boolean isEnabled;
+    private final Boolean enabled;
 
-    public FieldEnabledSpec(Boolean isEnabled) {
-        this.isEnabled = isEnabled;
+    public FieldEnabledSpec(Boolean enabled) {
+        this.enabled = enabled;
     }
 
     @Override
     public Predicate toPredicate(Root<Field> root, CriteriaQuery<?> query, CriteriaBuilder criteriaBuilder) {
-        if(!Boolean.TRUE.equals(isEnabled)) {
+        if(!Boolean.TRUE.equals(enabled)) {
             return criteriaBuilder.conjunction();
         }
 
-        return criteriaBuilder.equal(root.get("isEnabled"), isEnabled);
+        return criteriaBuilder.equal(root.get("enabled"), enabled);
     }
 }

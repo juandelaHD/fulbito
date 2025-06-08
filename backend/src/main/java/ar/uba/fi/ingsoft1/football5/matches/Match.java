@@ -20,7 +20,9 @@ public class Match {
 
     // Cancha donde se jugará el partido
     @ManyToOne
-    @JoinColumn(name = "field_id", nullable = false)
+    @JoinColumn(name = "field_id",
+                foreignKey = @ForeignKey(name = "fk_field_match",
+                        foreignKeyDefinition = "FOREIGN KEY (field_id) REFERENCES field(id) ON DELETE SET NULL"))
     @JsonManagedReference("match-field")
     private Field field;
 

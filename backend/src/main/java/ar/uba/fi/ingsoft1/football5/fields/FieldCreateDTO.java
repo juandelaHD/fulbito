@@ -11,7 +11,7 @@ public record FieldCreateDTO(
         @NotNull Boolean illuminated,
         @NotBlank @Size(min = 1, max = 100) String zone,
         @NotBlank @Size(min = 1, max = 100) String address,
-        @NotNull Boolean isEnabled
+        @NotNull Boolean enabled
 ) {
     public Field asField(User owner) {
         return this.asField(null, owner);
@@ -26,7 +26,7 @@ public record FieldCreateDTO(
         existing.setGrassType(this.grassType());
         existing.setIlluminated(this.illuminated());
         existing.setLocation(new Location(this.zone().toLowerCase(), this.address().toLowerCase()));
-        existing.setEnabled(this.isEnabled());
+        existing.setEnabled(this.enabled());
         return existing;
     }
 }
