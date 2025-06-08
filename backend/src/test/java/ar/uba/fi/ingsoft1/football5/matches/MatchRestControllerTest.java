@@ -61,7 +61,7 @@ class MatchRestControllerTest {
                         1L, "Test", "User", "testuser",
                         "/images/1", "Zone", 25, "M",
                         Role.ADMIN, true);
-
+                        
         match = new MatchDTO(
                 1L,
                 null,
