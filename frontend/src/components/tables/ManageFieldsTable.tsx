@@ -1,8 +1,11 @@
 import { ColumnDef } from "@tanstack/react-table";
 import { Table } from "@/components/tables/Table";
-import {useDeleteField, useGetOwnedFields} from "@/services/FieldServices";
-import {useImageById} from "@/services/ImageServices.ts";
-import {toast} from "react-hot-toast";
+import { useDeleteField, useGetOwnedFields } from "@/services/FieldServices";
+import { useImageById } from "@/services/ImageServices.ts";
+import { toast } from "react-hot-toast";
+import { ConfirmDialog } from "@/components/modals/ConfirmDialog.tsx";
+import { useState } from "react";
+import { useMemo } from "react";
 
 export type Field = {
   id: number
@@ -18,6 +21,7 @@ export type Field = {
 export function ManageFieldsTable() {
   const { data, isLoading, isError, refetch } = useGetOwnedFields();
   const { mutateAsync: deleteField } = useDeleteField();
+  const [fieldToDelete, setFieldToDelete] = useState<Field | null>(null);
 
   function mapFieldDTOtoField(dto: any): Field {
     return {
@@ -32,14 +36,12 @@ export function ManageFieldsTable() {
     };
   }
 
-  const handleDelete = async (fieldId: number) => {
-    if (confirm("Are you sure you want to delete this field?")) {
-      await deleteField(fieldId);
-      refetch();
-    }
+  const handleDeleteConfirmed = async (fieldId: number) => {
+    await deleteField(fieldId);
+    refetch();
   };
 
-  const columns: ColumnDef<Field>[] = [
+  const columns: ColumnDef<Field>[] = useMemo(() => [
     { accessorKey: "name", header: "Name" },
     { accessorKey: "grassType", header: "Grass Type" },
     { accessorKey: "lighting", header: "Lighting" },
@@ -49,28 +51,28 @@ export function ManageFieldsTable() {
       id: "actions",
       header: "Actions",
       cell: ({ row }) => (
-        <div className="flex space-x-2">
-          <button
-            onClick={() => {
-              toast.error(`⚠️ Editing field ${row.original.id} is not yet implemented`);
-            }}
-            className="text-sm bg-blue-600 text-white px-2 py-1 rounded hover:bg-blue-700"
-          >
-            Edit
-          </button>
-          <button
-            onClick={() => handleDelete(row.original.id)}
-            className="text-sm bg-red-600 text-white px-2 py-1 rounded hover:bg-red-700"
-          >
-            Delete
-          </button>
-        </div>
+          <div className="flex space-x-2">
+            <button
+                onClick={() => {
+                  toast.error(`⚠️ Editing field ${row.original.id} is not yet implemented`);
+                }}
+                className="text-sm bg-blue-600 text-white px-2 py-1 rounded hover:bg-blue-700"
+            >
+              Edit
+            </button>
+            <button
+                onClick={() => setFieldToDelete(row.original)}
+                className="text-sm bg-red-600 text-white px-2 py-1 rounded hover:bg-red-700"
+            >
+              Delete
+            </button>
+          </div>
       ),
     },
     {
       id: "image",
       header: "Image",
-      cell: ({ row }) => {
+      cell: ({row}) => {
         const imageEndpoint = row.original.imageUrl;
         const imageUrl = useImageById(imageEndpoint);
 
@@ -91,13 +93,23 @@ export function ManageFieldsTable() {
         );
       },
     }
-  ];
+  ], [setFieldToDelete]);
 
   return (
       <>
         {isLoading && <div>Loading fields...</div>}
         {isError && <div className="text-red-500">Error loading fields</div>}
         {!isLoading && data && <Table columns={columns} data={data.content.map(mapFieldDTOtoField)} />}
+        {fieldToDelete && (
+            <ConfirmDialog
+                message={`Are you sure you want to delete "${fieldToDelete.name}"?`}
+                onCancel={() => setFieldToDelete(null)}
+                onConfirm={async () => {
+                  await handleDeleteConfirmed(fieldToDelete.id);
+                  setFieldToDelete(null);
+                }}
+            />
+        )}
     </>
   );
 }
