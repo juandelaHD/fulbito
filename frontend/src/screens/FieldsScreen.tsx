@@ -63,14 +63,14 @@ export const FieldsScreen = () => {
     };
 
     console.log("📦 Payload for field search:", payload);
-    await refetch(); 
+    await refetch();
   };
 
   const rowsForTable: FieldForTable[] = fetchedFields?.content?.map((item) => {
     const idNum = Number(item.id);
     const photoUrl =
-        item.imageIds && item.imageIds.length > 0
-            ? `${BASE_API_URL}/images/${item.imageIds[0]}`
+        item.imageUrls && item.imageUrls.length > 0
+            ? `${BASE_API_URL}${item.imageUrls[0]}`
             : "";
 
     return {
