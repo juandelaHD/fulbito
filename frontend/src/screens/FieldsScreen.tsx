@@ -17,6 +17,7 @@ export const FieldsScreen = () => {
     grassType: "",
     isIlluminated: false,
     hasOpenScheduledMatch: false,
+    isEnabled: false
   });
 
   const {
@@ -37,6 +38,7 @@ export const FieldsScreen = () => {
         : undefined,
     isIlluminated: filters.isIlluminated || undefined,
     hasOpenScheduledMatch: filters.hasOpenScheduledMatch || undefined,
+    isEnabled: filters.isEnabled || undefined,
     page: 0,
     size: 50,
   } as GetFieldsRequest);
