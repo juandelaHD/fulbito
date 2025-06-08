@@ -1,6 +1,6 @@
 import { ColumnDef } from "@tanstack/react-table";
 import { Table } from "@/components/tables/Table";
-import { useGetOwnedFields } from "@/services/FieldServices";
+import {useDeleteField, useGetOwnedFields} from "@/services/FieldServices";
 import {useImageById} from "@/services/ImageServices.ts";
 import {toast} from "react-hot-toast";
 
@@ -16,7 +16,8 @@ export type Field = {
 }
 
 export function ManageFieldsTable() {
-  const { data, isLoading, isError } = useGetOwnedFields();
+  const { data, isLoading, isError, refetch } = useGetOwnedFields();
+  const { mutateAsync: deleteField } = useDeleteField();
 
   function mapFieldDTOtoField(dto: any): Field {
     return {
@@ -32,7 +33,10 @@ export function ManageFieldsTable() {
   }
 
   const handleDelete = async (fieldId: number) => {
-    toast.error(`⚠️ Field deletion of field ${fieldId} is not yet implemented`)
+    if (confirm("Are you sure you want to delete this field?")) {
+      await deleteField(fieldId);
+      refetch();
+    }
   };
 
   const columns: ColumnDef<Field>[] = [
