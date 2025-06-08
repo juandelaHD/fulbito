@@ -2,6 +2,7 @@ import { CommonLayout } from "@/components/CommonLayout/CommonLayout";
 import { useAppForm } from "@/config/use-app-form";
 import { LoginRequestSchema } from "@/models/Login";
 import { useLogin } from "@/services/UserServices";
+import {Link} from "wouter";
 
 export const LoginScreen = () => {
   const { mutate } = useLogin();
@@ -33,9 +34,9 @@ export const LoginScreen = () => {
       </formData.AppForm>
       <div className="text-center text-sm font-light text-green-800 mt-4">
         Don't have an account?{" "}
-        <a href="/singup" className="font-medium text-green-700 hover:underline">
-            Sign Up
-        </a>
+      <Link href="/signup" className="font-medium text-green-700 hover:underline">
+          Sign Up
+      </Link>
       </div>
     </CommonLayout>
   );

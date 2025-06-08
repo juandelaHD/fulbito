@@ -4,7 +4,7 @@ import { useSignup } from "@/services/UserServices";
 import { SignupRequestSchema } from "@/models/Signup";
 import { toast } from "react-hot-toast";
 import { FileInput } from "@/components/form-components/FileInput/FileInput";
-import { useLocation } from "wouter";
+import {Link, useLocation} from "wouter";
 
 const fieldLabels: Record<string, string> = {
   firstName: "First Name",
@@ -170,9 +170,9 @@ export const SignupScreen = () => {
           </div>
           <div className="text-center text-sm font-light text-green-800 mt-4">
             Already have an account?{" "}
-            <a href="/login" className="font-medium text-green-700 hover:underline">
+            <Link href="/login" className="font-medium text-green-700 hover:underline">
               Log in
-            </a>
+            </Link>
           </div>
         </section>
       </CommonLayout>
