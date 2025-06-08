@@ -6,10 +6,9 @@ import ar.uba.fi.ingsoft1.football5.config.security.JwtUserDetails;
 import ar.uba.fi.ingsoft1.football5.fields.Field;
 import ar.uba.fi.ingsoft1.football5.fields.FieldService;
 import ar.uba.fi.ingsoft1.football5.images.AvatarImage;
+import ar.uba.fi.ingsoft1.football5.user.Role;
 import ar.uba.fi.ingsoft1.football5.user.User;
 import ar.uba.fi.ingsoft1.football5.user.UserService;
-import ar.uba.fi.ingsoft1.football5.user.Role;
-
 import ar.uba.fi.ingsoft1.football5.user.email.EmailSenderService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -24,9 +23,8 @@ import java.util.Optional;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.anyString;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)

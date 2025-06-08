@@ -3,7 +3,6 @@ package ar.uba.fi.ingsoft1.football5.fields.filters;
 import ar.uba.fi.ingsoft1.football5.fields.Field;
 import ar.uba.fi.ingsoft1.football5.fields.Location;
 import jakarta.persistence.criteria.*;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;

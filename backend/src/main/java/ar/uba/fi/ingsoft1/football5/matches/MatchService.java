@@ -7,7 +7,6 @@ import ar.uba.fi.ingsoft1.football5.fields.Field;
 import ar.uba.fi.ingsoft1.football5.fields.FieldService;
 import ar.uba.fi.ingsoft1.football5.user.User;
 import ar.uba.fi.ingsoft1.football5.user.UserService;
-
 import ar.uba.fi.ingsoft1.football5.user.email.EmailSenderService;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;

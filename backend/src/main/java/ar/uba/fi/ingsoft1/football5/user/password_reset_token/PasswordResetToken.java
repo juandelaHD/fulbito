@@ -2,6 +2,7 @@ package ar.uba.fi.ingsoft1.football5.user.password_reset_token;
 
 import ar.uba.fi.ingsoft1.football5.user.User;
 import jakarta.persistence.*;
+
 import java.time.LocalDateTime;
 
 @Entity(name = "password_reset_tokens")

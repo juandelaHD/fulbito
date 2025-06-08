@@ -2,7 +2,8 @@ package ar.uba.fi.ingsoft1.football5.fields;
 
 import ar.uba.fi.ingsoft1.football5.common.exception.ItemNotFoundException;
 import ar.uba.fi.ingsoft1.football5.config.security.JwtUserDetails;
-import ar.uba.fi.ingsoft1.football5.fields.filters.*;
+import ar.uba.fi.ingsoft1.football5.fields.filters.FieldFiltersDTO;
+import ar.uba.fi.ingsoft1.football5.fields.filters.SpecificationService;
 import ar.uba.fi.ingsoft1.football5.images.ImageService;
 import ar.uba.fi.ingsoft1.football5.matches.Match;
 import ar.uba.fi.ingsoft1.football5.matches.MatchRepository;
