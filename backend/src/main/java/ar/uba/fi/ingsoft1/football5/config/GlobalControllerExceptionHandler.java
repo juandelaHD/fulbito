@@ -1,7 +1,9 @@
 package ar.uba.fi.ingsoft1.football5.config;
 
-import ar.uba.fi.ingsoft1.football5.common.exception.*;
 import ar.uba.fi.ingsoft1.football5.common.exception.ErrorResponse;
+import ar.uba.fi.ingsoft1.football5.common.exception.ItemNotFoundException;
+import ar.uba.fi.ingsoft1.football5.common.exception.UnauthorizedException;
+import ar.uba.fi.ingsoft1.football5.common.exception.UserNotFoundException;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;

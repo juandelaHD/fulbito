@@ -1,7 +1,5 @@
 package ar.uba.fi.ingsoft1.football5.fields;
 
-import ar.uba.fi.ingsoft1.football5.images.Image;
-
 import java.util.List;
 import java.util.Map;
 
@@ -11,6 +9,7 @@ public record FieldDTO(
         GrassType grassType,
         Boolean illuminated,
         Location location,
+        Boolean enabled,
         List<String> imagesUrls,
         Map<String, Integer> matchesWithMissingPlayers
 ) {
@@ -21,6 +20,7 @@ public record FieldDTO(
                     field.getGrassType(),
                     field.isIlluminated(),
                     field.getLocation(),
+                    field.isEnabled(),
                     field.getImages().stream().map(image -> "/images/" + image.getId()).toList(),
                     null // No se solicitan los partidos abiertos
             );
@@ -33,6 +33,7 @@ public record FieldDTO(
                 field.getGrassType(),
                 field.isIlluminated(),
                 field.getLocation(),
+                field.isEnabled(),
                 field.getImages().stream().map(image -> "/images/" + image.getId()).toList(),
                 openMatches // Se incluyen los partidos abiertos con jugadores faltantes
         );

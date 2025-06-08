@@ -7,21 +7,20 @@ import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
 import org.springframework.data.jpa.domain.Specification;
 
-import static org.apache.commons.lang3.StringUtils.isBlank;
+public class FieldEnabledSpec implements Specification<Field> {
 
-public class FieldZoneSpec implements Specification<Field> {
+    private final Boolean enabled;
 
-    private final String zone;
-
-    public FieldZoneSpec(String zone, String userZone) {
-        this.zone = isBlank(zone) ? userZone : zone;
+    public FieldEnabledSpec(Boolean enabled) {
+        this.enabled = enabled;
     }
 
     @Override
     public Predicate toPredicate(Root<Field> root, CriteriaQuery<?> query, CriteriaBuilder criteriaBuilder) {
-        if (zone == null || zone.isBlank()) {
+        if(!Boolean.TRUE.equals(enabled)) {
             return criteriaBuilder.conjunction();
         }
-        return criteriaBuilder.like(criteriaBuilder.lower(root.get("location").get("zone")), "%" + zone.toLowerCase() + "%");
+
+        return criteriaBuilder.equal(root.get("enabled"), enabled);
     }
 }
