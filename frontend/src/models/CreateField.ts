@@ -28,7 +28,7 @@ export const CreateFieldResponseSchema = z.object({
   }),
   illuminated: z.boolean(),
   location: LocationSchema,
-  imageUrls: z.array(z.string()).optional(),
+  imagesUrls: z.array(z.string()).optional(),
 });
 
 export type CreateFieldResponse = z.infer<typeof CreateFieldResponseSchema>;

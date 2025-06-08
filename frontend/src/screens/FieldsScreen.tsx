@@ -69,8 +69,8 @@ export const FieldsScreen = () => {
   const rowsForTable: FieldForTable[] = fetchedFields?.content?.map((item) => {
     const idNum = Number(item.id);
     const photoUrl =
-        item.imageUrls && item.imageUrls.length > 0
-            ? `${BASE_API_URL}${item.imageUrls[0]}`
+        item.imagesUrls && item.imagesUrls.length > 0
+            ? `${BASE_API_URL}${item.imagesUrls[0]}`
             : "";
 
     return {
@@ -102,7 +102,7 @@ export const FieldsScreen = () => {
                 data={rowsForTable}
                 onReserve={(f) =>
                     toast.error(
-                        `⚠️ Reservations are not yet implemented for: ${f.name}`
+                        `⚠️ Reservations are not yet implemented for: ${f}`
                     )
                 }
             />

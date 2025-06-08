@@ -24,7 +24,7 @@ export const FieldItemSchema = z.object({
         zone: z.string().min(2, "Zone is required"),
         address: z.string().min(2, "Address is required"),
     }),
-    imageUrls: z.array(z.string()).optional(),
+    imagesUrls: z.array(z.string()),
     matchesWithMissingPlayers: z.record(z.string(), z.number()).nullable().optional(),
 });
 
