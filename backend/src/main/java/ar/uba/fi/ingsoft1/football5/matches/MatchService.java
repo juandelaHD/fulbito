@@ -91,6 +91,10 @@ public class MatchService {
     }
 
     private void validateFieldForMatch(Field field, MatchCreateDTO match) {
+        if (!field.isEnabled()) {
+            throw new IllegalArgumentException("Field is not enabled for matches");
+        }
+
         if (!fieldService.validateFieldAvailability(
                 field.getId(),
                 match.date(),

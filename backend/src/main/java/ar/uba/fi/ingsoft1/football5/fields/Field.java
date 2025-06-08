@@ -47,6 +47,9 @@ public class Field {
     @OneToMany(mappedBy = "field", fetch = FetchType.LAZY)
     private List<Match> matches = new ArrayList<>();
 
+    @Column
+    private boolean isEnabled = true;
+
     protected Field() {}
 
     public Field(Long id, String name, GrassType grassType, Boolean illuminated, Location location, User owner) {
@@ -108,5 +111,13 @@ public class Field {
 
     public List<Match> getMatches() {
         return matches;
+    }
+
+    public void setEnabled(boolean enabled) {
+        this.isEnabled = enabled;
+    }
+
+    public boolean isEnabled() {
+        return isEnabled;
     }
 }
