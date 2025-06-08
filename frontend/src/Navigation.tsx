@@ -55,9 +55,6 @@ export const Navigation = () => {
           <Route path="/login">
             <LoginScreen />
           </Route>
-          <Route path="/fields">
-            <FieldsScreen />
-          </Route>
           <Route path="/signup">
             <SignupScreen />
           </Route>
@@ -68,7 +65,7 @@ export const Navigation = () => {
             <ResetPasswordScreen />
           </Route>
           <Route>
-            <Redirect href="/signup" />
+            <Redirect href="/login" />
           </Route>
         </Switch>
       );
