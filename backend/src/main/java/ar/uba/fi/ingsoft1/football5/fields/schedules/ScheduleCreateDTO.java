@@ -11,6 +11,7 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
 
+@ValidScheduleCreate
 public record ScheduleCreateDTO(
         @NotNull
         @Schema(type = "string", format = "date", example = "2025-06-08")
@@ -30,13 +31,15 @@ public record ScheduleCreateDTO(
 
         @NotNull
         @Min(30) @Max(120)
+        @Schema(type = "integer", example = "60")
         Integer slotDurationMinutes,
 
         @NotNull
         @Min(0)
+        @Schema(type = "integer", example = "0")
         Integer breakDurationMinutes,
 
         @NotEmpty
-        @Schema(example = "[\"MONDAY\", \"WEDNESDAY\"]")
+        @Schema(example = "[\"MONDAY\",\"TUESDAY\", \"WEDNESDAY\", \"THURSDAY\", \"FRIDAY\"]")
         List<DayOfWeek> daysOfWeek
 ) {}
