@@ -236,29 +236,6 @@ class FieldServiceTest {
     }
 
     @Test
-    void updateField_whenDisablingFieldWithFutureScheduledMatches_throwsIllegalArgumentException() {
-        Field field = new Field(1L, "field 1", GrassType.NATURAL_GRASS, true,
-                new Location("zone a", "address 1"), owner);
-        field.setEnabled(true);
-
-        when(fieldRepository.findById(1L)).thenReturn(Optional.of(field));
-        when(fieldRepository.findByName("field 1")).thenReturn(Optional.empty());
-        when(fieldRepository.findByLocationZoneAndLocationAddress("zone a", "address 1"))
-                .thenReturn(Optional.empty());
-        when(userDetails.username()).thenReturn("owner-user");
-        when(owner.getUsername()).thenReturn("owner-user");
-        when(matchRepository.findByFieldAndStatusAndStartTimeAfter(eq(field), eq(MatchStatus.SCHEDULED), any(LocalDateTime.class)))
-                .thenReturn(List.of(mock(Match.class)));
-
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () ->
-                fieldService.updateField(1L, new FieldCreateDTO("field 1", GrassType.NATURAL_GRASS, true,
-                        "zone a", "address 1", false), List.of(), userDetails)
-        );
-
-        assertEquals("Field with id '1' cannot be updated/deleted because it has active matches.", exception.getMessage());
-    }
-
-    @Test
     void updateField_whenValidationsPassed_returnsUpdatedField() throws IOException, ItemNotFoundException {
         Field field = new Field(1L, "field 1", GrassType.NATURAL_GRASS, true,
                 new Location("zone a", "address 1"), owner);

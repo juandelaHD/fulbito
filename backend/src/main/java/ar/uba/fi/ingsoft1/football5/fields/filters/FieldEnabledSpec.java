@@ -21,6 +21,6 @@ public class FieldEnabledSpec implements Specification<Field> {
             return criteriaBuilder.conjunction();
         }
 
-        return criteriaBuilder.equal(root.get("enabled"), isEnabled);
+        return criteriaBuilder.equal(root.get("isEnabled"), isEnabled);
     }
 }

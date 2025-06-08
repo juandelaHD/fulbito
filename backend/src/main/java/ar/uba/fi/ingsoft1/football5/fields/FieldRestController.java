@@ -53,9 +53,9 @@ class FieldRestController {
             @RequestParam(value = "grassType", required = false) GrassType grassType,
             @RequestParam(value = "isIlluminated", required = false) Boolean isIlluminated,
             @RequestParam(value = "hasOpenScheduledMatch", required = false) Boolean hasOpenScheduledMatch,
-            @RequestParam(value = "enabled", required = false) Boolean enabled
+            @RequestParam(value = "isEnabled", required = false) Boolean isEnabled
     ) {
-        FieldFiltersDTO filters = new FieldFiltersDTO(name, zone, address, grassType, isIlluminated, hasOpenScheduledMatch, enabled);
+        FieldFiltersDTO filters = new FieldFiltersDTO(name, zone, address, grassType, isIlluminated, hasOpenScheduledMatch, isEnabled);
         return fieldService.getFieldsWithFilters(pageable, userDetails, filters);
     }
 

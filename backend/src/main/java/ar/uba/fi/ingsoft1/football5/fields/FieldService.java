@@ -89,18 +89,10 @@ public class FieldService {
         validateOwnership(field, userDetails);
         validateUniqueName(fieldCreate, id);
         validateUniqueLocation(fieldCreate, id);
-        validateVisibilityUpdate(fieldCreate, field);
 
         Field saved = fieldRepository.save(fieldCreate.asUpdatedField(field));
         imageService.saveFieldImages(saved, images);
         return new FieldDTO(saved);
-    }
-
-    private void validateVisibilityUpdate(FieldCreateDTO fieldCreate, Field field) {
-        if (field.isEnabled() && !fieldCreate.isEnabled()) {
-            // If the field is enabled and the update disables it, we need to check if there are active matches.
-            validateNonActiveMatches(field);
-        }
     }
 
     public Page<FieldDTO> getOwnedFields(Pageable pageable, JwtUserDetails userDetails) {
@@ -147,7 +139,7 @@ public class FieldService {
                 LocalDateTime.now());
         if (!activeMatches.isEmpty()) {
             throw new IllegalArgumentException(String.format(
-                    "Field with id '%s' cannot be updated/deleted because it has active matches.", field.getId()));
+                    "Field with id '%s' cannot be deleted because it has active matches, but you can disable the field.", field.getId()));
         }
     }
 
