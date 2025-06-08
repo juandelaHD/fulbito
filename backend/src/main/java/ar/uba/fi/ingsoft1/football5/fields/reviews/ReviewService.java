@@ -4,11 +4,14 @@ import ar.uba.fi.ingsoft1.football5.common.exception.ItemNotFoundException;
 import ar.uba.fi.ingsoft1.football5.config.security.JwtUserDetails;
 import ar.uba.fi.ingsoft1.football5.fields.Field;
 import ar.uba.fi.ingsoft1.football5.fields.FieldService;
+import ar.uba.fi.ingsoft1.football5.matches.MatchStatus;
 import ar.uba.fi.ingsoft1.football5.user.User;
 import ar.uba.fi.ingsoft1.football5.user.UserService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+
+import java.time.LocalDateTime;
 
 @Service
 public class ReviewService {
@@ -43,11 +46,14 @@ public class ReviewService {
     }
 
     private void validateUserCanReviewField(Field field, User user) {
-        if (user.getJoinedMatches().stream().noneMatch(match -> match.getField().getId().equals(field.getId()))) {
-            throw new IllegalArgumentException(
-                    "User must have played at least one match in the field to review it.");
+        boolean hasPlayedPastScheduledMatch = user.getJoinedMatches().stream()
+                .anyMatch(match -> match.getField().getId().equals(field.getId())
+                        && match.getStatus() == MatchStatus.SCHEDULED
+                        && match.getStartTime().isBefore(LocalDateTime.now()));
+
+        if (!hasPlayedPastScheduledMatch) {
+            throw new IllegalArgumentException("User must have played a past scheduled match in this field to review it.");
         }
-        // TODO: When adding schedules, we must check that the match has already been played in the field (SCHEDULED + Past Time)
     }
 
     private void validateUserHasNotReviewedField(Field field, User user) {

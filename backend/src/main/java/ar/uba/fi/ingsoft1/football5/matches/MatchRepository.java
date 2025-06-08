@@ -10,9 +10,9 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 public interface MatchRepository extends JpaRepository<Match, Long> {
-    List<Match> findByFieldAndStatus(Field field, MatchStatus status);
-    List<Match> findByType(MatchType type);
-    List<Match> findByStatus(MatchStatus status);
+    List<Match> findByFieldAndStatusAndStartTimeAfter(Field field, MatchStatus status, LocalDateTime now);
+
+
     @Query("""
     SELECT m FROM Match m
     WHERE m.field.id = :fieldId

@@ -1,10 +1,10 @@
 package ar.uba.fi.ingsoft1.football5.user.email;
 
+import org.springframework.mail.SimpleMailMessage;
+
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-
-import org.springframework.mail.SimpleMailMessage;
 
 public class MatchConfirmationMailWriter extends EmailWriter {
     private final LocalDate date;
