@@ -6,6 +6,10 @@ import ar.uba.fi.ingsoft1.football5.fields.filters.FieldFiltersDTO;
 import ar.uba.fi.ingsoft1.football5.fields.reviews.ReviewCreateDTO;
 import ar.uba.fi.ingsoft1.football5.fields.reviews.ReviewDTO;
 import ar.uba.fi.ingsoft1.football5.fields.reviews.ReviewService;
+import ar.uba.fi.ingsoft1.football5.fields.schedules.ScheduleCreateDTO;
+import ar.uba.fi.ingsoft1.football5.fields.schedules.ScheduleDTO;
+import ar.uba.fi.ingsoft1.football5.fields.schedules.ScheduleService;
+import ar.uba.fi.ingsoft1.football5.fields.schedules.ScheduleSlotDTO;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -15,9 +19,9 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springdoc.core.annotations.ParameterObject;
-import org.springframework.data.domain.Pageable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -25,6 +29,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.time.LocalDate;
 import java.util.List;
 
 @RestController
@@ -34,15 +39,17 @@ class FieldRestController {
 
     private final FieldService fieldService;
     private final ReviewService reviewService;
+    private final ScheduleService scheduleService;
 
     @Autowired
-    FieldRestController(FieldService fieldService, ReviewService reviewService) {
+    FieldRestController(FieldService fieldService, ReviewService reviewService, ScheduleService scheduleService) {
         this.fieldService = fieldService;
         this.reviewService = reviewService;
+        this.scheduleService = scheduleService;
     }
 
-    @GetMapping(produces = "application/json")
-    @Operation(summary = "Get all fields with pagination")
+    @GetMapping(path = "/filters", produces = "application/json")
+    @Operation(summary = "Get all fields with pagination and filters")
     @ApiResponse(responseCode = "200", description = "Fields retrieved successfully")
     Page<FieldDTO> getFields(
             @Valid @ParameterObject Pageable pageable,
@@ -52,10 +59,20 @@ class FieldRestController {
             @RequestParam(value = "address", required = false) String address,
             @RequestParam(value = "grassType", required = false) GrassType grassType,
             @RequestParam(value = "isIlluminated", required = false) Boolean isIlluminated,
-            @RequestParam(value = "hasOpenScheduledMatch", required = false) Boolean hasOpenScheduledMatch
+            @RequestParam(value = "hasOpenScheduledMatch", required = false) Boolean hasOpenScheduledMatch,
+            @RequestParam(value = "isEnabled", required = false) Boolean isEnabled
     ) {
-        FieldFiltersDTO filters = new FieldFiltersDTO(name, zone, address, grassType, isIlluminated, hasOpenScheduledMatch);
+        FieldFiltersDTO filters = new FieldFiltersDTO(name, zone, address, grassType, isIlluminated, hasOpenScheduledMatch, isEnabled);
         return fieldService.getFieldsWithFilters(pageable, userDetails, filters);
+    }
+
+    @GetMapping(produces = "application/json")
+    @Operation(summary = "Get all fields with pagination")
+    @ApiResponse(responseCode = "200", description = "Fields retrieved successfully")
+    Page<FieldDTO> getAllFields(
+            @Valid @ParameterObject Pageable pageable
+    ) {
+        return fieldService.getFieldsWithNonFilters(pageable);
     }
 
     @GetMapping(path = "/owned", produces = "application/json")
@@ -153,6 +170,46 @@ class FieldRestController {
             @AuthenticationPrincipal JwtUserDetails userDetails
     ) throws ItemNotFoundException {
         return reviewService.createReview(reviewCreateDTO, fieldId, userDetails);
+    }
+
+    // --- Schedules endpoints
+
+    @PostMapping(path = "/{id}/schedules", produces = "application/json")
+    @Operation(summary = "Create a schedule for a field")
+    @ApiResponse(responseCode = "201", description = "Schedule created successfully")
+    @ApiResponse(responseCode = "404", description = "Field not found", content = @Content)
+    @ApiResponse(responseCode = "400", description = "Invalid schedule data supplied", content = @Content)
+    @ResponseStatus(HttpStatus.CREATED)
+    @PreAuthorize("hasRole('ADMIN')")
+    List<ScheduleDTO> createSchedule(
+            @PathVariable("id") @Parameter(description = "ID of the field to schedule") Long fieldId,
+            @Valid @RequestBody ScheduleCreateDTO scheduleCreate,
+            @AuthenticationPrincipal JwtUserDetails userDetails
+    ) throws ItemNotFoundException, IllegalArgumentException {
+        return scheduleService.createSchedule(fieldId, scheduleCreate, userDetails);
+    }
+
+    @GetMapping(path = "/{id}/schedules", produces = "application/json")
+    @Operation(summary = "Get schedules for a field by ID")
+    @ResponseStatus(HttpStatus.OK)
+    @ApiResponse(responseCode = "200", description = "Schedules retrieved successfully")
+    @ApiResponse(responseCode = "404", description = "Field not found", content = @Content)
+    Page<ScheduleDTO> getSchedulesByFieldId(
+            @Valid @ParameterObject Pageable pageable,
+            @PathVariable("id") @Parameter(description = "ID of the field") Long fieldId
+    ) throws ItemNotFoundException {
+        return scheduleService.getSchedulesByFieldId(fieldId, pageable);
+    }
+
+    @GetMapping(path = "/{id}/schedules/slots", produces = "application/json")
+    @Operation(summary = "Get schedule slots for a field on a specific date")
+    @ResponseStatus(HttpStatus.OK)
+    List<ScheduleSlotDTO> getScheduleSlotsByFieldAndDate(
+            @PathVariable("id") Long fieldId,
+            @RequestParam("date") @Parameter(description = "Date in yyyy-MM-dd") String dateStr
+    ) throws ItemNotFoundException {
+        LocalDate date = LocalDate.parse(dateStr);
+        return scheduleService.getScheduleSlotsByFieldAndDate(fieldId, date);
     }
 }
 

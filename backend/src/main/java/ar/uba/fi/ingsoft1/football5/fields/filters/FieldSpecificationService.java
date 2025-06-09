@@ -15,6 +15,7 @@ public class FieldSpecificationService implements SpecificationService<Field, Fi
                 .and(new FieldAddressSpec(filters.address()))
                 .and(new FieldGrassTypeSpec(filters.grassType()))
                 .and(new FieldIlluminatedSpec(filters.illuminated()))
-                .and(new FieldHasOpenScheduledMatchSpec(filters.hasOpenScheduledMatch()));
+                .and(new FieldHasOpenScheduledMatchSpec(filters.hasOpenScheduledMatch()))
+                .and(new FieldEnabledSpec(filters.enabled()));
     }
 }

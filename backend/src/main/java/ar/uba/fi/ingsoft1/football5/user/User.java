@@ -1,7 +1,9 @@
 package ar.uba.fi.ingsoft1.football5.user;
 
+import ar.uba.fi.ingsoft1.football5.images.AvatarImage;
 import ar.uba.fi.ingsoft1.football5.images.Image;
 import ar.uba.fi.ingsoft1.football5.matches.Match;
+import ar.uba.fi.ingsoft1.football5.teams.Team;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
@@ -35,7 +37,7 @@ public class User implements UserDetails, UserCredentials {
 
     @JsonManagedReference("user-image")
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-    private Image avatar;
+    private AvatarImage avatar;
 
     @Column(nullable = false)
     private String zone;
@@ -66,6 +68,10 @@ public class User implements UserDetails, UserCredentials {
 
     @Column(name = "invitation_token")
     private String invitationToken;
+
+    @ManyToMany(mappedBy = "members")
+    @JsonBackReference("user-teams")
+    private Set<Team> teams = new HashSet<>();
 
     protected User() {}
 
@@ -136,7 +142,7 @@ public class User implements UserDetails, UserCredentials {
         return avatar;
     }
 
-    public void setAvatar(Image avatar) {
+    public void setAvatar(AvatarImage avatar) {
         this.avatar = avatar;
     }
 
@@ -158,6 +164,14 @@ public class User implements UserDetails, UserCredentials {
 
     public Set<Match> getJoinedMatches() {
         return joinedMatches;
+    }
+
+    public Set<Team> getTeams() {
+        return teams;
+    }
+
+    public void setTeams(Set<Team> teams) {
+        this.teams = teams;
     }
 
     public String getInvitationToken() {

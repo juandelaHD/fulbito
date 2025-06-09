@@ -5,18 +5,16 @@ import ar.uba.fi.ingsoft1.football5.config.security.JwtService;
 import ar.uba.fi.ingsoft1.football5.config.security.JwtUserDetails;
 import ar.uba.fi.ingsoft1.football5.user.Role;
 import ar.uba.fi.ingsoft1.football5.user.UserDTO;
-import org.springframework.http.MediaType;
-import org.springframework.security.authentication.TestingAuthenticationToken;
-import org.springframework.security.test.context.support.WithMockUser;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.MediaType;
+import org.springframework.security.authentication.TestingAuthenticationToken;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.LocalDate;
@@ -25,12 +23,13 @@ import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.authentication;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
-import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 
 @WebMvcTest(controllers = MatchRestController.class)
@@ -60,9 +59,9 @@ class MatchRestControllerTest {
 
         organizer = new UserDTO(
                         1L, "Test", "User", "testuser",
-                        1L, "Zone", 25, "M",
+                        "/images/1", "Zone", 25, "M",
                         Role.ADMIN, true);
-
+                        
         match = new MatchDTO(
                 1L,
                 null,

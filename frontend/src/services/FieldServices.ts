@@ -5,6 +5,7 @@ import {CreateFieldRequest, CreateFieldResponseSchema} from "@/models/CreateFiel
 import {useToken} from "@/services/TokenContext.tsx";
 import {handleErrorResponse} from "@/services/ApiUtils.ts";
 import {GetFieldsRequest, GetFieldsResponse, GetFieldsResponseSchema} from "@/models/GetFields.ts";
+import { useEffect, useState } from "react";
 
 export function useCreateField() {
     const [tokenState] = useToken();
@@ -60,18 +61,13 @@ export function useGetFields(filters: GetFieldsRequest) {
     queryFn: async ({ queryKey }) => {
     const [, rawFilters] = queryKey;
     const filters = rawFilters as GetFieldsRequest;
-
-    console.log("🌐 Requesting fields with filters:", filters);
-
     const params = new URLSearchParams();
     Object.entries(filters).forEach(([key, value]) => {
         if (value !== undefined && value !== "") {
         params.append(key, String(value));
         }
     });
-
-      const url = `${BASE_API_URL}/fields?${params.toString()}`;
-
+      const url = `${BASE_API_URL}/fields/filters?${params.toString()}`;
       try {
         const response = await fetch(url, {
           headers: {
@@ -79,31 +75,130 @@ export function useGetFields(filters: GetFieldsRequest) {
             Accept: "application/json",
           },
         });
-
         const json = await response.json();
-
-        console.log("✅ Fields response:", json);
-
         const parsed = GetFieldsResponseSchema.parse(json);
-
         if (parsed.content.length === 0) {
         toast("No fields matched your search.", {
             icon: "ℹ️",
             duration: 4000,
         });
         }
-
         if (!response.ok) {
           toast.error("Failed to fetch fields. Please try again later.");
           throw new Error(json.message || "Unknown error");
         }
-
         return GetFieldsResponseSchema.parse(json);
       } catch (err) {
-        console.error("❌ Error fetching fields:", err);
+        console.error("Error fetching fields:", err);
         throw err;
       }
     },
     enabled: false,
   });
+}
+
+export function useAvailableFields(token: string) {
+  const [fields, setFields] = useState<Record<number, string>>({});
+  const [loadingFields, setLoadingFields] = useState(true);
+
+  useEffect(() => {
+    const fetchFields = async () => {
+      try {
+        const res = await fetch(`${BASE_API_URL}/fields`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (!res.ok) throw new Error("Error fetching fields");
+        const data = await res.json();
+        const dict: Record<number, string> = {};
+        data.content.forEach((f: any) => {
+          dict[f.id] = f.name;
+        });
+        setFields(dict)
+      } catch (e) {
+        toast.error("Error loading fields");
+      } finally {
+        setLoadingFields(false);
+      }
+    };
+    fetchFields();
+  }, [token]);
+
+  return { fields, loadingFields };
+}
+
+
+export type ScheduleSlot = {
+  id: number;
+  start: string; // "HH:mm"
+  end: string;   // "HH:mm"
+  available: boolean;
+};
+
+export async function getFieldSchedulesService(fieldId: number, date: string, token: string): Promise<ScheduleSlot[]> {
+  const res = await fetch(`${BASE_API_URL}/fields/${fieldId}/schedules/slots?date=${date}`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+      Accept: "application/json",
+    },
+  });
+  if (!res.ok) throw new Error("Error fetching schedules");
+  return await res.json();
+}
+
+
+export function useGetOwnedFields() {
+    const [tokenState] = useToken();
+    const token = tokenState.state === "LOGGED_IN" ? tokenState.accessToken : "";
+
+    return useQuery<GetFieldsResponse, Error>({
+        queryKey: ["ownedFields"],
+        queryFn: async () => {
+        const response = await fetch(`${BASE_API_URL}/fields/owned`, {
+            headers: {
+            Authorization: `Bearer ${token}`,
+            Accept: "application/json",
+            },
+        });
+
+        if (!response.ok) {
+            await handleErrorResponse(response, "fetching owned fields");
+        }
+
+        const json = await response.json();
+        const parsed =  GetFieldsResponseSchema.parse(json);
+        console.log("Owned fields response:", parsed);
+
+        if (parsed.content.length === 0) {
+            toast("You don't have any field yet", {
+                icon: "ℹ️",
+                duration: 4000,
+            });
+        }
+
+        return parsed;
+        }
+    });
+}
+
+export function useDeleteField() {
+    const [tokenState] = useToken();
+    const token = tokenState.state === "LOGGED_IN" ? tokenState.accessToken : "";
+
+    return useMutation({
+        mutationFn: async (fieldId: number) => {
+            const response = await fetch(`${BASE_API_URL}/fields/${fieldId}`, {
+                method: "DELETE",
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    "Content-Type": "application/json",
+                },
+            });
+
+            if (!response.ok) {
+                await handleErrorResponse(response, "deleting field");
+            } else {
+                toast.success("Field deleted successfully", { duration: 5000 });
+            }
+        },
+    });
 }

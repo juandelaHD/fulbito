@@ -12,6 +12,7 @@ import { AdminHomePage } from "./screens/AdminHomePage";
 import { PlayerHomePage } from "./screens/PlayerHomePage";
 import { ForgotPasswordScreen } from "@/screens/ForgotPasswordScreen.tsx";
 import { ResetPasswordScreen } from "@/screens/ResetPasswordScreen.tsx";
+import {FieldsManagementScreen} from "@/screens/FieldManagementScreen.tsx";
 import { SignupInvitationScreen } from "@/screens/SignupWithInvitation.tsx";
 
 export const Navigation = () => {
@@ -23,6 +24,9 @@ export const Navigation = () => {
           <Route path="/">
             <MainScreen />
           </Route>
+            <Route path="/fields/management">
+                <FieldsManagementScreen />
+            </Route>
          <Route path="/fields/new">
             <CreateFieldScreen />
           </Route>
@@ -69,7 +73,7 @@ export const Navigation = () => {
           </Route>
           <Route>
             {/* DEFAULT */}
-            <Redirect href="/signup" />
+            <Redirect href="/login" />
           </Route>
         </Switch>
       );

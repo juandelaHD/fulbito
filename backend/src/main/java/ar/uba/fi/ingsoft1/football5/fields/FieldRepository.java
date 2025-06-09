@@ -16,5 +16,9 @@ public interface FieldRepository extends JpaRepository<Field, Long>, JpaSpecific
 
     @Override
     @EntityGraph(attributePaths = {"matches"})
+    Page<Field> findAll(Pageable pageable);
+
+    @Override
+    @EntityGraph(attributePaths = {"matches"})
     Page<Field> findAll(Specification<Field> spec, Pageable pageable);
 }

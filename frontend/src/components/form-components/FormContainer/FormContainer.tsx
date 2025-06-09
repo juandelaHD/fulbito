@@ -7,7 +7,8 @@ type Props = {
     extraError: Error | null;
     className?: string;
     children?: React.ReactNode;
-    submitLabel?: string;    
+    submitLabel?: string;
+    submitDisabled?: boolean;
 };
 
 export const FormContainer = ({
@@ -15,6 +16,7 @@ export const FormContainer = ({
     className = "", 
     children, 
     submitLabel = "Submit",
+    submitDisabled = false,
 }: Props) => {
     const form = useFormContext();
 
@@ -30,18 +32,13 @@ export const FormContainer = ({
         >
             {children}
             {extraError && <ErrorContainer errors={[extraError]} />}
-          <form.Subscribe
-            selector={state => [state.canSubmit, state.isSubmitting]}
-            children={([canSubmit, isSubmitting]) => (
-              <button
-                type="submit"
-                className={`${styles.submitButton} w-full bg-green-700 hover:bg-green-800 text-white py-2 px-4 rounded transition`}
-                disabled={!canSubmit || isSubmitting}
-              >
-                {isSubmitting ? "Submitting..." : submitLabel}
-              </button>
-            )}
-          />
+        <button
+        type="submit"
+        disabled={submitDisabled}
+        className={`${styles.submitButton} w-full bg-green-700 hover:bg-green-800 text-white py-2 px-4 rounded transition`}
+        >
+        {submitLabel}
+        </button>  
         </form>
     );
 };

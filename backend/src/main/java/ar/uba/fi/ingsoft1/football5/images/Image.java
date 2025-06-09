@@ -1,45 +1,38 @@
 package ar.uba.fi.ingsoft1.football5.images;
 
-import ar.uba.fi.ingsoft1.football5.fields.Field;
-import ar.uba.fi.ingsoft1.football5.user.User;
-import com.fasterxml.jackson.annotation.JsonBackReference;
+import ar.uba.fi.ingsoft1.football5.common.exception.ItemNotFoundException;
+import ar.uba.fi.ingsoft1.football5.config.security.JwtUserDetails;
 import jakarta.persistence.*;
 
 @Entity
-public class Image {
+@Inheritance(strategy = InheritanceType.SINGLE_TABLE)
+@DiscriminatorColumn(name = "image_type", discriminatorType = DiscriminatorType.STRING)
+public abstract class Image {
 
     @Id
     @GeneratedValue
     private Long id;
 
-    @Column(name = "data", columnDefinition = "BYTEA")
+    @Column(name = "data", columnDefinition = "BYTEA", nullable = false)
     private byte[] data;
-
-    @JsonBackReference("field-image")
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "field_id")
-    private Field field;
-
-    @JsonBackReference("user-image")
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id")
-    private User user;
 
     protected Image() {}
 
-    public Image(byte[] data, Field field) {
+    public Image(byte[] data) {
         this.data = data;
-        this.field = field;
     }
 
-    public Image(byte[] data, User user) {
-        this.data = data;
-        this.user = user;
+    public Long getId() {
+        return id;
     }
 
-    public Long getId() { return id; }
-    protected void setId(Long id) { this.id = id; }
-    public byte[] getData() { return data; }
-    public Field getField() { return field; }
-    public User getUser() { return user; }
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public byte[] getData() {
+        return data;
+    }
+
+    public abstract void validateOwnership(JwtUserDetails userDetails) throws ItemNotFoundException;
 }
