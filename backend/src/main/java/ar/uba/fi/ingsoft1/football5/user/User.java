@@ -70,6 +70,9 @@ public class User implements UserDetails, UserCredentials {
     @JsonBackReference("user-teams")
     private Set<Team> teams = new HashSet<>();
 
+    @Column(nullable = true)
+    private String invitationToken;
+
     protected User() {}
 
     public User(String username, String firstName, String lastName, String gender, String zone, Integer age, String password, Role role) {
@@ -170,4 +173,13 @@ public class User implements UserDetails, UserCredentials {
     public void setTeams(Set<Team> teams) {
         this.teams = teams;
     }
+
+    public String getInvitationToken() {
+        return invitationToken;
+    }
+
+    public void setInvitationToken(String invitationToken) {
+        this.invitationToken = invitationToken;
+    }
+
 }

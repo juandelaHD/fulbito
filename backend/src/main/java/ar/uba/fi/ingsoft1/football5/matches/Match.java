@@ -1,6 +1,7 @@
 package ar.uba.fi.ingsoft1.football5.matches;
 
 import ar.uba.fi.ingsoft1.football5.fields.Field;
+import ar.uba.fi.ingsoft1.football5.matches.invitation.MatchInvitation;
 import ar.uba.fi.ingsoft1.football5.user.User;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
@@ -45,6 +46,9 @@ public class Match {
     // TODO: Equipos para partido cerrado (pueden ser 2)
     // @OneToMany(mappedBy = "team_id", cascade = CascadeType.ALL, orphanRemoval = true)
     // private Set<Team> teams = new HashSet<>();
+
+    @OneToOne(mappedBy = "match", cascade = CascadeType.ALL, orphanRemoval = true)
+    private MatchInvitation invitation;
 
     // Estado del partido
     @Enumerated(EnumType.STRING)
@@ -104,6 +108,17 @@ public class Match {
     public Long setId(Long id) {
         this.id = id;
         return this.id;
+    }
+
+    public MatchInvitation getInvitation() {
+        return invitation;
+    }
+
+    public void setInvitation(MatchInvitation invitation) {
+        this.invitation = invitation;
+        if (invitation != null) {
+            invitation.setMatch(this);
+        }
     }
 
     public Field getField() {
@@ -207,7 +222,9 @@ public class Match {
     public String getResult() {
         return result;
     }
+
     public void setResult(String result) {
         this.result = result;
     }
+
 }
