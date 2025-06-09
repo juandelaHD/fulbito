@@ -24,10 +24,13 @@ export const Navigation = () => {
           <Route path="/">
             <MainScreen />
           </Route>
-            <Route path="/fields/management">
-                <FieldsManagementScreen />
-            </Route>
-         <Route path="/fields/new">
+          <Route path="/login">
+            <LoginScreen />
+          </Route>
+          <Route path="/fields/management">
+              <FieldsManagementScreen />
+          </Route>
+          <Route path="/fields/new">
             <CreateFieldScreen />
           </Route>
           <Route path="/fields">

@@ -7,12 +7,6 @@ import { SignupRequest, SignupResponseSchema } from "@/models/Signup";
 import { ForgotPasswordRequest, ForgotPasswordRequestSchema, ResetPasswordRequest, ResetPasswordRequestSchema } from "@/models/PasswordReset";
 import {handleErrorResponse} from "@/services/ApiUtils.ts";
 
-export function useSignup() {
-  return useMutation({
-    mutationFn: signupService,
-  });
-}
-
 export function useLogin() {
   const [, setToken] = useToken();
 

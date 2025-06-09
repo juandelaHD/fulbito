@@ -20,8 +20,8 @@ const fieldLabels: Record<string, string> = {
 export const SignupInvitationScreen = () => {
   useLocation();
   // Extrae el token de la URL: /invite/:token
-  const [match] = useRoute("/invite/:token");
-  const token = match?.token;
+  const [, params] = useRoute("/invite/:token");
+  const token = params?.token;
   const { mutateAsync } = useSignup();
 
   const formData = useAppForm({
