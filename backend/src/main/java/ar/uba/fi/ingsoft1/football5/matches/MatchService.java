@@ -5,6 +5,7 @@ import ar.uba.fi.ingsoft1.football5.common.exception.UserNotFoundException;
 import ar.uba.fi.ingsoft1.football5.config.security.JwtUserDetails;
 import ar.uba.fi.ingsoft1.football5.fields.Field;
 import ar.uba.fi.ingsoft1.football5.fields.FieldService;
+import ar.uba.fi.ingsoft1.football5.matches.invitation.MatchInvitationService;
 import ar.uba.fi.ingsoft1.football5.user.User;
 import ar.uba.fi.ingsoft1.football5.user.UserService;
 import ar.uba.fi.ingsoft1.football5.user.email.EmailSenderService;
@@ -22,17 +23,20 @@ public class MatchService {
     private final UserService userService;
     private final FieldService fieldService;
     private final EmailSenderService emailSenderService;
+    private final MatchInvitationService matchInvitationService;
 
     public MatchService(
             MatchRepository matchRepository,
             UserService userService,
             FieldService fieldService,
-            EmailSenderService emailSenderService
+            EmailSenderService emailSenderService,
+            MatchInvitationService matchInvitationService
     ) {
         this.matchRepository = matchRepository;
         this.userService = userService;
         this.fieldService = fieldService;
         this.emailSenderService = emailSenderService;
+        this.matchInvitationService = matchInvitationService;
     }
 
     public Match loadMatchById(Long id) throws ItemNotFoundException {
@@ -66,7 +70,7 @@ public class MatchService {
         );
         newMatch.addPlayer(organizerUser);
 
-        emailSenderService.sendMailToVerifyMatch(
+        emailSenderService.sendMailOfMatchScheduled(
                 organizerUser.getUsername(),
                 match.date(),
                 match.startTime(),
@@ -75,6 +79,8 @@ public class MatchService {
         newMatch.setConfirmationSent(true);
 
         Match savedMatch = matchRepository.save(newMatch);
+
+        matchInvitationService.createInvitation(savedMatch.getId());
         return new MatchDTO(savedMatch);
     }
 
@@ -83,10 +89,33 @@ public class MatchService {
 
         Match match = loadMatchById(matchId);
         User user = userService.loadUserByUsername(userDetails.username());
-        validateJoinConditions(match, user);
+
+        if (match.getType() != MatchType.OPEN)
+            throw new IllegalArgumentException("Only open matches can be joined");
+
+        if (match.getStartTime().isBefore(LocalDateTime.now())) {
+            match.setStatus(MatchStatus.IN_PROGRESS);
+            matchRepository.save(match);
+            throw new IllegalArgumentException("Cannot join a match that already started");
+        }
+        if (match.getPlayers().size() >= match.getMaxPlayers()) {
+            match.setStatus(MatchStatus.COMPLETED);
+            throw new IllegalArgumentException("Match is full");
+        }
+
+        if (match.getPlayers().contains(user))
+            throw new IllegalArgumentException("User is already registered in the match");
 
         match.addPlayer(user);
-        return new MatchDTO(matchRepository.save(match));
+
+        if (match.getPlayers().size() >= match.getMaxPlayers()) {
+            match.setStatus(MatchStatus.COMPLETED);
+            matchInvitationService.invalidateMatchInvitation(match);
+        }
+
+        Match savedMatch = matchRepository.save(match);
+
+        return new MatchDTO(savedMatch);
     }
 
     private void validateFieldForMatch(Field field, MatchCreateDTO match) {
@@ -104,18 +133,15 @@ public class MatchService {
         }
     }
 
-    private void validateJoinConditions(Match match, User user) throws IllegalArgumentException {
-        if (match.getType() != MatchType.OPEN)
-            throw new IllegalArgumentException("Only open matches can be joined");
-
-        if (match.getStartTime().isBefore(LocalDateTime.now()))
-            throw new IllegalArgumentException("Cannot join a match that already started");
-
-        if (match.getPlayers().size() >= match.getMaxPlayers())
-            throw new IllegalArgumentException("Match is full");
-
-        if (match.getPlayers().contains(user))
-            throw new IllegalArgumentException("User is already registered in the match");
+    public String getMatchInvitationLink(Long matchId) throws ItemNotFoundException {
+        Match match = loadMatchById(matchId);
+        if (match.getInvitation() == null || !match.getInvitation().isValid()) {
+            throw new ItemNotFoundException("match", matchId);
+        }
+        if (match.getInvitation().getToken() == null) {
+            throw new IllegalArgumentException("Match invitation token is not set");
+        }
+        return match.getInvitation().getToken();
     }
 
     public List<MatchDTO> getAvailableOpenMatches() {

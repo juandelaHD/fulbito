@@ -4,7 +4,7 @@ import ar.uba.fi.ingsoft1.football5.common.exception.UserNotFoundException;
 import ar.uba.fi.ingsoft1.football5.config.security.JwtService;
 import ar.uba.fi.ingsoft1.football5.config.security.JwtUserDetails;
 import ar.uba.fi.ingsoft1.football5.images.ImageService;
-import ar.uba.fi.ingsoft1.football5.matches.MatchRepository;
+import ar.uba.fi.ingsoft1.football5.matches.MatchStatus;
 import ar.uba.fi.ingsoft1.football5.matches.invitation.MatchInvitation;
 import ar.uba.fi.ingsoft1.football5.matches.invitation.MatchInvitationService;
 import ar.uba.fi.ingsoft1.football5.matches.Match;
@@ -13,7 +13,6 @@ import ar.uba.fi.ingsoft1.football5.teams.TeamDTO;
 import ar.uba.fi.ingsoft1.football5.user.email.EmailSenderService;
 import ar.uba.fi.ingsoft1.football5.user.password_reset_token.PasswordResetService;
 import ar.uba.fi.ingsoft1.football5.user.password_reset_token.PasswordResetToken;
-import ar.uba.fi.ingsoft1.football5.user.password_reset_token.PasswordResetTokenRepository;
 import ar.uba.fi.ingsoft1.football5.user.refresh_token.RefreshToken;
 import ar.uba.fi.ingsoft1.football5.user.refresh_token.RefreshTokenService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,6 +25,7 @@ import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -44,7 +44,6 @@ public class UserService implements UserDetailsService {
     private final ImageService imageService;
     private final EmailSenderService emailService;
     private final PasswordResetService passwordResetService;
-    private final MatchRepository matchRepository;
     private final MatchInvitationService matchInvitationService;
 
     @Autowired
@@ -56,9 +55,9 @@ public class UserService implements UserDetailsService {
             ImageService imageService,
             EmailSenderService emailService,
             PasswordResetService passwordResetService,
-            MatchRepository matchRepository,
             MatchInvitationService matchInvitationService
-    ) {
+    )
+    {
         this.jwtService = jwtService;
         this.passwordEncoder = passwordEncoder;
         this.userRepository = userRepository;
@@ -66,7 +65,6 @@ public class UserService implements UserDetailsService {
         this.imageService = imageService;
         this.emailService = emailService;
         this.passwordResetService = passwordResetService;
-        this.matchRepository = matchRepository;
         this.matchInvitationService = matchInvitationService;
     }
 
@@ -87,29 +85,35 @@ public class UserService implements UserDetailsService {
                 .map(UserDTO::new);
     }
 
-    Optional<TokenDTO> createUser(UserCreateDTO data, MultipartFile avatar) throws IOException {
-
+    Optional<TokenDTO> createUser(UserCreateDTO data, MultipartFile avatar) throws IOException, IllegalArgumentException {
         if (userRepository.findByUsername(data.username().toLowerCase()).isPresent()) {
             throw new IllegalArgumentException("Username already taken");
         }
-
         var user = data.asUser(passwordEncoder::encode);
         user.setEmailConfirmed(false);
-
+        boolean invitationValid = true;
         if (data.invitationToken() != null) {
-            var invitation = matchInvitationService.validateToken(data.invitationToken())
-                    .orElseThrow(() -> new IllegalArgumentException("Invalid invitation token or expired"));
-            user.setInvitationToken(data.invitationToken());
+            try {
+                MatchInvitation invitation = matchInvitationService.validateToken(data.invitationToken())
+                        .orElseThrow(() -> new IllegalArgumentException("Invalid invitation token"));
+                Match match = invitation.getMatch();
+                if (match.getPlayers().size() >= match.getMaxPlayers()) {
+                    throw new IllegalArgumentException("The match is already full");
+                }
+                if (match.getStatus() != MatchStatus.SCHEDULED) {
+                    throw new IllegalArgumentException("The match is not open for joining");
+                }
+                user.setInvitationToken(data.invitationToken());
+            } catch (IllegalArgumentException e) {
+                invitationValid = false;
+                // User can still register without an invitation
+            }
         }
-
         User savedUser = userRepository.save(user);
         imageService.saveAvatarImage(savedUser, avatar);
-
         String token = UUID.randomUUID().toString();
         user.setEmailConfirmationToken(token);
-
         userRepository.save(user);
-
         emailService.sendMailToVerifyAccount(user.getUsername(), token);
         return Optional.of(generateTokens(user));
     }
@@ -119,17 +123,13 @@ public class UserService implements UserDetailsService {
         if (maybeUser.isEmpty()) {
             return Optional.empty();
         }
-
         User existingUser = maybeUser.get();
-
         if (!passwordEncoder.matches(data.getPassword(), existingUser.getPassword())) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid password");
         }
-
         if (!existingUser.isEmailConfirmed()) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Email is not confirmed");
         }
-
         TokenDTO tokens = generateTokens(existingUser);
         return Optional.of(tokens);
     }
@@ -185,15 +185,25 @@ public class UserService implements UserDetailsService {
         user.setEmailConfirmationToken(null);
 
         if (user.getInvitationToken() != null) {
-            matchInvitationService.validateToken(user.getInvitationToken()).ifPresent(inv -> {
-                matchInvitationService.markAsUsed(inv, user);
-                var match = inv.getMatch();
+            try {
+                MatchInvitation invitation = matchInvitationService.validateToken(user.getInvitationToken())
+                        .orElseThrow(() -> new IllegalArgumentException("Invalid invitation token"));
+                Match match = invitation.getMatch();
+                if (match.getStatus() != MatchStatus.SCHEDULED) {
+                    throw new IllegalArgumentException("Cannot join match with status: " + match.getStatus());
+                }
+                if (match.getPlayers().size() >= match.getMaxPlayers()) {
+                    throw new IllegalArgumentException("Cannot join match that is already full.");
+                }
+                if (match.getStartTime().isBefore(LocalDateTime.now())) {
+                    throw new IllegalArgumentException("Cannot join match that has already started.");
+                }
                 match.addPlayer(user);
-                matchRepository.save(match);
-            });
+            } catch (IllegalArgumentException e) {
+                // Optional?: log.warn("No se pudo unir al partido con invitación: " + e.getMessage());
+            }
             user.setInvitationToken(null);
         }
-
         userRepository.save(user);
         return Optional.of(user);
     }

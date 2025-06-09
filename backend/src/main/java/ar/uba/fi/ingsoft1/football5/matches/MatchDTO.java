@@ -1,6 +1,7 @@
 package ar.uba.fi.ingsoft1.football5.matches;
 
 import ar.uba.fi.ingsoft1.football5.fields.FieldDTO;
+import ar.uba.fi.ingsoft1.football5.matches.invitation.MatchInvitationDTO;
 import ar.uba.fi.ingsoft1.football5.user.UserDTO;
 import io.swagger.v3.oas.annotations.media.Schema;
 
@@ -49,7 +50,10 @@ public record MatchDTO(
         LocalDateTime endTime,
 
         @Schema(description = "Whether confirmation was sent", example = "false")
-        boolean confirmationSent
+        boolean confirmationSent,
+
+        @Schema(description = "Match invitation details")
+        MatchInvitationDTO invitation
 
         // @Schema(description = "Match result", example = "0-0")
         // Uncomment when result is implemented
@@ -70,7 +74,8 @@ public record MatchDTO(
                 match.getDate(),
                 match.getStartTime(),
                 match.getEndTime(),
-                match.isConfirmationSent()
+                match.isConfirmationSent(),
+                match.getInvitation() != null ? new MatchInvitationDTO(match.getInvitation()) : null
         );
     }
 }

@@ -3,7 +3,6 @@ package ar.uba.fi.ingsoft1.football5.matches;
 import ar.uba.fi.ingsoft1.football5.common.exception.ItemNotFoundException;
 import ar.uba.fi.ingsoft1.football5.common.exception.UserNotFoundException;
 import ar.uba.fi.ingsoft1.football5.config.security.JwtUserDetails;
-import ar.uba.fi.ingsoft1.football5.matches.invitation.MatchInvitationDTO;
 import ar.uba.fi.ingsoft1.football5.matches.invitation.MatchInvitationService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -22,14 +21,11 @@ import java.util.List;
 @Tag(name = "3 - Matches", description = "Endpoints for managing football matches")
 public class MatchRestController {
     private final MatchService matchService;
-    private final MatchInvitationService matchInvitationService;
-    private static final Integer MAX_INVITATION_EXPIRY_HOURS = 24;
 
     @Autowired
     MatchRestController(MatchService matchService,
                         MatchInvitationService matchInvitationService) {
         this.matchService = matchService;
-        this.matchInvitationService = matchInvitationService;
     }
 
     @GetMapping(path = "/{matchId}", produces = "application/json")
@@ -38,6 +34,16 @@ public class MatchRestController {
     @ApiResponse(responseCode = "200", description = "Match details retrieved successfully")
     MatchDTO getMatch(@Valid @PathVariable Long matchId) throws ItemNotFoundException {
         return matchService.getMatchById(matchId);
+    }
+
+    @GetMapping(path = "/{matchId}/link-invite")
+    @Operation(summary = "Get invitation link for a match")
+    @ResponseStatus(HttpStatus.OK)
+    @ApiResponse(responseCode = "200", description = "Invitation link retrieved successfully")
+    @ApiResponse(responseCode = "404", description = "Match not found")
+    public String getInvitationLink(@PathVariable Long matchId) throws ItemNotFoundException {
+        String token = matchService.getMatchInvitationLink(matchId);
+        return "http://localhost:30003/invite/" + token; // TODO: Replace with actual URL generation logic
     }
 
     @PostMapping(path = "/create", consumes = "application/json", produces = "application/json")
@@ -82,30 +88,6 @@ public class MatchRestController {
     @ResponseStatus(HttpStatus.OK)
     public List<MatchDTO> getAvailableOpenMatches() {
         return matchService.getAvailableOpenMatches();
-    }
-
-    @PostMapping("/{matchId}/invite")
-    @PreAuthorize("hasRole('USER')")
-    @Operation(
-            summary = "Generate an invitation link for a match",
-            description = "Allows a registered user to generate a unique invitation link for a specific match. The link can be shared with unregistered users so they can join the match after registration."
-    )
-    @ApiResponse(responseCode = "200", description = "Invitation link generated successfully")
-    @ApiResponse(responseCode = "404", description = "Match not found")
-    @ApiResponse(responseCode = "403", description = "Not authorized to generate invitations")
-    @ResponseStatus(HttpStatus.OK)
-    public String generateInvitation(
-            @PathVariable
-            @io.swagger.v3.oas.annotations.Parameter(
-                    description = "ID of the match for which the invitation is generated",
-                    required = true,
-                    example = "42"
-            )
-            Long matchId
-    ) throws ItemNotFoundException {
-        MatchInvitationDTO invitation = matchInvitationService.createInvitation(matchId, MAX_INVITATION_EXPIRY_HOURS);
-        // TODO: Replace with actual URL generation logic
-        return "http://localhost:30003/invite/" + invitation.token();
     }
 }
 

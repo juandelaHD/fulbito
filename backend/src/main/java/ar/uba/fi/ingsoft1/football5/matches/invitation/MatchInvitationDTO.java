@@ -1,7 +1,6 @@
 package ar.uba.fi.ingsoft1.football5.matches.invitation;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import java.time.LocalDateTime;
 
 @Schema(description = "Data Transfer Object representing a match invitation.")
 public record MatchInvitationDTO(
@@ -9,17 +8,14 @@ public record MatchInvitationDTO(
         String token,
         @Schema(description = "Match ID", example = "42")
         Long matchId,
-        @Schema(description = "Expiration date and time")
-        LocalDateTime expiryDate,
         @Schema(description = "Whether the invitation was used", example = "false")
-        boolean used
+        boolean valid
 ) {
     public MatchInvitationDTO(MatchInvitation invitation) {
         this(
                 invitation.getToken(),
                 invitation.getMatch().getId(),
-                invitation.getExpiryDate(),
-                invitation.isUsed()
+                invitation.isValid()
         );
     }
 }

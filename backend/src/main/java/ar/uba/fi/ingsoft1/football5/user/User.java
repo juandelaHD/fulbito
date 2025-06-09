@@ -66,12 +66,12 @@ public class User implements UserDetails, UserCredentials {
     @JsonBackReference("player-match")
     private final Set<Match> joinedMatches = new HashSet<>();
 
-    @Column(name = "invitation_token")
-    private String invitationToken;
-
     @ManyToMany(mappedBy = "members")
     @JsonBackReference("user-teams")
     private Set<Team> teams = new HashSet<>();
+
+    @Column(nullable = true)
+    private String invitationToken;
 
     protected User() {}
 
@@ -181,4 +181,5 @@ public class User implements UserDetails, UserCredentials {
     public void setInvitationToken(String invitationToken) {
         this.invitationToken = invitationToken;
     }
+
 }
