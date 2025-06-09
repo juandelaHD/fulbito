@@ -40,7 +40,11 @@ public record UserCreateDTO(
 
         @NotNull(message = "Role is required")
         @Schema(description = "Role assigned to the user within the system", example = "USER")
-        Role role
+        Role role,
+
+        @Schema(description = "Token de invitación si el usuario fue invitado")
+        String invitationToken
+
 ) implements UserCredentials {
 
     public User asUser(Function<String, String> encryptPassword) {

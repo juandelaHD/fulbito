@@ -2,9 +2,11 @@ import { CommonLayout } from "@/components/CommonLayout/CommonLayout";
 import { useAppForm } from "@/config/use-app-form";
 import { LoginRequestSchema } from "@/models/Login";
 import { useLogin } from "@/services/UserServices";
+import { useLocation } from "wouter";
 
 export const LoginScreen = () => {
-  const { mutate } = useLogin();
+  const { mutate, isSuccess } = useLogin();
+  const [, setLocation] = useLocation();
 
   const formData = useAppForm({
     defaultValues: {
@@ -16,6 +18,10 @@ export const LoginScreen = () => {
     },
     onSubmit: async ({ value }) => mutate(value),
   });
+
+  if (isSuccess) {
+    setLocation("/");
+  }
 
   return (
       <CommonLayout>
