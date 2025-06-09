@@ -4,6 +4,8 @@ import ar.uba.fi.ingsoft1.football5.common.exception.UserNotFoundException;
 import ar.uba.fi.ingsoft1.football5.config.security.JwtService;
 import ar.uba.fi.ingsoft1.football5.config.security.JwtUserDetails;
 import ar.uba.fi.ingsoft1.football5.images.ImageService;
+import ar.uba.fi.ingsoft1.football5.matches.Match;
+import ar.uba.fi.ingsoft1.football5.teams.Team;
 import ar.uba.fi.ingsoft1.football5.teams.TeamDTO;
 import ar.uba.fi.ingsoft1.football5.user.email.EmailSenderService;
 import ar.uba.fi.ingsoft1.football5.user.password_reset_token.PasswordResetService;
@@ -20,6 +22,7 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -69,6 +72,11 @@ public class UserService implements UserDetailsService {
         return Optional.of(new UserDTO(user));
     }
 
+    public Optional<UserDTO> getUserByDetails(JwtUserDetails userDetails) {
+        return userRepository.findByUsername(userDetails.username())
+                .map(UserDTO::new);
+    }
+
     Optional<TokenDTO> createUser(UserCreateDTO data, MultipartFile avatar) throws IOException {
 
         if (userRepository.findByUsername(data.username().toLowerCase()).isPresent()) {
@@ -116,6 +124,33 @@ public class UserService implements UserDetailsService {
                 .map(TeamDTO::new)
                 .toList();
         return Optional.of(teams);
+    }
+
+    public List<TeamDTO> getTeamsByUserDetails(JwtUserDetails userDetails) throws UserNotFoundException {
+        User user = loadUserByUsername(userDetails.username());
+        List<TeamDTO> teams = new ArrayList<>();
+        for (Team team : user.getTeams()) {
+            teams.add(new TeamDTO(team));
+        }
+        return teams;
+    }
+
+    public List<MatchHistoryDTO> getPlayedMatches(JwtUserDetails userDetails) throws UserNotFoundException{
+        User user = loadUserByUsername(userDetails.username());
+        List<MatchHistoryDTO> playedMatches = new ArrayList<>();
+        for (Match match : user.getJoinedMatches()) {
+            playedMatches.add(new MatchHistoryDTO(match));
+        }
+        return playedMatches;
+    }
+
+    public List<MatchHistoryDTO> getReservationsByUser(JwtUserDetails userDetails) throws UserNotFoundException {
+        User user = loadUserByUsername(userDetails.username());
+        List<MatchHistoryDTO> reservations = new ArrayList<>();
+        for (Match match : user.getOrganizedMatches()) {
+            reservations.add(new MatchHistoryDTO(match));
+        }
+        return reservations;
     }
 
     Optional<TokenDTO> refresh(RefreshDTO data) {
