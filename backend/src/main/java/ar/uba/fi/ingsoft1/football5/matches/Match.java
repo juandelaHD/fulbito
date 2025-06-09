@@ -79,6 +79,10 @@ public class Match {
     @Column(nullable = false)
     private boolean confirmationSent = false;
 
+    // TODO: Create a result entity or enum
+    @Column(nullable = false)
+    private String result = "0-0";
+
     public Match() {}
 
     public Match(Field field, User organizer, MatchStatus status, MatchType type, Integer minPlayers, Integer maxPlayers, LocalDate date, LocalDateTime startTime, LocalDateTime endTime) {
@@ -199,5 +203,11 @@ public class Match {
     public void setConfirmationSent(boolean confirmationSent) {
         this.confirmationSent = confirmationSent;
     }
-    
+
+    public String getResult() {
+        return result;
+    }
+    public void setResult(String result) {
+        this.result = result;
+    }
 }

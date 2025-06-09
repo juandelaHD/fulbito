@@ -51,6 +51,9 @@ public record MatchDTO(
         @Schema(description = "Whether confirmation was sent", example = "false")
         boolean confirmationSent
 
+        // @Schema(description = "Match result", example = "0-0")
+        // Uncomment when result is implemented
+
 ) {
     public MatchDTO(Match match) {
         this(
