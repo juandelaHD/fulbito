@@ -71,6 +71,11 @@ public class UserService implements UserDetailsService {
         return Optional.of(new UserDTO(user));
     }
 
+    public Optional<UserDTO> getUserByDetails(JwtUserDetails userDetails) {
+        return userRepository.findByUsername(userDetails.username())
+                .map(UserDTO::new);
+    }
+
     Optional<TokenDTO> createUser(UserCreateDTO data, MultipartFile avatar) throws IOException {
 
         if (userRepository.findByUsername(data.username().toLowerCase()).isPresent()) {
@@ -120,20 +125,22 @@ public class UserService implements UserDetailsService {
         return Optional.of(teams);
     }
 
-    public List<MatchHistoryDTO> getPlayedMatches(String username) throws UserNotFoundException {
-        User user = loadUserByUsername(username);
-        return user.getJoinedMatches()
-                .stream()
-                .map(MatchHistoryDTO::new)
-                .toList();
+    public List<MatchHistoryDTO> getPlayedMatches(JwtUserDetails userDetails) throws UserNotFoundException{
+        User user = loadUserByUsername(userDetails.username());
+        List<MatchHistoryDTO> playedMatches = new ArrayList<>();
+        for (Match match : user.getJoinedMatches()) {
+            playedMatches.add(new MatchHistoryDTO(match));
+        }
+        return playedMatches;
     }
 
-    public List<MatchHistoryDTO> getReservationsByUser(String username) throws UserNotFoundException {
-        User user = loadUserByUsername(username);
-        return user.getOrganizedMatches()
-                .stream()
-                .map(MatchHistoryDTO::new)
-                .toList();
+    public List<MatchHistoryDTO> getReservationsByUser(JwtUserDetails userDetails) throws UserNotFoundException {
+        User user = loadUserByUsername(userDetails.username());
+        List<MatchHistoryDTO> reservations = new ArrayList<>();
+        for (Match match : user.getOrganizedMatches()) {
+            reservations.add(new MatchHistoryDTO(match));
+        }
+        return reservations;
     }
 
     Optional<TokenDTO> refresh(RefreshDTO data) {

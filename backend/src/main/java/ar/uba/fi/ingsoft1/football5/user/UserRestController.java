@@ -1,6 +1,7 @@
 package ar.uba.fi.ingsoft1.football5.user;
 
 import ar.uba.fi.ingsoft1.football5.common.exception.UserNotFoundException;
+import ar.uba.fi.ingsoft1.football5.config.security.JwtUserDetails;
 import ar.uba.fi.ingsoft1.football5.teams.TeamDTO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -9,6 +10,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.HttpStatus;
 import org.springframework.lang.NonNull;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -57,39 +59,53 @@ class UserRestController {
                 .orElseThrow(() -> new UserNotFoundException("User not found", username));
     }
 
-    @GetMapping("/{username}/played-matches")
+    @GetMapping(path = "/me", produces = "application/json")
     @Operation(
-            summary = "Get played matches for a user",
-            description = "Devuelve solo los partidos en los que el usuario participó como jugador (no los organizados).",
+            summary = "Get my profile",
+            description = "Returns the details of the authenticated user.",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "Profile retrieved successfully"),
+                    @ApiResponse(responseCode = "404", description = "User not found")
+            }
+    )
+    @ResponseStatus(HttpStatus.OK)
+    public UserDTO getMyProfile(@AuthenticationPrincipal JwtUserDetails userDetails) {
+        return userService.getUserByDetails(userDetails)
+                .orElseThrow(() -> new UserNotFoundException("User not found", userDetails.username()));
+    }
+
+    @GetMapping("/me/played-matches")
+    @Operation(
+            summary = "Get matches I played",
+            description = "Returns only the matches in which the authenticated user participated as a player (not organized).",
             responses = {
                     @ApiResponse(responseCode = "200", description = "Played matches retrieved successfully"),
                     @ApiResponse(responseCode = "404", description = "User not found")
             }
     )
     @ResponseStatus(HttpStatus.OK)
-    public List<MatchHistoryDTO> getPlayedMatches(@PathVariable String username) throws UserNotFoundException {
-        return userService.getPlayedMatches(username);
+    public List<MatchHistoryDTO> getMyPlayedMatches(@AuthenticationPrincipal JwtUserDetails userDetails) {
+        return userService.getPlayedMatches(userDetails);
     }
 
-    @GetMapping(path = "/{username}/reservations", produces = "application/json")
+    @GetMapping(path = "/me/reservations", produces = "application/json")
     @Operation(
-            summary = "Obtener reservas realizadas por el usuario",
-            description = "Devuelve la lista de partidos reservados (organizados) por el usuario.",
+            summary = "Get my reservations",
+            description = "Returns the list of matches organized (reserved) by the authenticated user.",
             responses = {
                     @ApiResponse(
                             responseCode = "200",
-                            description = "Reservas obtenidas correctamente",
+                            description = "Reservations retrieved successfully",
                             content = @Content(schema = @Schema(implementation = MatchHistoryDTO.class))
                     ),
                     @ApiResponse(
                             responseCode = "404",
-                            description = "Usuario no encontrado"
+                            description = "User not found"
                     )
             }
     )
     @ResponseStatus(HttpStatus.OK)
-    public List<MatchHistoryDTO> getReservationsByUser(@PathVariable String username) throws UserNotFoundException {
-        return userService.getReservationsByUser(username);
+    public List<MatchHistoryDTO> getMyReservations(@AuthenticationPrincipal JwtUserDetails userDetails) {
+        return userService.getReservationsByUser(userDetails);
     }
-
 }
