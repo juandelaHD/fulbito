@@ -3,6 +3,7 @@ package ar.uba.fi.ingsoft1.football5.user;
 import ar.uba.fi.ingsoft1.football5.images.AvatarImage;
 import ar.uba.fi.ingsoft1.football5.images.Image;
 import ar.uba.fi.ingsoft1.football5.matches.Match;
+import ar.uba.fi.ingsoft1.football5.teams.Team;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
@@ -64,6 +65,10 @@ public class User implements UserDetails, UserCredentials {
     @ManyToMany(mappedBy = "players", fetch = FetchType.EAGER)
     @JsonBackReference("player-match")
     private final Set<Match> joinedMatches = new HashSet<>();
+
+    @ManyToMany(mappedBy = "members")
+    @JsonBackReference("user-teams")
+    private Set<Team> teams = new HashSet<>();
 
     protected User() {}
 
@@ -156,5 +161,13 @@ public class User implements UserDetails, UserCredentials {
 
     public Set<Match> getJoinedMatches() {
         return joinedMatches;
+    }
+
+    public Set<Team> getTeams() {
+        return teams;
+    }
+
+    public void setTeams(Set<Team> teams) {
+        this.teams = teams;
     }
 }

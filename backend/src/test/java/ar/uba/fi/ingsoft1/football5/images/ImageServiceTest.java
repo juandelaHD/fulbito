@@ -6,6 +6,7 @@ import ar.uba.fi.ingsoft1.football5.fields.Field;
 import ar.uba.fi.ingsoft1.football5.fields.FieldRepository;
 import ar.uba.fi.ingsoft1.football5.fields.GrassType;
 import ar.uba.fi.ingsoft1.football5.fields.Location;
+import ar.uba.fi.ingsoft1.football5.teams.TeamRepository;
 import ar.uba.fi.ingsoft1.football5.user.User;
 import ar.uba.fi.ingsoft1.football5.user.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -49,6 +50,9 @@ class ImageServiceTest {
     private FieldRepository fieldRepository;
 
     @Mock
+    private TeamRepository teamRepository;
+
+    @Mock
     private JwtUserDetails userDetails;
 
     @Mock
@@ -62,7 +66,7 @@ class ImageServiceTest {
                 .getResource("default_profile.webp")).toURI());
         storagePath = defaultImgPath.getParent().toString();
 
-        imageService = new ImageService(storagePath, imageRepository, userRepository, fieldRepository);
+        imageService = new ImageService(storagePath, imageRepository, userRepository, fieldRepository, teamRepository);
 
         AvatarImage.injectRepository(userRepository);
         FieldImage.injectRepositories(fieldRepository, userRepository);

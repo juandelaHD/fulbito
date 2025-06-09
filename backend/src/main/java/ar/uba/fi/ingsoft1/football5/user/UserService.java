@@ -4,6 +4,7 @@ import ar.uba.fi.ingsoft1.football5.common.exception.UserNotFoundException;
 import ar.uba.fi.ingsoft1.football5.config.security.JwtService;
 import ar.uba.fi.ingsoft1.football5.config.security.JwtUserDetails;
 import ar.uba.fi.ingsoft1.football5.images.ImageService;
+import ar.uba.fi.ingsoft1.football5.teams.TeamDTO;
 import ar.uba.fi.ingsoft1.football5.user.email.EmailSenderService;
 import ar.uba.fi.ingsoft1.football5.user.password_reset_token.PasswordResetService;
 import ar.uba.fi.ingsoft1.football5.user.password_reset_token.PasswordResetToken;
@@ -19,6 +20,7 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -62,9 +64,9 @@ public class UserService implements UserDetailsService {
                 .orElseThrow(() -> new UserNotFoundException(USER_NOT_FOUND, username));
     }
 
-    public UserDTO getUser(String username) throws UserNotFoundException {
+    public Optional<UserDTO> getUserByUsername(String username) throws UserNotFoundException {
         User user = loadUserByUsername(username);
-        return new UserDTO(user);
+        return Optional.of(new UserDTO(user));
     }
 
     Optional<TokenDTO> createUser(UserCreateDTO data, MultipartFile avatar) throws IOException {
@@ -106,6 +108,14 @@ public class UserService implements UserDetailsService {
 
         TokenDTO tokens = generateTokens(existingUser);
         return Optional.of(tokens);
+    }
+
+    public Optional<List<TeamDTO>> getTeamsByUsername(String username) throws UserNotFoundException {
+        User user = loadUserByUsername(username);
+        List<TeamDTO> teams = user.getTeams().stream()
+                .map(TeamDTO::new)
+                .toList();
+        return Optional.of(teams);
     }
 
     Optional<TokenDTO> refresh(RefreshDTO data) {
