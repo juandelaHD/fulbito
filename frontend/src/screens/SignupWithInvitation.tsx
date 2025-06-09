@@ -18,7 +18,8 @@ const fieldLabels: Record<string, string> = {
 };
 
 export const SignupInvitationScreen = () => {
-  useLocation();
+  const [, navigate] = useLocation();
+
   // Extrae el token de la URL: /invite/:token
   const [, params] = useRoute("/invite/:token");
   const token = params?.token;
@@ -71,7 +72,14 @@ export const SignupInvitationScreen = () => {
         invitationToken: token,
       };
 
-      await mutateAsync(payload);
+      await mutateAsync(payload, {
+        onSuccess: () => {
+          navigate("/login");
+        },
+        onError: (error) => {
+          console.error(error);
+        }
+      });
     },
   });
 

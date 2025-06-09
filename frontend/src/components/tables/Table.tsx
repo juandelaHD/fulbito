@@ -45,7 +45,7 @@ export function Table<TData>({ columns, data, onRowClick }: TableProps<TData>) {
                 <TableHead
                   key={header.id}
                   onClick={header.column.getCanSort() ? header.column.getToggleSortingHandler() : undefined}
-                  className={header.column.getCanSort() ? "cursor-pointer" : ""}
+                  className={`!text-center py-3 px-2 text-base font-semibold ${header.column.getCanSort() ? "cursor-pointer" : ""}`}
                 >
                   {flexRender(header.column.columnDef.header, header.getContext())}
                   {header.column.getIsSorted() === "asc" && " \u{1F53A}"}
@@ -61,10 +61,10 @@ export function Table<TData>({ columns, data, onRowClick }: TableProps<TData>) {
             <TableRow
               key={row.id}
               onClick={() => onRowClick?.(row.original)}
-              className={`h-[40px] ${onRowClick ? "cursor-pointer hover:bg-muted" : ""}`}
+              className={`h-[56px] my-2 bg-gray-50 hover:bg-gray-100 transition rounded-lg ${onRowClick ? "cursor-pointer hover:bg-muted" : ""}`}
             >
               {row.getVisibleCells().map((cell) => (
-                <TableCell key={cell.id}>
+                <TableCell key={cell.id} className="!text-center">
                   {flexRender(cell.column.columnDef.cell, cell.getContext())}
                 </TableCell>
               ))}

@@ -92,11 +92,36 @@ export function useJoinMatch() {
       toast.success("Successfully joined match!", { duration: 5000 });
     },
     onError: (err: unknown) => {
-      console.error("Error while joining match:", err);
-      toast.error("Error while joining match. Please try again.", { duration: 5000 });
+      console.log("Error while joining match:", err);
     },
   });
 }
+
+export async function getMatchInviteLinkService(matchId: number, token: string): Promise<string> {
+  const response = await fetch(`${BASE_API_URL}/matches/${matchId}/link-invite`, {
+    method: "GET",
+    headers: {
+      Authorization: `Bearer ${token}`,
+      Accept: "application/json",
+    },
+  });
+
+  if (!response.ok) {
+    await handleErrorResponse(response, "fetching invite link");
+  }
+  return await response.text();
+}
+
+
+export function useGetMatchInviteLink() {
+  const [tokenState] = useToken();
+  const token = tokenState.state === "LOGGED_IN" ? tokenState.accessToken : "";
+
+  return useMutation({
+    mutationFn: (matchId: number) => getMatchInviteLinkService(matchId, token),
+  });
+}
+
 
 export type CreateMatchPayload = {
   matchType: string;
