@@ -27,6 +27,12 @@ public record MatchCreateDTO(
         List<Long> teamIds,
         */
 
+        @Schema(description = "Name of team A")
+        String teamA,
+
+        @Schema(description = "Name of team B")
+        String teamB,
+
         @Min(value = 1, message = "Minimum number of players must be at least 1")
         @Schema(description = "Minimum number of players required", example = "1")
         Integer minPlayers,

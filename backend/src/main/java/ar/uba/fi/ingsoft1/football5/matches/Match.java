@@ -46,6 +46,11 @@ public class Match {
     // @OneToMany(mappedBy = "team_id", cascade = CascadeType.ALL, orphanRemoval = true)
     // private Set<Team> teams = new HashSet<>();
 
+    @Column(nullable = true)    
+    private String teamA;
+    @Column(nullable = true)
+    private String teamB;
+
     // Estado del partido
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
@@ -199,5 +204,14 @@ public class Match {
     public void setConfirmationSent(boolean confirmationSent) {
         this.confirmationSent = confirmationSent;
     }
+
+    public String getTeamA() {
+        return teamA;
+    }
+
+    public String getTeamB() {
+        return teamB;
+    }
+
     
 }

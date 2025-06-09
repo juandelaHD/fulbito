@@ -46,8 +46,22 @@ public class MatchService {
                 .orElseThrow(() -> new ItemNotFoundException("match", id));
     }
 
-    public MatchDTO createOpenMatch(MatchCreateDTO match, JwtUserDetails userDetails)
+    public void validationsClosedMatch(MatchCreateDTO match)
+        throws IllegalArgumentException, ItemNotFoundException, UserNotFoundException {
+            if(match.teamA() == null || match.teamA().isBlank()){
+                throw new IllegalArgumentException("Team A name is required for CLOSED match");
+            }
+            if(match.teamB() == null || match.teamB().isBlank()){
+                throw new IllegalArgumentException("Team B name is required for CLOSED match");
+            }
+        }    
+
+    public MatchDTO createMatch(MatchCreateDTO match, JwtUserDetails userDetails)
             throws IllegalArgumentException, ItemNotFoundException, UserNotFoundException {
+        if(match.matchType() == MatchType.CLOSED){
+            validationsClosedMatch(match);
+        }
+
         Field field = fieldService.loadFieldById(match.fieldId());
         validateFieldForMatch(field, match);
 
@@ -64,7 +78,6 @@ public class MatchService {
                 match.startTime(),
                 match.endTime()
         );
-        newMatch.addPlayer(organizerUser);
 
         emailSenderService.sendMailToVerifyMatch(
                 organizerUser.getUsername(),

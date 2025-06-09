@@ -27,6 +27,12 @@ public record MatchDTO(
         List<TeamDTO> teams,
         */
 
+        @Schema(description = "Name of team A")
+        String teamA,
+
+        @Schema(description = "Name of team B")
+        String teamB,
+
         @Schema(description = "Current status of the match", example = "SCHEDULED")
         MatchStatus status,
 
@@ -60,6 +66,8 @@ public record MatchDTO(
                 match.getPlayers().stream().map(UserDTO::new).toList(),
                 // TODO: Uncomment when teams are implemented
                 // match.getTeams().stream().map(TeamDTO::new).toList(),
+                match.getTeamA(),
+                match.getTeamB(),
                 match.getStatus(),
                 match.getType(),
                 match.getMinPlayers(),
