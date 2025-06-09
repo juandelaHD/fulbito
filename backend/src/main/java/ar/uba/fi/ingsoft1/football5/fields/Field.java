@@ -2,6 +2,7 @@ package ar.uba.fi.ingsoft1.football5.fields;
 
 import ar.uba.fi.ingsoft1.football5.images.FieldImage;
 import ar.uba.fi.ingsoft1.football5.matches.Match;
+import ar.uba.fi.ingsoft1.football5.fields.schedules.Schedule;
 import ar.uba.fi.ingsoft1.football5.user.User;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
@@ -46,6 +47,9 @@ public class Field {
     @JsonBackReference("match-field")
     @OneToMany(mappedBy = "field", fetch = FetchType.LAZY)
     private List<Match> matches = new ArrayList<>();
+
+    @OneToMany(mappedBy = "field", cascade = CascadeType.ALL,  orphanRemoval = true)
+    private List<Schedule> schedules = new ArrayList<>();
 
     @Column
     private boolean enabled = true;
@@ -120,4 +124,9 @@ public class Field {
     public boolean isEnabled() {
         return enabled;
     }
+
+    public List<Schedule> getSchedules() {
+        return schedules;
+    }
+
 }

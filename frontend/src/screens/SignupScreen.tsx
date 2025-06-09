@@ -4,6 +4,7 @@ import { useSignup } from "@/services/UserServices";
 import { SignupRequestSchema } from "@/models/Signup";
 import { toast } from "react-hot-toast";
 import { FileInput } from "@/components/form-components/FileInput/FileInput";
+import {useLocation} from "wouter";
 
 const fieldLabels: Record<string, string> = {
   firstName: "First Name",
@@ -17,6 +18,7 @@ const fieldLabels: Record<string, string> = {
 };
 
 export const SignupScreen = () => {
+  const [, navigate] = useLocation();
   const { mutate } = useSignup();
 
   const formData = useAppForm({
@@ -67,7 +69,15 @@ export const SignupScreen = () => {
         avatar: result.data.avatar instanceof File ? result.data.avatar : null,
       };
 
-      mutate(payload);
+      mutate(payload, {
+        onSuccess: () => {
+          navigate("/login");
+        },
+        onError: (error) => {
+          console.error(error);
+        }
+      });
+
     },
   });
 
@@ -147,11 +157,11 @@ export const SignupScreen = () => {
                   </formData.AppField>
                   <formData.AppField name="avatar">
                     {(field) => (
-                      <FileInput
-                        label="Avatar"
-                        accept="image/*"
-                        onChange={(file) => field.handleChange(() => file)}
-                      />
+                        <FileInput
+                            label="Avatar"
+                            accept="image/*"
+                            onChange={(file) => field.handleChange(() => file)}
+                        />
                     )}
                   </formData.AppField>
                 </formData.FormContainer>
@@ -161,7 +171,7 @@ export const SignupScreen = () => {
           <div className="text-center text-sm font-light text-green-800 mt-4">
             Already have an account?{" "}
             <a href="/login" className="font-medium text-green-700 hover:underline">
-              Log in
+              Log In
             </a>
           </div>
         </section>

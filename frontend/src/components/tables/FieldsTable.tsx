@@ -1,5 +1,6 @@
 import { ColumnDef } from "@tanstack/react-table"
 import { Table } from "@/components/tables/Table"
+import {useImageById} from "@/services/ImageServices.ts";
 
 export type Field = {
   id: number
@@ -8,7 +9,8 @@ export type Field = {
   lighting: string
   zone: string
   address: string
-  photos: string
+  imageUrl?: string
+  allImagesUrls?: string[]
 }
 
 type FieldsTableProps = {
@@ -18,26 +20,11 @@ type FieldsTableProps = {
 
 export function FieldsTable({ data, onReserve }: FieldsTableProps) {
   const columns: ColumnDef<Field>[] = [
-    {
-      accessorKey: "name",
-      header: "Name",
-    },
-    {
-      accessorKey: "grassType",
-      header: "Grass Type",
-    },
-    {
-      accessorKey: "lighting",
-      header: "Lighting",
-    },
-    {
-      accessorKey: "zone",
-      header: "Zone",
-    },
-    {
-      accessorKey: "address",
-      header: "Address",
-    },
+    { accessorKey: "name", header: "Name" },
+    { accessorKey: "grassType", header: "Grass Type" },
+    { accessorKey: "lighting", header: "Lighting" },
+    { accessorKey: "zone",  header: "Zone" },
+    { accessorKey: "address", header: "Address" },
     {
       id: "actions",
       header: "Actions",
@@ -54,21 +41,29 @@ export function FieldsTable({ data, onReserve }: FieldsTableProps) {
       ),
     },
     {
-      id: "photo",
-      header: "View Photos",
-      cell: ({ row }) => (
-        <div className="flex justify-center">
-          <a
-            href={row.original.photos}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-xl hover:scale-110 transition-transform"
-          >
-            🖼️
-          </a>
-        </div>
-      ),
-    },
+      id: "image",
+      header: "Image",
+      cell: ({ row }) => {
+        const imageEndpoint = row.original.imageUrl;
+        const imageUrl = useImageById(imageEndpoint);
+
+        return (
+            <div
+                className="w-[120px] h-[100px] overflow-hidden rounded bg-black/10 flex items-center justify-center"
+            >
+              {imageUrl ? (
+                  <img
+                      src={imageUrl}
+                      alt={row.original.name}
+                      className="w-full h-full object-cover block"
+                  />
+              ) : (
+                  <span className="text-xs">🖼️</span>
+              )}
+            </div>
+        );
+      },
+    }
   ]
 
   return <Table columns={columns} data={data} />

@@ -11,7 +11,7 @@ public record FieldCreateDTO(
         @NotNull Boolean illuminated,
         @NotBlank @Size(min = 1, max = 100) String zone,
         @NotBlank @Size(min = 1, max = 100) String address,
-        @NotNull Boolean enabled
+        Boolean enabled
 ) {
     public Field asField(User owner) {
         return this.asField(null, owner);

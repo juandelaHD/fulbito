@@ -4,6 +4,8 @@ import ar.uba.fi.ingsoft1.football5.common.exception.ItemNotFoundException;
 import ar.uba.fi.ingsoft1.football5.config.security.JwtUserDetails;
 import ar.uba.fi.ingsoft1.football5.fields.Field;
 import ar.uba.fi.ingsoft1.football5.fields.FieldRepository;
+import ar.uba.fi.ingsoft1.football5.teams.Team;
+import ar.uba.fi.ingsoft1.football5.teams.TeamRepository;
 import ar.uba.fi.ingsoft1.football5.user.User;
 import ar.uba.fi.ingsoft1.football5.user.UserRepository;
 import jakarta.annotation.PostConstruct;
@@ -26,18 +28,21 @@ public class ImageService {
     private final ImageRepository imageRepository;
     private final UserRepository userRepository;
     private final FieldRepository fieldRepository;
+    private final TeamRepository teamRepository;
 
     @PostConstruct
     public void injectRepositories() {
         AvatarImage.injectRepository(userRepository);
         FieldImage.injectRepositories(fieldRepository, userRepository);
+        TeamImage.injectRepository(teamRepository);
     }
 
-    public ImageService(@Value("${app.images.path}") String storagePath, ImageRepository imageRepository, UserRepository userRepository, FieldRepository fieldRepository) {
+    public ImageService(@Value("${app.images.path}") String storagePath, ImageRepository imageRepository, UserRepository userRepository, FieldRepository fieldRepository, TeamRepository teamRepository) {
         this.storagePath = storagePath;
         this.imageRepository = imageRepository;
         this.userRepository = userRepository;
         this.fieldRepository = fieldRepository;
+        this.teamRepository = teamRepository;
     }
 
     public void saveFieldImages(Field field, List<MultipartFile> images) throws IOException {
@@ -66,9 +71,24 @@ public class ImageService {
         user.setAvatar(image);
     }
 
+    public void saveTeamImage(Team team, MultipartFile file) throws IOException {
+        byte[] data;
+
+        if (file == null || file.isEmpty()) {
+            Path pathImg = Paths.get(storagePath, "default_profile.webp");
+            data = Files.readAllBytes(pathImg);
+        } else {
+            data = file.getBytes();
+        }
+
+        TeamImage image = new TeamImage(data, team);
+        image = imageRepository.save(image);
+        team.setImage(image);
+    }
+
     public byte[] getImageData(Long id) throws ItemNotFoundException {
         if (id == null) {
-            throw new ItemNotFoundException("image", id);
+            throw new ItemNotFoundException("image" , id);
         }
         return imageRepository.findById(id)
                 .map(Image::getData)

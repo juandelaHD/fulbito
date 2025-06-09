@@ -20,7 +20,7 @@ export default function OpenMatchesScreen() {
           date: m.date,
           startTime: start.toLocaleTimeString("es-AR", { hour: "2-digit", minute: "2-digit" }),
           endTime: end.toLocaleTimeString("es-AR",   { hour: "2-digit", minute: "2-digit" }),
-          inscritos: m.players.length,
+          registered: m.players.length,
           minPlayers: m.minPlayers,
           maxPlayers: m.maxPlayers,
         };
@@ -39,8 +39,8 @@ export default function OpenMatchesScreen() {
     <div className="p-6 space-y-6">
       <h1 className="text-2xl font-bold">Open Matches</h1>
 
-      {isFetchingMatches && <div>Cargando partidos abiertos…</div>}
-      {isError && <div className="text-red-500">Error cargando partidos.</div>}
+      {isFetchingMatches && <div>Loading open matches</div>}
+      {isError && <div className="text-red-500">Error while loading open matches.</div>}
 
       {!isFetchingMatches && !isError && (
         <OpenMatchesTable data={matches} onJoin={handleJoin} joiningId={null} />

@@ -6,6 +6,10 @@ import ar.uba.fi.ingsoft1.football5.fields.filters.FieldFiltersDTO;
 import ar.uba.fi.ingsoft1.football5.fields.reviews.ReviewCreateDTO;
 import ar.uba.fi.ingsoft1.football5.fields.reviews.ReviewDTO;
 import ar.uba.fi.ingsoft1.football5.fields.reviews.ReviewService;
+import ar.uba.fi.ingsoft1.football5.fields.schedules.ScheduleCreateDTO;
+import ar.uba.fi.ingsoft1.football5.fields.schedules.ScheduleDTO;
+import ar.uba.fi.ingsoft1.football5.fields.schedules.ScheduleService;
+import ar.uba.fi.ingsoft1.football5.fields.schedules.ScheduleSlotDTO;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -25,6 +29,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.time.LocalDate;
 import java.util.List;
 
 @RestController
@@ -34,11 +39,13 @@ class FieldRestController {
 
     private final FieldService fieldService;
     private final ReviewService reviewService;
+    private final ScheduleService scheduleService;
 
     @Autowired
-    FieldRestController(FieldService fieldService, ReviewService reviewService) {
+    FieldRestController(FieldService fieldService, ReviewService reviewService, ScheduleService scheduleService) {
         this.fieldService = fieldService;
         this.reviewService = reviewService;
+        this.scheduleService = scheduleService;
     }
 
     @GetMapping(path = "/filters", produces = "application/json")
@@ -163,6 +170,46 @@ class FieldRestController {
             @AuthenticationPrincipal JwtUserDetails userDetails
     ) throws ItemNotFoundException {
         return reviewService.createReview(reviewCreateDTO, fieldId, userDetails);
+    }
+
+    // --- Schedules endpoints
+
+    @PostMapping(path = "/{id}/schedules", produces = "application/json")
+    @Operation(summary = "Create a schedule for a field")
+    @ApiResponse(responseCode = "201", description = "Schedule created successfully")
+    @ApiResponse(responseCode = "404", description = "Field not found", content = @Content)
+    @ApiResponse(responseCode = "400", description = "Invalid schedule data supplied", content = @Content)
+    @ResponseStatus(HttpStatus.CREATED)
+    @PreAuthorize("hasRole('ADMIN')")
+    List<ScheduleDTO> createSchedule(
+            @PathVariable("id") @Parameter(description = "ID of the field to schedule") Long fieldId,
+            @Valid @RequestBody ScheduleCreateDTO scheduleCreate,
+            @AuthenticationPrincipal JwtUserDetails userDetails
+    ) throws ItemNotFoundException, IllegalArgumentException {
+        return scheduleService.createSchedule(fieldId, scheduleCreate, userDetails);
+    }
+
+    @GetMapping(path = "/{id}/schedules", produces = "application/json")
+    @Operation(summary = "Get schedules for a field by ID")
+    @ResponseStatus(HttpStatus.OK)
+    @ApiResponse(responseCode = "200", description = "Schedules retrieved successfully")
+    @ApiResponse(responseCode = "404", description = "Field not found", content = @Content)
+    Page<ScheduleDTO> getSchedulesByFieldId(
+            @Valid @ParameterObject Pageable pageable,
+            @PathVariable("id") @Parameter(description = "ID of the field") Long fieldId
+    ) throws ItemNotFoundException {
+        return scheduleService.getSchedulesByFieldId(fieldId, pageable);
+    }
+
+    @GetMapping(path = "/{id}/schedules/slots", produces = "application/json")
+    @Operation(summary = "Get schedule slots for a field on a specific date")
+    @ResponseStatus(HttpStatus.OK)
+    List<ScheduleSlotDTO> getScheduleSlotsByFieldAndDate(
+            @PathVariable("id") Long fieldId,
+            @RequestParam("date") @Parameter(description = "Date in yyyy-MM-dd") String dateStr
+    ) throws ItemNotFoundException {
+        LocalDate date = LocalDate.parse(dateStr);
+        return scheduleService.getScheduleSlotsByFieldAndDate(fieldId, date);
     }
 }
 
