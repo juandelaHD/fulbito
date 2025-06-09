@@ -4,6 +4,7 @@ import ar.uba.fi.ingsoft1.football5.common.exception.UserNotFoundException;
 import ar.uba.fi.ingsoft1.football5.config.security.JwtService;
 import ar.uba.fi.ingsoft1.football5.config.security.JwtUserDetails;
 import ar.uba.fi.ingsoft1.football5.images.ImageService;
+import ar.uba.fi.ingsoft1.football5.matches.Match;
 import ar.uba.fi.ingsoft1.football5.teams.TeamDTO;
 import ar.uba.fi.ingsoft1.football5.user.email.EmailSenderService;
 import ar.uba.fi.ingsoft1.football5.user.password_reset_token.PasswordResetService;
@@ -20,6 +21,7 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -116,6 +118,22 @@ public class UserService implements UserDetailsService {
                 .map(TeamDTO::new)
                 .toList();
         return Optional.of(teams);
+    }
+
+    public List<MatchHistoryDTO> getPlayedMatches(String username) throws UserNotFoundException {
+        User user = loadUserByUsername(username);
+        return user.getJoinedMatches()
+                .stream()
+                .map(MatchHistoryDTO::new)
+                .toList();
+    }
+
+    public List<MatchHistoryDTO> getReservationsByUser(String username) throws UserNotFoundException {
+        User user = loadUserByUsername(username);
+        return user.getOrganizedMatches()
+                .stream()
+                .map(MatchHistoryDTO::new)
+                .toList();
     }
 
     Optional<TokenDTO> refresh(RefreshDTO data) {
