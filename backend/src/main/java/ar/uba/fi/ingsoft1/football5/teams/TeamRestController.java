@@ -1,0 +1,278 @@
+package ar.uba.fi.ingsoft1.football5.teams;
+
+import ar.uba.fi.ingsoft1.football5.common.exception.ItemNotFoundException;
+import ar.uba.fi.ingsoft1.football5.config.security.JwtUserDetails;
+import ar.uba.fi.ingsoft1.football5.images.ImageService;
+import ar.uba.fi.ingsoft1.football5.user.UserService;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.parameters.RequestBody;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.Validator;
+import jakarta.validation.constraints.Positive;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
+import java.util.List;
+import java.util.Set;
+
+@RestController
+@RequestMapping("/teams")
+@Tag(name = "Teams", description = "Endpoints for managing teams")
+public class TeamRestController {
+    private final TeamService teamService;
+    private final TeamRepository teamRepository;
+    private final ImageService imageService;
+
+    @Autowired
+    private Validator validator;
+
+    @Autowired
+    private UserService userService;
+
+    public TeamRestController(TeamService teamService, TeamRepository teamRepository, ImageService imageService) {
+        this.teamService = teamService;
+        this.teamRepository = teamRepository;
+        this.imageService = imageService;
+    }
+
+    @PostMapping(path = "/create", consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @Operation(
+            summary = "Create a new team",
+            description = "Creates a new team with a unique name. The authenticated user will be the captain. Accepts a JSON string for the team and an optional image file.",
+            responses = {
+                    @ApiResponse(
+                            responseCode = "201",
+                            description = "Team created successfully",
+                            content = @Content(
+                                    mediaType = "application/json",
+                                    schema = @Schema(implementation = TeamDTO.class)
+                            )
+                    ),
+                    @ApiResponse(
+                            responseCode = "400",
+                            description = "Invalid data or team name already exists",
+                            content = @Content(
+                                    mediaType = "application/json",
+                                    schema = @Schema(
+                                            example = """
+                    {
+                      "status": 400,
+                      "error": "Bad Request",
+                      "message": "Team creation failed",
+                      "path": "/teams/create"
+                    }
+                    """
+                                    )
+                            )
+                    )
+            }
+    )
+    public ResponseEntity<TeamDTO> createTeam(
+            @RequestParam("team")
+            @Parameter(
+                    description = "TeamCreateDTO JSON payload",
+                    schema = @Schema(type = "string", format = "json", implementation = TeamCreateDTO.class)
+            ) String teamJson,
+            @RequestParam(value = "image", required = false) MultipartFile image,
+            @AuthenticationPrincipal JwtUserDetails userDetails
+    ) throws IOException, ItemNotFoundException, IllegalArgumentException {
+        ObjectMapper objectMapper = new ObjectMapper();
+        TeamCreateDTO dto = objectMapper.readValue(teamJson, TeamCreateDTO.class);
+
+        Set<ConstraintViolation<TeamCreateDTO>> violations = validator.validate(dto);
+        if (!violations.isEmpty()) {
+            StringBuilder errorMessage = new StringBuilder("Validation failed: ");
+            for (ConstraintViolation<TeamCreateDTO> violation : violations) {
+                errorMessage.append(violation.getPropertyPath()).append(" ").append(violation.getMessage()).append("; ");
+            }
+            throw new org.springframework.web.server.ResponseStatusException(
+                    HttpStatus.BAD_REQUEST, errorMessage.toString()
+            );
+        }
+
+        return teamService.createTeam(dto, userDetails.username(), image)
+                .map(team -> ResponseEntity.status(HttpStatus.CREATED).body(team))
+                .orElseThrow(() -> new org.springframework.web.server.ResponseStatusException(
+                        HttpStatus.BAD_REQUEST, "Team creation failed. The name may already exist."
+                ));
+    }
+
+    @GetMapping(value = "/my", produces = MediaType.APPLICATION_JSON_VALUE)
+    @Operation(
+            summary = "List teams where the user is captain",
+            description = "Returns all teams where the authenticated user is the captain.",
+            responses = {
+                    @ApiResponse(
+                            responseCode = "200",
+                            description = "Teams listed successfully",
+                            content = @Content(schema = @Schema(implementation = TeamDTO.class))
+                    )
+            }
+    )
+    public List<TeamDTO> getMyTeams(@AuthenticationPrincipal JwtUserDetails userDetails) {
+        return teamService.getTeamsByCaptain(userDetails.username());
+    }
+
+    @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
+    @Operation(
+            summary = "List all teams",
+            description = "Returns all teams in the system.",
+            responses = {
+                    @ApiResponse(
+                            responseCode = "200",
+                            description = "Teams listed successfully",
+                            content = @Content(schema = @Schema(implementation = TeamDTO.class))
+                    )
+            }
+    )
+    public List<TeamDTO> getAllTeams() {
+        return teamService.getAllTeams();
+    }
+
+    @PutMapping(path = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @Operation(
+            summary = "Update a team",
+            description = "Updates the details of a team. The authenticated user must be the captain of the team.",
+            responses = {
+                    @ApiResponse(
+                            responseCode = "200",
+                            description = "Team updated successfully",
+                            content = @Content(schema = @Schema(implementation = TeamDTO.class))
+                    ),
+                    @ApiResponse(
+                            responseCode = "404",
+                            description = "Team not found",
+                            content = @Content
+                    ),
+                    @ApiResponse(
+                            responseCode = "400",
+                            description = "Not the captain or invalid data",
+                            content = @Content
+                    )
+            }
+    )
+    public ResponseEntity<TeamDTO> updateTeam(
+            @PathVariable("id") Long id,
+            @RequestParam("team")
+            @Parameter(
+                    description = "Payload JSON del equipo",
+                    schema = @Schema(type = "string", format = "json", implementation = TeamCreateDTO.class)
+            ) String teamJson,
+            @RequestPart(value = "image", required = false)
+            @Parameter(
+                    description = "Team image (opcional)",
+                    schema = @Schema(type = "string", format = "binary")
+            ) MultipartFile image,
+            @AuthenticationPrincipal JwtUserDetails userDetails
+    ) throws Exception {
+        ObjectMapper objectMapper = new ObjectMapper();
+        TeamCreateDTO dto = objectMapper.readValue(teamJson, TeamCreateDTO.class);
+        TeamDTO updated = teamService.updateTeam(id, dto, userDetails.username());
+        if (image != null && !image.isEmpty()) {
+            Team team = teamRepository.findById(updated.id()).orElseThrow();
+            imageService.saveTeamImage(team, image);
+        }
+        return ResponseEntity.ok(updated);
+    }
+    @DeleteMapping("/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @Operation(
+            summary = "Delete a team",
+            description = "Deletes a team if the authenticated user is the captain.",
+            responses = {
+                    @ApiResponse(
+                            responseCode = "204",
+                            description = "Team deleted successfully"
+                    ),
+                    @ApiResponse(
+                            responseCode = "404",
+                            description = "Team not found",
+                            content = @Content
+                    ),
+                    @ApiResponse(
+                            responseCode = "400",
+                            description = "Not the captain",
+                            content = @Content
+                    )
+            }
+    )
+    public void deleteTeam(
+            @Parameter(description = "Team ID", required = true) @PathVariable @Positive Long id,
+            @AuthenticationPrincipal JwtUserDetails userDetails) throws ItemNotFoundException {
+        teamService.deleteTeam(id, userDetails.username());
+    }
+
+    @PostMapping(value = "/{teamId}/image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @ResponseStatus(HttpStatus.OK)
+    @Operation(
+            summary = "Upload or replace team image",
+            description = "Allows the captain to upload or replace the team's image. Use multipart/form-data with a 'file' field.",
+            requestBody = @RequestBody(
+                    required = true,
+                    description = "Image file to upload",
+                    content = @Content(
+                            mediaType = MediaType.MULTIPART_FORM_DATA_VALUE,
+                            schema = @Schema(type = "string", format = "binary")
+                    )
+            ),
+            responses = {
+                    @ApiResponse(
+                            responseCode = "200",
+                            description = "Image uploaded successfully"
+                    ),
+                    @ApiResponse(
+                            responseCode = "404",
+                            description = "Team not found",
+                            content = @Content
+                    ),
+                    @ApiResponse(
+                            responseCode = "400",
+                            description = "Not the captain or invalid file",
+                            content = @Content
+                    )
+            }
+    )
+    public void uploadTeamImage(
+            @Parameter(description = "Team ID", required = true) @PathVariable @Positive Long teamId,
+            @Parameter(description = "Image file", required = true) @RequestParam("file") MultipartFile file,
+            @AuthenticationPrincipal JwtUserDetails userDetails
+    ) throws Exception {
+        Team team = teamRepository.findById(teamId)
+                .orElseThrow(() -> new ItemNotFoundException("team", teamId));
+        if (!team.getCaptain().getUsername().equalsIgnoreCase(userDetails.username())) {
+            throw new IllegalArgumentException("You are not the captain of this team.");
+        }
+        imageService.saveTeamImage(team, file);
+    }
+
+    @PostMapping("/{teamId}/members")
+    @Operation(
+            summary = "Add a member to a team",
+            description = "Allows the captain to add a user as a team member.",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "Member added successfully"),
+                    @ApiResponse(responseCode = "400", description = "Not authorized or invalid data"),
+                    @ApiResponse(responseCode = "404", description = "Team or user not found")
+            }
+    )
+    public ResponseEntity<TeamDTO> addMember(
+            @PathVariable Long teamId,
+            @RequestParam String username,
+            @AuthenticationPrincipal JwtUserDetails userDetails
+    ) throws ItemNotFoundException, IllegalArgumentException {
+        TeamDTO updated = teamService.addMember(teamId, username, userDetails.username());
+        return ResponseEntity.ok(updated);
+    }
+}
