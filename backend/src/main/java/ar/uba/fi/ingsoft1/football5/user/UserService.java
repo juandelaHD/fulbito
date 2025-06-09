@@ -5,6 +5,7 @@ import ar.uba.fi.ingsoft1.football5.config.security.JwtService;
 import ar.uba.fi.ingsoft1.football5.config.security.JwtUserDetails;
 import ar.uba.fi.ingsoft1.football5.images.ImageService;
 import ar.uba.fi.ingsoft1.football5.matches.Match;
+import ar.uba.fi.ingsoft1.football5.teams.Team;
 import ar.uba.fi.ingsoft1.football5.teams.TeamDTO;
 import ar.uba.fi.ingsoft1.football5.user.email.EmailSenderService;
 import ar.uba.fi.ingsoft1.football5.user.password_reset_token.PasswordResetService;
@@ -123,6 +124,15 @@ public class UserService implements UserDetailsService {
                 .map(TeamDTO::new)
                 .toList();
         return Optional.of(teams);
+    }
+
+    public List<TeamDTO> getTeamsByUserDetails(JwtUserDetails userDetails) throws UserNotFoundException {
+        User user = loadUserByUsername(userDetails.username());
+        List<TeamDTO> teams = new ArrayList<>();
+        for (Team team : user.getTeams()) {
+            teams.add(new TeamDTO(team));
+        }
+        return teams;
     }
 
     public List<MatchHistoryDTO> getPlayedMatches(JwtUserDetails userDetails) throws UserNotFoundException{

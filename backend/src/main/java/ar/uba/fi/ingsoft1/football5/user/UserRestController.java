@@ -74,6 +74,20 @@ class UserRestController {
                 .orElseThrow(() -> new UserNotFoundException("User not found", userDetails.username()));
     }
 
+    @GetMapping("/me/teams")
+    @Operation(
+            summary = "Get my teams",
+            description = "Returns the list of teams associated with the authenticated user.",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "Teams retrieved successfully"),
+                    @ApiResponse(responseCode = "404", description = "User not found")
+            }
+    )
+    @ResponseStatus(HttpStatus.OK)
+    public List<TeamDTO> getMyTeams(@AuthenticationPrincipal JwtUserDetails userDetails) {
+        return userService.getTeamsByUserDetails(userDetails);
+    }
+
     @GetMapping("/me/played-matches")
     @Operation(
             summary = "Get matches I played",
