@@ -37,7 +37,7 @@ class UserRestController {
     )
     @ResponseStatus(HttpStatus.OK)
     // TODO: When are we using this service? Is it for the user or admin profile page? Decide PreAuthorize annotation.
-    UserDTO getUser(@NonNull @PathVariable String username) {
+    UserDTO getUser(@NonNull @PathVariable String username) throws UserNotFoundException {
         return userService.getUserByUsername(username)
                 .orElseThrow(() -> new UserNotFoundException("User not found", username));
     }
@@ -69,7 +69,7 @@ class UserRestController {
             }
     )
     @ResponseStatus(HttpStatus.OK)
-    public UserDTO getMyProfile(@AuthenticationPrincipal JwtUserDetails userDetails) {
+    public UserDTO getMyProfile(@AuthenticationPrincipal JwtUserDetails userDetails) throws UserNotFoundException {
         return userService.getUserByDetails(userDetails)
                 .orElseThrow(() -> new UserNotFoundException("User not found", userDetails.username()));
     }
@@ -84,7 +84,7 @@ class UserRestController {
             }
     )
     @ResponseStatus(HttpStatus.OK)
-    public List<TeamDTO> getMyTeams(@AuthenticationPrincipal JwtUserDetails userDetails) {
+    public List<TeamDTO> getMyTeams(@AuthenticationPrincipal JwtUserDetails userDetails) throws UserNotFoundException {
         return userService.getTeamsByUserDetails(userDetails);
     }
 
@@ -98,7 +98,7 @@ class UserRestController {
             }
     )
     @ResponseStatus(HttpStatus.OK)
-    public List<MatchHistoryDTO> getMyPlayedMatches(@AuthenticationPrincipal JwtUserDetails userDetails) {
+    public List<MatchHistoryDTO> getMyPlayedMatches(@AuthenticationPrincipal JwtUserDetails userDetails) throws UserNotFoundException {
         return userService.getPlayedMatches(userDetails);
     }
 
@@ -119,7 +119,7 @@ class UserRestController {
             }
     )
     @ResponseStatus(HttpStatus.OK)
-    public List<MatchHistoryDTO> getMyReservations(@AuthenticationPrincipal JwtUserDetails userDetails) {
+    public List<MatchHistoryDTO> getMyReservations(@AuthenticationPrincipal JwtUserDetails userDetails) throws UserNotFoundException {
         return userService.getReservationsByUser(userDetails);
     }
 }
