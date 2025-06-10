@@ -55,42 +55,54 @@ public class MatchService {
                 .orElseThrow(() -> new ItemNotFoundException("match", id));
     }
 
-    public void validationsClosedMatch(MatchCreateDTO match)
+    public void validationsClosedMatch(MatchCreateDTO match, Team homeTeam, Team awayTeam)
         throws IllegalArgumentException, ItemNotFoundException, UserNotFoundException {
-            // Corroboro que los teams que recibo tengan datos
-            if (match.homeTeam() == null || teamRepository.findById(match.homeTeam().id()).isEmpty()) {
-                throw new IllegalArgumentException("Home team must be provided with a valid ID");
-            }
-            if (match.awayTeam() == null || teamRepository.findById(match.awayTeam().id()).isEmpty()) {
-                throw new IllegalArgumentException("Away team must be provided with a valid ID");
-            }
-            if (match.homeTeam().id().equals(match.awayTeam().id())) {
-                throw new IllegalArgumentException("Home and away teams must be different");
-            }
-            // Reviso si los equipos tienen jugadores duplicados entre si
-            var membersA = match.homeTeam().members().stream().map(m -> m.username().toLowerCase()).toList();
-            var membersB = match.awayTeam().members().stream().map(m -> m.username().toLowerCase()).toList();
 
-            // Jugadores duplicados
-            for (String user : membersA) {
-                if (membersB.contains(user)) {
-                    throw new IllegalArgumentException("User '" + user + "' is in both teams");
-                }
-            }
+        if (match.homeTeamId().equals(match.awayTeamId())) {
+            throw new IllegalArgumentException("Home and away teams must be different");
         }
 
-    private Team loadAndValidateTeam(Long teamId, String label) {
-        return teamRepository.findById(teamId)
-            .orElseThrow(() -> new IllegalArgumentException(label + " with ID " + teamId + " does not exist"));
+        if (homeTeam.getMembers().size() + awayTeam.getMembers().size() < match.minPlayers()) {
+            throw new IllegalArgumentException("Total players in both teams must be at least " + match.minPlayers() + ". Change the teams or the match limits.");
+        }
+
+        if (homeTeam.getMembers().size() + awayTeam.getMembers().size() > match.maxPlayers()) {
+            throw new IllegalArgumentException("Total players in both teams must not exceed " + match.maxPlayers() + ". Change the teams or the match limits.");
+        }
+
+        List<String> membersA = homeTeam.getMembers().stream()
+                .map(User::getUsername)
+                .toList();
+        List<String> membersB = awayTeam.getMembers().stream()
+                .map(User::getUsername)
+                .toList();
+
+        for (String member : membersA) {
+            if (membersB.contains(member)) {
+                throw new IllegalArgumentException("Teams cannot have players in common: " + member);
+            }
+        }
     }
-    private void notifyMatchCreation(MatchCreateDTO match, User user) {
-            emailSenderService.sendMailOfMatchScheduled(
+
+    private void notifyReservation(MatchCreateDTO match, User user) {
+        emailSenderService.sendReservationMail(
                 user.getUsername(),
                 match.date(),
                 match.startTime(),
                 match.endTime()
         );
-    }    
+    }
+
+    private void notifyTeamCaptain(MatchCreateDTO match, User captain, User organizer) {
+        emailSenderService.sendTeamCaptainMail(
+                captain.getUsername(),
+                match.date(),
+                match.startTime(),
+                match.endTime(),
+                organizer.getUsername()
+        );
+    }
+
 
     public MatchDTO createMatch(MatchCreateDTO match, JwtUserDetails userDetails)
             throws IllegalArgumentException, ItemNotFoundException, UserNotFoundException {
@@ -115,8 +127,8 @@ public class MatchService {
         if(match.matchType() == MatchType.CLOSED){
             joinClosedMatch(match, newMatch);
         }
-        
-        notifyMatchCreation(match, organizerUser);
+
+        notifyReservation(match, organizerUser);
         newMatch.setConfirmationSent(true);
 
         Match savedMatch = matchRepository.save(newMatch);
@@ -163,13 +175,15 @@ public class MatchService {
 
     private void joinClosedMatch(MatchCreateDTO match, Match newMatch)
             throws IllegalArgumentException, ItemNotFoundException, UserNotFoundException{
-        validationsClosedMatch(match);
-        Team homeTeam = loadAndValidateTeam(match.homeTeam().id(), "Home team");
-        Team awayTeam = loadAndValidateTeam(match.awayTeam().id(), "Away team");
+        Team homeTeam = teamRepository.findById(match.homeTeamId())
+                .orElseThrow( () -> new IllegalArgumentException("Home team with ID " + match.homeTeamId() + " does not exist"));
+        Team awayTeam = teamRepository.findById(match.awayTeamId())
+                .orElseThrow( () -> new IllegalArgumentException("Away team with ID " + match.homeTeamId() + " does not exist"));
+        validationsClosedMatch(match, homeTeam, awayTeam);
         newMatch.addHomeTeam(homeTeam);
         newMatch.addAwayTeam(awayTeam);
-        notifyMatchCreation(match, homeTeam.getCaptain());
-        notifyMatchCreation(match, awayTeam.getCaptain());
+        notifyTeamCaptain(match, homeTeam.getCaptain(), newMatch.getOrganizer());
+        notifyTeamCaptain(match, awayTeam.getCaptain(), newMatch.getOrganizer());
         newMatch.setStatus(MatchStatus.COMPLETED);
     }
 

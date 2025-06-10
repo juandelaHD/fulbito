@@ -7,8 +7,6 @@ import jakarta.validation.constraints.NotNull;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
-import ar.uba.fi.ingsoft1.football5.teams.TeamDTO;
-
 @Schema(description = "Data Transfer Object used when creating a new match.")
 public record MatchCreateDTO(
         @NotNull(message = "Match type is required")
@@ -19,11 +17,11 @@ public record MatchCreateDTO(
         @Schema(description = "ID of the field where the match will take place", example = "1")
         Long fieldId,
 
-        @Schema(description = "TeamDTO of team A", nullable = true)
-        TeamDTO homeTeam,
+        @Schema(description = "Team ID of team A", example = "1", nullable = true)
+        Long homeTeamId,
 
-        @Schema(description = "TeamDTO of team B", nullable = true)
-        TeamDTO awayTeam,
+        @Schema(description = "Team ID of team B", example = "2", nullable = true)
+        Long awayTeamId,
 
         @Min(value = 1, message = "Minimum number of players must be at least 1")
         @Schema(description = "Minimum number of players required", example = "1")
