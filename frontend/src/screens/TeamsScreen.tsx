@@ -1,13 +1,37 @@
+import { useRef, useState } from "react";
 import { CommonLayout } from "@/components/CommonLayout/CommonLayout";
 import { useGetMyTeams } from "@/services/TeamServices";
 import { TeamsTable } from "@/components/tables/TeamsTable";
 import { useLocation } from "wouter";
 
-
-// TODO: LA TABLA DE EQUIPOS DEBE ESTAR EN LA PANTALLA DEL PERFIL DE USUARIO, NO AQUÍ
 export const TeamsScreen = () => {
-  const { data, isLoading, error } = useGetMyTeams();
+  // Deshabilita el fetch automático
+  const { data, isLoading, error, refetch, isFetching } = useGetMyTeams({ enabled: false });
   const [, navigate] = useLocation();
+  const prevCount = useRef<number>(0);
+  const [newTeams, setNewTeams] = useState<number>(0);
+  console.log("TeamsScreen rendered");
+  // Cargar equipos la primera vez manualmente
+  const handleInitialLoad = async () => {
+    const result = await refetch();
+    if (result.data) {
+      prevCount.current = result.data.length;
+    }
+  };
+
+  useState(() => {
+    handleInitialLoad();
+  });
+
+  // Al hacer refresh, compara la cantidad de equipos
+  const handleRefresh = async () => {
+    const result = await refetch();
+    if (result.data) {
+      const diff = result.data.length - prevCount.current;
+      setNewTeams(diff > 0 ? diff : 0);
+      prevCount.current = result.data.length;
+    }
+  };
 
   return (
     <CommonLayout>
@@ -21,7 +45,21 @@ export const TeamsScreen = () => {
             Create team
           </button>
         </div>
-        <h1 className="text-2xl font-semibold mb-4">Teams</h1>
+        <div className="flex items-center gap-4 mb-4">
+          <h1 className="text-2xl font-semibold">Teams</h1>
+          <button
+            className="px-3 py-1 bg-gray-200 rounded hover:bg-gray-300"
+            onClick={handleRefresh}
+            disabled={isFetching}
+          >
+            Refresh
+          </button>
+          {newTeams > 0 && (
+            <span className="text-green-600 font-medium">
+              {newTeams} nuevo{newTeams > 1 ? "s" : ""} equipo{newTeams > 1 ? "s" : ""}!
+            </span>
+          )}
+        </div>
         {isLoading && <p>Loading teams...</p>}
         {error && <p className="text-red-500">Error while loading teams</p>}
         {Array.isArray(data) && <TeamsTable data={data} />}

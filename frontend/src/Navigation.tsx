@@ -5,9 +5,8 @@ import { MainScreen } from "@/screens/MainScreen";
 import { SignupScreen } from "@/screens/SignupScreen";
 import { CreateFieldScreen } from "@/screens/CreateFieldScreen"; 
 import { useToken } from "@/services/TokenContext";
-import OpenMatchesScreen from "@/screens/OpenMatchesScreen";
 import { FieldsScreen } from "@/screens/FieldsScreen";
-import { MatchScreen } from "./screens/MatchScreen";
+import { CreateMatchScreen } from "./screens/CreateMatchScreen.tsx";
 import { AdminHomePage } from "./screens/AdminHomePage";
 import { PlayerHomePage } from "./screens/PlayerHomePage";
 import { ForgotPasswordScreen } from "@/screens/ForgotPasswordScreen.tsx";
@@ -16,6 +15,9 @@ import {FieldsManagementScreen} from "@/screens/FieldManagementScreen.tsx";
 import { SignupInvitationScreen } from "@/screens/SignupWithInvitation.tsx";
 import { TeamCreateScreen } from "@/screens/TeamCreateScreen.tsx";
 import { TeamsScreen } from "@/screens/TeamsScreen.tsx";
+import { MatchHomeScreen } from "@/screens/MatchHomeScreen.tsx";
+import { CreateClosedMatchScreen } from "@/screens/CreateClosedMatchScreen.tsx";
+import { CreateOpenMatchScreen } from "@/screens/CreateOpenMatchScreen.tsx";
 
 export const Navigation = () => {
   const [tokenState] = useToken();
@@ -38,11 +40,17 @@ export const Navigation = () => {
           <Route path="/fields">
             <FieldsScreen />
           </Route>
-          <Route path="/open-matches">
-            <OpenMatchesScreen />
-          </Route>
           <Route path="/match">
-            <MatchScreen />
+            <MatchHomeScreen />
+          </Route>
+          <Route path="/match/create">
+            <CreateMatchScreen />
+          </Route>
+          <Route path="/matches/create/closed">
+            <CreateClosedMatchScreen />
+          </Route>
+          <Route path="/matches/create/open">
+            <CreateOpenMatchScreen />
           </Route>
           <Route path="/admin">
             <AdminHomePage />
