@@ -3,7 +3,7 @@ import { Table } from "@/components/tables/Table";
 import { useDeleteField, useGetOwnedFields } from "@/services/FieldServices";
 import { useImageById } from "@/services/ImageServices.ts";
 import { toast } from "react-hot-toast";
-import { ConfirmDialog } from "@/components/modals/ConfirmDialog.tsx";
+import { DeleteModal } from "@/components/modals/DeleteModal";
 import { useState } from "react";
 import { useMemo } from "react";
 
@@ -101,8 +101,9 @@ export function ManageFieldsTable() {
         {isError && <div className="text-red-500">Error loading fields</div>}
         {!isLoading && data && <Table columns={columns} data={data.content.map(mapFieldDTOtoField)} />}
         {fieldToDelete && (
-            <ConfirmDialog
-                message={`Are you sure you want to delete "${fieldToDelete.name}"?`}
+            <DeleteModal
+                isOpen={!!fieldToDelete}
+                fieldName={fieldToDelete.name}
                 onCancel={() => setFieldToDelete(null)}
                 onConfirm={async () => {
                   await handleDeleteConfirmed(fieldToDelete.id);
