@@ -8,7 +8,7 @@ import "react-datepicker/dist/react-datepicker.css";
 import { toast } from "react-hot-toast";
 import DatePicker from "react-datepicker";
 import { format } from "date-fns";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useToken } from "@/services/TokenContext.tsx";
 
 const matchLabels: Record<string, string> = {
@@ -22,18 +22,28 @@ const matchLabels: Record<string, string> = {
   scheduleId: "Schedule",
 };
 
-export const MatchScreen = () => {
+export const CreateMatchScreen = ({ defaultMatchType = "OPEN" }: { defaultMatchType?: "OPEN" | "CLOSED" }) => {
   const [tokenState] = useToken();
   const token = tokenState.state === "LOGGED_IN" ? tokenState.accessToken : "";
+  // location.state puede contener homeTeamId y awayTeamId
+  const { homeTeamId, awayTeamId, defaultMatchType: navMatchType } = useMemo(() => {
+    const params = new URLSearchParams(window.location.search);
+    return {
+      homeTeamId: params.get("homeTeamId") ?? undefined,
+      awayTeamId: params.get("awayTeamId") ?? undefined,
+      defaultMatchType: params.get("defaultMatchType") as "OPEN" | "CLOSED" | undefined,
+    };
+  }, [window.location.search]);
   const { mutateAsync } = useCreateMatch();
   const { fields, loadingFields } = useAvailableFields(token);
   const [schedules, setSchedules] = useState<ScheduleSlot[]>([]);
   const [loadingSchedules, setLoadingSchedules] = useState(false);
   const [schedulesFetched, setSchedulesFetched] = useState(false);
+  const matchType = navMatchType || defaultMatchType;
 
   const formData = useAppForm({
     defaultValues: {
-      matchType: "OPEN",
+      matchType: matchType,
       fieldId: "",
       minPlayers: 1,
       maxPlayers: 10,
@@ -86,6 +96,9 @@ export const MatchScreen = () => {
         date: format(result.data.date, "yyyy-MM-dd"),
         startTime: format(startTime, "yyyy-MM-dd'T'HH:mm:ss"),
         endTime: format(endTime, "yyyy-MM-dd'T'HH:mm:ss"),
+        ...(homeTeamId && awayTeamId
+          ? { homeTeamId: Number(homeTeamId), awayTeamId: Number(awayTeamId) }
+          : {}),
       };
 
       await mutateAsync(payload);
@@ -126,19 +139,6 @@ export const MatchScreen = () => {
         <h1 className="text-center text-2xl font-semibold mb-4">Create a New Match</h1>
         <formData.AppForm>
           <formData.FormContainer extraError={null} className="space-y-4" submitLabel="Create Match">
-            {/* Match Type */}
-            <formData.AppField name="matchType">
-              {(field) => (
-                <field.SelectField
-                  label="Match Type"
-                  options={[
-                    { label: "Open", value: "OPEN" },
-                    { label: "Close", value: "CLOSE" },
-                  ]}
-                />
-              )}
-            </formData.AppField>
-
             {/* Min / Max Players */}
             <formData.AppField name="minPlayers">
               {(field) => (
