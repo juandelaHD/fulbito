@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Set;
 
 @Service
 @Transactional
@@ -111,12 +112,12 @@ public class MatchService {
             validationsClosedMatch(match);
             Team homeTeam = loadAndValidateTeam(match.homeTeam().id(), "Home team");
             Team awayTeam = loadAndValidateTeam(match.awayTeam().id(), "Away team");
-            newMatch.setHomeTeam(homeTeam);
-            newMatch.setAwayTeam(awayTeam);
+            newMatch.addHomeTeam(homeTeam);
+            newMatch.addAwayTeam(awayTeam);
+            joinClosedMatch(newMatch);
             notifyMatchCreation(match, homeTeam.getCaptain());
             notifyMatchCreation(match, awayTeam.getCaptain());
         }
-
         notifyMatchCreation(match, organizerUser);
         newMatch.setConfirmationSent(true);
 
@@ -133,6 +134,18 @@ public class MatchService {
 
         match.addPlayer(user);
         return new MatchDTO(matchRepository.save(match));
+    }
+
+    private void joinClosedMatch(Match match){
+        Set<User> homePlayers = match.getHomeTeam().getMembers();
+        Set<User> awayPlayers = match.getAwayTeam().getMembers();
+
+        for (User player: homePlayers){
+            match.addPlayer(player);
+        }
+        for (User player: awayPlayers){
+            match.addPlayer(player);
+        }
     }
 
     private void validateFieldForMatch(Field field, MatchCreateDTO match) {

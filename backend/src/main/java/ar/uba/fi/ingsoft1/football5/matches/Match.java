@@ -206,16 +206,18 @@ public class Match {
         this.confirmationSent = confirmationSent;
     }
 
-    public void setHomeTeam(Team homeTeam) {
-        this.homeTeam = homeTeam;
+    public void addHomeTeam(Team team) {
+        homeTeam = team;
+        homeTeam.getJoinedMatches().add(this); 
     }
 
     public Team getHomeTeam() {
         return homeTeam;
-    }
-
-    public void setAwayTeam(Team awayTeam) {
-        this.awayTeam = awayTeam;
+    }    
+    
+    public void addAwayTeam(Team team) {
+        awayTeam = team;
+        awayTeam.getJoinedMatches().add(this); 
     }
 
     public Team getAwayTeam() {
