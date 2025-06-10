@@ -200,6 +200,8 @@ class MatchServiceTest {
         MatchCreateDTO dto = new MatchCreateDTO(
                 MatchType.OPEN,
                 1L,
+                null,
+                null,
                 5,
                 10,
                 LocalDate.now().plusDays(1),
@@ -209,9 +211,9 @@ class MatchServiceTest {
 
         when(matchRepository.save(any(Match.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        MatchDTO result = matchService.createOpenMatch(dto, userDetails);
+        MatchDTO result = matchService.createMatch(dto, userDetails);
 
-        assertEquals(1, result.players().size());
+        assertEquals(0, result.players().size());
         assertEquals("testuser", result.organizer().username());
         verify(emailSenderService).sendMailOfMatchScheduled(eq("testuser"), any(), any(), any());
     }
@@ -222,6 +224,8 @@ class MatchServiceTest {
             new MatchCreateDTO(
                     MatchType.OPEN,
                     1L,
+                    null,
+                    null,
                     5,
                     10,
                     LocalDate.now().minusDays(1),
@@ -239,6 +243,8 @@ class MatchServiceTest {
             new MatchCreateDTO(
                     MatchType.OPEN,
                     1L,
+                    null,
+                    null,
                     5,
                     10,
                     LocalDate.now().plusDays(1),
@@ -260,6 +266,8 @@ class MatchServiceTest {
         MatchCreateDTO dto = new MatchCreateDTO(
                 MatchType.OPEN,
                 1L,
+                null,
+                null,
                 5,
                 10,
                 LocalDate.now().plusDays(1),
@@ -268,7 +276,7 @@ class MatchServiceTest {
         );
 
         Exception ex = assertThrows(IllegalArgumentException.class, () -> {
-            matchService.createOpenMatch(dto, userDetails);
+            matchService.createMatch(dto, userDetails);
         });
 
         assertEquals("Field is not enabled for matches", ex.getMessage());
@@ -285,6 +293,8 @@ class MatchServiceTest {
         MatchCreateDTO dto = new MatchCreateDTO(
                 MatchType.OPEN,
                 1L,
+                null,
+                null,
                 5,
                 10,
                 LocalDate.now().plusDays(1),
@@ -293,7 +303,7 @@ class MatchServiceTest {
         );
 
         Exception ex = assertThrows(IllegalArgumentException.class, () -> {
-            matchService.createOpenMatch(dto, userDetails);
+            matchService.createMatch(dto, userDetails);
         });
 
         assertEquals("Field is not available at the specified date and time", ex.getMessage());

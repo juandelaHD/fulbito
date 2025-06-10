@@ -3,6 +3,7 @@ package ar.uba.fi.ingsoft1.football5.matches;
 import ar.uba.fi.ingsoft1.football5.fields.Field;
 import ar.uba.fi.ingsoft1.football5.matches.invitation.MatchInvitation;
 import ar.uba.fi.ingsoft1.football5.user.User;
+import ar.uba.fi.ingsoft1.football5.teams.Team;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 
@@ -43,9 +44,14 @@ public class Match {
     @JsonManagedReference("player-match")
     private Set<User> players = new HashSet<>();
 
-    // TODO: Equipos para partido cerrado (pueden ser 2)
-    // @OneToMany(mappedBy = "team_id", cascade = CascadeType.ALL, orphanRemoval = true)
-    // private Set<Team> teams = new HashSet<>();
+    // Equipos del partido
+    @ManyToOne
+    @JoinColumn(name = "home_team_id", nullable = true)
+    private Team homeTeam;
+
+    @ManyToOne
+    @JoinColumn(name = "away_team_id", nullable = true)
+    private Team awayTeam;
 
     @OneToOne(mappedBy = "match", cascade = CascadeType.ALL, orphanRemoval = true)
     private MatchInvitation invitation;
@@ -219,6 +225,32 @@ public class Match {
         this.confirmationSent = confirmationSent;
     }
 
+    public void addHomeTeam(Team team) {
+        homeTeam = team;
+        homeTeam.getJoinedMatches().add(this); 
+
+        for (User player: homeTeam.getMembers()){
+            this.addPlayer(player);
+        }
+    }
+
+    public Team getHomeTeam() {
+        return homeTeam;
+    }    
+    
+    public void addAwayTeam(Team team) {
+        awayTeam = team;
+        awayTeam.getJoinedMatches().add(this); 
+
+        for (User player: awayTeam.getMembers()){
+            this.addPlayer(player);
+        }
+    }
+
+    public Team getAwayTeam() {
+        return awayTeam;
+    }
+
     public String getResult() {
         return result;
     }
@@ -226,5 +258,4 @@ public class Match {
     public void setResult(String result) {
         this.result = result;
     }
-
 }
