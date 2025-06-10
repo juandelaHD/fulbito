@@ -52,6 +52,7 @@ export const CreateFieldScreen = () => {
         illuminated: result.data.illuminated,
         zone: result.data.zone,
         address: result.data.address,
+        enabled: true,
         photos: value.photos ? Array.from(value.photos) : [],
       };
 
