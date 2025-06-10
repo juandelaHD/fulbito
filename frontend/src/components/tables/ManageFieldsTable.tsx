@@ -2,10 +2,10 @@ import { ColumnDef } from "@tanstack/react-table";
 import { Table } from "@/components/tables/Table";
 import { useDeleteField, useGetOwnedFields } from "@/services/FieldServices";
 import { useImageById } from "@/services/ImageServices.ts";
-import { toast } from "react-hot-toast";
 import { DeleteModal } from "@/components/modals/DeleteModal";
 import { useState } from "react";
 import { useMemo } from "react";
+import {EditFieldModal} from "@/components/modals/EditFieldModal.tsx";
 
 export type Field = {
   id: number
@@ -14,6 +14,7 @@ export type Field = {
   lighting: string
   zone: string
   address: string
+  enabled: boolean
   imageUrl?: string
   allImagesUrls?: string[]
 }
@@ -22,6 +23,7 @@ export function ManageFieldsTable() {
   const { data, isLoading, isError, refetch } = useGetOwnedFields();
   const { mutateAsync: deleteField } = useDeleteField();
   const [fieldToDelete, setFieldToDelete] = useState<Field | null>(null);
+  const [editingField, setEditingField] = useState<Field | null>(null);
 
   function mapFieldDTOtoField(dto: any): Field {
     return {
@@ -31,6 +33,7 @@ export function ManageFieldsTable() {
       lighting: dto.illuminated ? "Yes" : "No",
       zone: dto.location.zone,
       address: dto.location.address,
+      enabled: dto.enabled,
       imageUrl: Array.isArray(dto.imagesUrls) && dto.imagesUrls.length > 0 ? dto.imagesUrls[0] : undefined,
       allImagesUrls: dto.imagesUrls,
     };
@@ -47,15 +50,14 @@ export function ManageFieldsTable() {
     { accessorKey: "lighting", header: "Lighting" },
     { accessorKey: "zone", header: "Zone" },
     { accessorKey: "address", header: "Address" },
+    { accessorKey: "enabled", header: "Enabled", cell: ({ row }) => (row.original.enabled ? "Yes" : "No") },
     {
       id: "actions",
       header: "Actions",
       cell: ({ row }) => (
           <div className="flex space-x-2">
             <button
-                onClick={() => {
-                  toast.error(`⚠️ Editing field ${row.original.id} is not yet implemented`);
-                }}
+                onClick={() => setEditingField(row.original)}
                 className="text-sm bg-blue-600 text-white px-2 py-1 rounded hover:bg-blue-700"
             >
               Edit
@@ -108,6 +110,16 @@ export function ManageFieldsTable() {
                 onConfirm={async () => {
                   await handleDeleteConfirmed(fieldToDelete.id);
                   setFieldToDelete(null);
+                }}
+            />
+        )}
+        {editingField && (
+            <EditFieldModal
+                field={editingField}
+                onClose={() => setEditingField(null)}
+                onSaved={() => {
+                  setEditingField(null);
+                  refetch();
                 }}
             />
         )}

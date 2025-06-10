@@ -16,7 +16,7 @@ export const FieldsScreen = () => {
     grassType: "",
     isIlluminated: false,
     hasOpenScheduledMatch: false,
-    isEnabled: false
+    isEnabled: true
   });
 
   const [openReviewsFor, setOpenReviewsFor] = useState<FieldForTable | null>(null);
