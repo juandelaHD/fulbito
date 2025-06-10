@@ -235,7 +235,7 @@ public class MatchService {
                 status == MatchStatus.COMPLETED ||
                 status == MatchStatus.FINISHED ||
                 status == MatchStatus.CANCELLED) {
-            throw new IllegalArgumentException("No se puede modificar un partido que ya comenzó o finalizó.");
+            throw new IllegalArgumentException("Cannot modify match with status: " + status);
         }
     }
 
