@@ -75,6 +75,12 @@ public class UserService implements UserDetailsService {
                 .orElseThrow(() -> new UserNotFoundException(USER_NOT_FOUND, username));
     }
 
+    public User loadUserById(Long id) {
+        return userRepository
+                .findById(id)
+                .orElseThrow(() -> new UserNotFoundException(USER_NOT_FOUND, id.toString()));
+    }
+
     public Optional<UserDTO> getUserByUsername(String username) throws UserNotFoundException {
         User user = loadUserByUsername(username);
         return Optional.of(new UserDTO(user));

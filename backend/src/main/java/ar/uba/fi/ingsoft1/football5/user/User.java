@@ -158,6 +158,10 @@ public class User implements UserDetails, UserCredentials {
         return role;
     }
 
+    public Integer getMatchesPlayed() {
+        return getOrganizedMatches().size();
+    }
+
     public Set<Match> getOrganizedMatches() {
         return organizedMatches;
     }

@@ -4,6 +4,7 @@ import ar.uba.fi.ingsoft1.football5.common.exception.ItemNotFoundException;
 import ar.uba.fi.ingsoft1.football5.common.exception.UserNotFoundException;
 import ar.uba.fi.ingsoft1.football5.config.security.JwtUserDetails;
 import ar.uba.fi.ingsoft1.football5.matches.invitation.MatchInvitationService;
+import ar.uba.fi.ingsoft1.football5.teams.formation.TeamFormationRequestDTO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -88,6 +89,20 @@ public class MatchRestController {
     @ResponseStatus(HttpStatus.OK)
     public List<MatchDTO> getAvailableOpenMatches() {
         return matchService.getAvailableOpenMatches();
+    }
+
+    @PostMapping("/{matchId}/form-teams")
+    @Operation(
+            summary = "Form teams for a match",
+            description = "Allows the organizer to form teams for a match by providing team formation details."
+    )
+    @PreAuthorize("hasRole('USER')")
+    public MatchDTO formTeams(
+            @PathVariable Long matchId,
+            @RequestBody TeamFormationRequestDTO request,
+            @AuthenticationPrincipal JwtUserDetails userDetails
+    ) throws Exception {
+        return matchService.formTeams(matchId, request, userDetails);
     }
 }
 

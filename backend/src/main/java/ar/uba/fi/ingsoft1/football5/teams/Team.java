@@ -34,7 +34,7 @@ public class Team {
     @ManyToMany
     private Set<User> members = new HashSet<>();
 
-    protected Team() {}
+    public Team() {}
 
     public Team(String name, User captain) {
         this.name = name.toLowerCase();
