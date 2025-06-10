@@ -7,6 +7,8 @@ import ar.uba.fi.ingsoft1.football5.fields.Field;
 import ar.uba.fi.ingsoft1.football5.fields.FieldService;
 import ar.uba.fi.ingsoft1.football5.user.User;
 import ar.uba.fi.ingsoft1.football5.user.UserService;
+import ar.uba.fi.ingsoft1.football5.teams.Team;
+import ar.uba.fi.ingsoft1.football5.teams.TeamRepository;
 import ar.uba.fi.ingsoft1.football5.user.email.EmailSenderService;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
@@ -19,17 +21,20 @@ import java.util.List;
 public class MatchService {
 
     private final MatchRepository matchRepository;
+    private final TeamRepository teamRepository;
     private final UserService userService;
     private final FieldService fieldService;
     private final EmailSenderService emailSenderService;
 
     public MatchService(
             MatchRepository matchRepository,
+            TeamRepository teamRepository,
             UserService userService,
             FieldService fieldService,
             EmailSenderService emailSenderService
     ) {
         this.matchRepository = matchRepository;
+        this. teamRepository = teamRepository;
         this.userService = userService;
         this.fieldService = fieldService;
         this.emailSenderService = emailSenderService;
@@ -48,19 +53,42 @@ public class MatchService {
 
     public void validationsClosedMatch(MatchCreateDTO match)
         throws IllegalArgumentException, ItemNotFoundException, UserNotFoundException {
-            if(match.teamA() == null || match.teamA().isBlank()){
-                throw new IllegalArgumentException("Team A name is required for CLOSED match");
+            // Corroboro que los teams que recibo tengan datos
+            if (match.homeTeam() == null || match.homeTeam().id() == null) {
+                throw new IllegalArgumentException("Home team must be provided with a valid ID");
             }
-            if(match.teamB() == null || match.teamB().isBlank()){
-                throw new IllegalArgumentException("Team B name is required for CLOSED match");
+            if (match.awayTeam() == null || match.awayTeam().id() == null) {
+                throw new IllegalArgumentException("Away team must be provided with a valid ID");
             }
-        }    
+            if (match.homeTeam().id().equals(match.awayTeam().id())) {
+                throw new IllegalArgumentException("Home and away teams must be different");
+            }
+            // Reviso si los equipos tienen jugadores duplicados entre si
+            var membersA = match.homeTeam().members().stream().map(m -> m.username().toLowerCase()).toList();
+            var membersB = match.awayTeam().members().stream().map(m -> m.username().toLowerCase()).toList();
+
+            // Jugadores duplicados
+            for (String user : membersA) {
+                if (membersB.contains(user)) {
+                    throw new IllegalArgumentException("User '" + user + "' is in both teams");
+                }
+            }
+        }
+    private Team loadAndValidateTeam(Long teamId, String label) {
+        return teamRepository.findById(teamId)
+            .orElseThrow(() -> new IllegalArgumentException(label + " with ID " + teamId + " does not exist"));
+    }
+    private void notifyMatchCreation(MatchCreateDTO match, User user) {
+            emailSenderService.sendMailToVerifyMatch(
+                user.getUsername(),
+                match.date(),
+                match.startTime(),
+                match.endTime()
+        );
+    }    
 
     public MatchDTO createMatch(MatchCreateDTO match, JwtUserDetails userDetails)
             throws IllegalArgumentException, ItemNotFoundException, UserNotFoundException {
-        if(match.matchType() == MatchType.CLOSED){
-            validationsClosedMatch(match);
-        }
 
         Field field = fieldService.loadFieldById(match.fieldId());
         validateFieldForMatch(field, match);
@@ -79,12 +107,17 @@ public class MatchService {
                 match.endTime()
         );
 
-        emailSenderService.sendMailToVerifyMatch(
-                organizerUser.getUsername(),
-                match.date(),
-                match.startTime(),
-                match.endTime()
-        );
+        if(match.matchType() == MatchType.CLOSED){
+            validationsClosedMatch(match);
+            Team homeTeam = loadAndValidateTeam(match.homeTeam().id(), "Home team");
+            Team awayTeam = loadAndValidateTeam(match.awayTeam().id(), "Away team");
+            newMatch.setHomeTeam(homeTeam);
+            newMatch.setAwayTeam(awayTeam);
+            notifyMatchCreation(match, homeTeam.getCaptain());
+            notifyMatchCreation(match, awayTeam.getCaptain());
+        }
+
+        notifyMatchCreation(match, organizerUser);
         newMatch.setConfirmationSent(true);
 
         Match savedMatch = matchRepository.save(newMatch);
