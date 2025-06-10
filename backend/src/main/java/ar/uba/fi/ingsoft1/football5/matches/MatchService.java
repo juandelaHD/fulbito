@@ -8,6 +8,8 @@ import ar.uba.fi.ingsoft1.football5.fields.FieldService;
 import ar.uba.fi.ingsoft1.football5.matches.invitation.MatchInvitationService;
 import ar.uba.fi.ingsoft1.football5.user.User;
 import ar.uba.fi.ingsoft1.football5.user.UserService;
+import ar.uba.fi.ingsoft1.football5.teams.Team;
+import ar.uba.fi.ingsoft1.football5.teams.TeamRepository;
 import ar.uba.fi.ingsoft1.football5.user.email.EmailSenderService;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
@@ -20,6 +22,7 @@ import java.util.List;
 public class MatchService {
 
     private final MatchRepository matchRepository;
+    private final TeamRepository teamRepository;
     private final UserService userService;
     private final FieldService fieldService;
     private final EmailSenderService emailSenderService;
@@ -27,12 +30,14 @@ public class MatchService {
 
     public MatchService(
             MatchRepository matchRepository,
+            TeamRepository teamRepository,
             UserService userService,
             FieldService fieldService,
             EmailSenderService emailSenderService,
             MatchInvitationService matchInvitationService
     ) {
         this.matchRepository = matchRepository;
+        this. teamRepository = teamRepository;
         this.userService = userService;
         this.fieldService = fieldService;
         this.emailSenderService = emailSenderService;
@@ -50,8 +55,46 @@ public class MatchService {
                 .orElseThrow(() -> new ItemNotFoundException("match", id));
     }
 
-    public MatchDTO createOpenMatch(MatchCreateDTO match, JwtUserDetails userDetails)
+    public void validationsClosedMatch(MatchCreateDTO match)
+        throws IllegalArgumentException, ItemNotFoundException, UserNotFoundException {
+            // Corroboro que los teams que recibo tengan datos
+            if (match.homeTeam() == null || teamRepository.findById(match.homeTeam().id()).isEmpty()) {
+                throw new IllegalArgumentException("Home team must be provided with a valid ID");
+            }
+            if (match.awayTeam() == null || teamRepository.findById(match.awayTeam().id()).isEmpty()) {
+                throw new IllegalArgumentException("Away team must be provided with a valid ID");
+            }
+            if (match.homeTeam().id().equals(match.awayTeam().id())) {
+                throw new IllegalArgumentException("Home and away teams must be different");
+            }
+            // Reviso si los equipos tienen jugadores duplicados entre si
+            var membersA = match.homeTeam().members().stream().map(m -> m.username().toLowerCase()).toList();
+            var membersB = match.awayTeam().members().stream().map(m -> m.username().toLowerCase()).toList();
+
+            // Jugadores duplicados
+            for (String user : membersA) {
+                if (membersB.contains(user)) {
+                    throw new IllegalArgumentException("User '" + user + "' is in both teams");
+                }
+            }
+        }
+
+    private Team loadAndValidateTeam(Long teamId, String label) {
+        return teamRepository.findById(teamId)
+            .orElseThrow(() -> new IllegalArgumentException(label + " with ID " + teamId + " does not exist"));
+    }
+    private void notifyMatchCreation(MatchCreateDTO match, User user) {
+            emailSenderService.sendMailOfMatchScheduled(
+                user.getUsername(),
+                match.date(),
+                match.startTime(),
+                match.endTime()
+        );
+    }    
+
+    public MatchDTO createMatch(MatchCreateDTO match, JwtUserDetails userDetails)
             throws IllegalArgumentException, ItemNotFoundException, UserNotFoundException {
+
         Field field = fieldService.loadFieldById(match.fieldId());
         validateFieldForMatch(field, match);
 
@@ -68,19 +111,19 @@ public class MatchService {
                 match.startTime(),
                 match.endTime()
         );
-        newMatch.addPlayer(organizerUser);
 
-        emailSenderService.sendMailOfMatchScheduled(
-                organizerUser.getUsername(),
-                match.date(),
-                match.startTime(),
-                match.endTime()
-        );
+        if(match.matchType() == MatchType.CLOSED){
+            joinClosedMatch(match, newMatch);
+        }
+        
+        notifyMatchCreation(match, organizerUser);
         newMatch.setConfirmationSent(true);
 
         Match savedMatch = matchRepository.save(newMatch);
 
-        matchInvitationService.createInvitation(savedMatch.getId());
+        if (match.matchType() == MatchType.OPEN) {
+            matchInvitationService.createInvitation(savedMatch.getId());
+        }
         return new MatchDTO(savedMatch);
     }
 
@@ -116,6 +159,18 @@ public class MatchService {
         Match savedMatch = matchRepository.save(match);
 
         return new MatchDTO(savedMatch);
+    }
+
+    private void joinClosedMatch(MatchCreateDTO match, Match newMatch)
+            throws IllegalArgumentException, ItemNotFoundException, UserNotFoundException{
+        validationsClosedMatch(match);
+        Team homeTeam = loadAndValidateTeam(match.homeTeam().id(), "Home team");
+        Team awayTeam = loadAndValidateTeam(match.awayTeam().id(), "Away team");
+        newMatch.addHomeTeam(homeTeam);
+        newMatch.addAwayTeam(awayTeam);
+        notifyMatchCreation(match, homeTeam.getCaptain());
+        notifyMatchCreation(match, awayTeam.getCaptain());
+        newMatch.setStatus(MatchStatus.COMPLETED);
     }
 
     private void validateFieldForMatch(Field field, MatchCreateDTO match) {
