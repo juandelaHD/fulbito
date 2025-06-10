@@ -1,12 +1,13 @@
-// src/screens/OpenMatchesScreen.tsx
 import { useEffect, useState } from "react";
-import { useGetOpenMatches, useJoinMatch } from "@/services/MatchesServices";
+import { useGetMatchInviteLink, useGetOpenMatches, useJoinMatch } from "@/services/MatchesServices";
 import { OpenMatchesTable, Match as TableMatch } from "@/components/tables/OpenMatchesTable";
 import { CommonLayout } from "@/components/CommonLayout/CommonLayout";
+import { toast } from "react-hot-toast";
 
 export default function OpenMatchesScreen() {
   const { data: rawMatches, isLoading: isFetchingMatches, isError, refetch } = useGetOpenMatches();
   const { mutateAsync: joinMatch } = useJoinMatch();
+  const { mutateAsync: getInviteLink } = useGetMatchInviteLink();
   const [matches, setMatches] = useState<TableMatch[]>([]);
 
   useEffect(() => {
@@ -34,6 +35,17 @@ export default function OpenMatchesScreen() {
     refetch();
   };
 
+  const handleGetInviteLink = async (matchId: number) => {
+    try {
+      const link = await getInviteLink(matchId);
+      await navigator.clipboard.writeText(link);
+      toast.success("¡Link copied to clipboard!");
+    } catch (err) {
+      console.log(err);
+      toast.error("Error while getting invite link.");
+    }
+  };
+
   return (
     <CommonLayout>
     <div className="p-6 space-y-6">
@@ -43,7 +55,7 @@ export default function OpenMatchesScreen() {
       {isError && <div className="text-red-500">Error while loading open matches.</div>}
 
       {!isFetchingMatches && !isError && (
-        <OpenMatchesTable data={matches} onJoin={handleJoin} joiningId={null} />
+        <OpenMatchesTable data={matches} onJoin={handleJoin} onGetInviteLink={handleGetInviteLink} joiningId={null} />
       )}
     </div>
     </CommonLayout>

@@ -1,6 +1,7 @@
 package ar.uba.fi.ingsoft1.football5.matches;
 
 import ar.uba.fi.ingsoft1.football5.fields.Field;
+import ar.uba.fi.ingsoft1.football5.matches.invitation.MatchInvitation;
 import ar.uba.fi.ingsoft1.football5.user.User;
 import ar.uba.fi.ingsoft1.football5.teams.Team;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
@@ -52,6 +53,9 @@ public class Match {
     @JoinColumn(name = "away_team_id", nullable = true)
     private Team awayTeam;
 
+    @OneToOne(mappedBy = "match", cascade = CascadeType.ALL, orphanRemoval = true)
+    private MatchInvitation invitation;
+
     // Estado del partido
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
@@ -85,6 +89,10 @@ public class Match {
     @Column(nullable = false)
     private boolean confirmationSent = false;
 
+    // TODO: Create a result entity or enum
+    @Column(nullable = false)
+    private String result = "0-0";
+
     public Match() {}
 
     public Match(Field field, User organizer, MatchStatus status, MatchType type, Integer minPlayers, Integer maxPlayers, LocalDate date, LocalDateTime startTime, LocalDateTime endTime) {
@@ -106,6 +114,17 @@ public class Match {
     public Long setId(Long id) {
         this.id = id;
         return this.id;
+    }
+
+    public MatchInvitation getInvitation() {
+        return invitation;
+    }
+
+    public void setInvitation(MatchInvitation invitation) {
+        this.invitation = invitation;
+        if (invitation != null) {
+            invitation.setMatch(this);
+        }
     }
 
     public Field getField() {
@@ -230,5 +249,13 @@ public class Match {
 
     public Team getAwayTeam() {
         return awayTeam;
+    }
+
+    public String getResult() {
+        return result;
+    }
+
+    public void setResult(String result) {
+        this.result = result;
     }
 }

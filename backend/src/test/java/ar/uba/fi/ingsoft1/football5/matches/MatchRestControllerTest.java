@@ -3,6 +3,7 @@ package ar.uba.fi.ingsoft1.football5.matches;
 import ar.uba.fi.ingsoft1.football5.common.exception.ItemNotFoundException;
 import ar.uba.fi.ingsoft1.football5.config.security.JwtService;
 import ar.uba.fi.ingsoft1.football5.config.security.JwtUserDetails;
+import ar.uba.fi.ingsoft1.football5.matches.invitation.MatchInvitationDTO;
 import ar.uba.fi.ingsoft1.football5.user.Role;
 import ar.uba.fi.ingsoft1.football5.user.UserDTO;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -52,6 +53,8 @@ class MatchRestControllerTest {
     private JwtUserDetails userDetails;
     private UserDTO organizer;
     private MatchDTO match;
+    private String token1 = "testToken";
+    private String token2 = "testToken2";
 
     @BeforeEach
     void setUp(){
@@ -61,7 +64,7 @@ class MatchRestControllerTest {
                         1L, "Test", "User", "testuser",
                         "/images/1", "Zone", 25, "M",
                         Role.ADMIN, true);
-                        
+
         match = new MatchDTO(
                 1L,
                 null,
@@ -76,7 +79,8 @@ class MatchRestControllerTest {
                 LocalDate.now().plusDays(1),
                 LocalDateTime.now().plusHours(2),
                 LocalDateTime.now().plusHours(3),
-                false
+                false,
+                new MatchInvitationDTO(token1, 1L, true)
         );        
     }
 
@@ -145,7 +149,8 @@ class MatchRestControllerTest {
                 LocalDate.now().plusDays(2),
                 LocalDateTime.now().plusHours(4),
                 LocalDateTime.now().plusHours(5),
-                false
+                false,
+                new MatchInvitationDTO(token2, 2L, true)
         );
 
         List<MatchDTO> matches = List.of(match, match2);

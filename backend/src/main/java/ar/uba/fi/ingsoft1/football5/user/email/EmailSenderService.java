@@ -38,7 +38,7 @@ public class EmailSenderService {
         this.sendMail(recipientEmailAddress, new AccountVerificationMailWriter(token));
     }
 
-    public void sendMailToVerifyMatch(String recipientEmailAddress, LocalDate date, LocalDateTime startDate, LocalDateTime endDate){
+    public void sendMailOfMatchScheduled(String recipientEmailAddress, LocalDate date, LocalDateTime startDate, LocalDateTime endDate){
         this.sendMail(recipientEmailAddress, new MatchConfirmationMailWriter(date,startDate,endDate));
     }
 

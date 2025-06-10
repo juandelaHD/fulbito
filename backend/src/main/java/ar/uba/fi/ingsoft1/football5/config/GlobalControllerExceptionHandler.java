@@ -198,6 +198,27 @@ public class GlobalControllerExceptionHandler {
         return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
     }
 
+    @ExceptionHandler(java.io.IOException.class)
+    @ApiResponse(
+            responseCode = "400",
+            description = "Input/output error (e.g., file too large)",
+            content = @Content(
+                    mediaType = "application/json",
+                    schema = @Schema(
+                            example = "{ \"status\": 400, \"error\": \"Bad Request\", \"message\": \"Input/output error: <message>\", \"path\": \"<actual_path_here>\" }"
+                    )
+            )
+    )
+    public ResponseEntity<ErrorResponse> handleIOException(java.io.IOException ex, HttpServletRequest request) {
+        ErrorResponse response = new ErrorResponse(
+                HttpStatus.BAD_REQUEST.value(),
+                "Bad Request",
+                "Input/output error: " + ex.getMessage(),
+                request.getRequestURI()
+        );
+        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+    }
+
     @ExceptionHandler(Throwable.class)
     @ApiResponse(
             responseCode = "500",

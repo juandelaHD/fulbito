@@ -14,6 +14,7 @@ export const SignupRequestSchema = z.object({
     errorMap: () => ({ message: "Must select Account Role!" }),
   }),
   avatar: z.any().optional(),
+  invitationToken: z.string().uuid().optional(),
 });
 
 export type SignupRequest = z.infer<typeof SignupRequestSchema>;

@@ -215,7 +215,7 @@ class MatchServiceTest {
 
         assertEquals(0, result.players().size());
         assertEquals("testuser", result.organizer().username());
-        verify(emailSenderService).sendMailToVerifyMatch(eq("testuser"), any(), any(), any());
+        verify(emailSenderService).sendMailOfMatchScheduled(eq("testuser"), any(), any(), any());
     }
  
     @Test

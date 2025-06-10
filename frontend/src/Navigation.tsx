@@ -3,7 +3,7 @@ import { Redirect, Route, Switch } from "wouter";
 import { LoginScreen } from "@/screens/LoginScreen";
 import { MainScreen } from "@/screens/MainScreen";
 import { SignupScreen } from "@/screens/SignupScreen";
-import { CreateFieldScreen } from "@/screens/CreateFieldScreen";
+import { CreateFieldScreen } from "@/screens/CreateFieldScreen"; 
 import { useToken } from "@/services/TokenContext";
 import OpenMatchesScreen from "@/screens/OpenMatchesScreen";
 import { FieldsScreen } from "@/screens/FieldsScreen";
@@ -13,6 +13,9 @@ import { PlayerHomePage } from "./screens/PlayerHomePage";
 import { ForgotPasswordScreen } from "@/screens/ForgotPasswordScreen.tsx";
 import { ResetPasswordScreen } from "@/screens/ResetPasswordScreen.tsx";
 import {FieldsManagementScreen} from "@/screens/FieldManagementScreen.tsx";
+import { SignupInvitationScreen } from "@/screens/SignupWithInvitation.tsx";
+import { TeamCreateScreen } from "@/screens/TeamCreateScreen.tsx";
+import { TeamsScreen } from "@/screens/TeamsScreen.tsx";
 
 export const Navigation = () => {
   const [tokenState] = useToken();
@@ -23,10 +26,13 @@ export const Navigation = () => {
           <Route path="/">
             <MainScreen />
           </Route>
-            <Route path="/fields/management">
-                <FieldsManagementScreen />
-            </Route>
-         <Route path="/fields/new">
+          <Route path="/login">
+            <LoginScreen />
+          </Route>
+          <Route path="/fields/management">
+              <FieldsManagementScreen />
+          </Route>
+          <Route path="/fields/new">
             <CreateFieldScreen />
           </Route>
           <Route path="/fields">
@@ -44,6 +50,12 @@ export const Navigation = () => {
           <Route path="/player">
             <PlayerHomePage />
           </Route>
+          <Route path="/teams/create">
+            <TeamCreateScreen />
+          </Route>
+          <Route path="/teams">
+            <TeamsScreen />
+          </Route>
           <Route>
             <Redirect href="/" />
           </Route>
@@ -55,6 +67,9 @@ export const Navigation = () => {
           <Route path="/login">
             <LoginScreen />
           </Route>
+          <Route path="/fields">
+            <FieldsScreen />
+          </Route>
           <Route path="/signup">
             <SignupScreen />
           </Route>
@@ -64,7 +79,11 @@ export const Navigation = () => {
           <Route path="/reset-password">
             <ResetPasswordScreen />
           </Route>
+          <Route path="/invite/:token">
+            <SignupInvitationScreen />
+          </Route>
           <Route>
+            {/* DEFAULT */}
             <Redirect href="/login" />
           </Route>
         </Switch>
