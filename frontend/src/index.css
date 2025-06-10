@@ -80,6 +80,15 @@ ul {
   margin: 0;
 }
 
+.color-circle {
+  width: 1.25rem;
+  height: 1.25rem;
+  border-radius: 9999px;
+  border: 1px solid #d1d5db;
+  display: inline-block;
+  background-color: var(--circle-color, #cccccc) !important;
+}
+
 @media (prefers-color-scheme: light) {
   :root {
     color: #0f1e11;
