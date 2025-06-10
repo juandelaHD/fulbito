@@ -58,10 +58,10 @@ public class MatchService {
     public void validationsClosedMatch(MatchCreateDTO match)
         throws IllegalArgumentException, ItemNotFoundException, UserNotFoundException {
             // Corroboro que los teams que recibo tengan datos
-            if (match.homeTeam() == null || match.homeTeam().id() == null) {
+            if (match.homeTeam() == null || teamRepository.findById(match.homeTeam().id()).isEmpty()) {
                 throw new IllegalArgumentException("Home team must be provided with a valid ID");
             }
-            if (match.awayTeam() == null || match.awayTeam().id() == null) {
+            if (match.awayTeam() == null || teamRepository.findById(match.awayTeam().id()).isEmpty()) {
                 throw new IllegalArgumentException("Away team must be provided with a valid ID");
             }
             if (match.homeTeam().id().equals(match.awayTeam().id())) {
@@ -78,12 +78,13 @@ public class MatchService {
                 }
             }
         }
+
     private Team loadAndValidateTeam(Long teamId, String label) {
         return teamRepository.findById(teamId)
             .orElseThrow(() -> new IllegalArgumentException(label + " with ID " + teamId + " does not exist"));
     }
     private void notifyMatchCreation(MatchCreateDTO match, User user) {
-            emailSenderService.sendMailToVerifyMatch(
+            emailSenderService.sendMailOfMatchScheduled(
                 user.getUsername(),
                 match.date(),
                 match.startTime(),
@@ -120,7 +121,9 @@ public class MatchService {
 
         Match savedMatch = matchRepository.save(newMatch);
 
-        matchInvitationService.createInvitation(savedMatch.getId());
+        if (match.matchType() == MatchType.OPEN) {
+            matchInvitationService.createInvitation(savedMatch.getId());
+        }
         return new MatchDTO(savedMatch);
     }
 
@@ -167,6 +170,7 @@ public class MatchService {
         newMatch.addAwayTeam(awayTeam);
         notifyMatchCreation(match, homeTeam.getCaptain());
         notifyMatchCreation(match, awayTeam.getCaptain());
+        newMatch.setStatus(MatchStatus.COMPLETED);
     }
 
     private void validateFieldForMatch(Field field, MatchCreateDTO match) {
