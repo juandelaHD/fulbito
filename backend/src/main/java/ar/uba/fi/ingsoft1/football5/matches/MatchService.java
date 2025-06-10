@@ -108,14 +108,9 @@ public class MatchService {
         );
 
         if(match.matchType() == MatchType.CLOSED){
-            validationsClosedMatch(match);
-            Team homeTeam = loadAndValidateTeam(match.homeTeam().id(), "Home team");
-            Team awayTeam = loadAndValidateTeam(match.awayTeam().id(), "Away team");
-            newMatch.addHomeTeam(homeTeam);
-            newMatch.addAwayTeam(awayTeam);
-            notifyMatchCreation(match, homeTeam.getCaptain());
-            notifyMatchCreation(match, awayTeam.getCaptain());
+            joinClosedMatch(match, newMatch);
         }
+        
         notifyMatchCreation(match, organizerUser);
         newMatch.setConfirmationSent(true);
 
@@ -132,6 +127,17 @@ public class MatchService {
 
         match.addPlayer(user);
         return new MatchDTO(matchRepository.save(match));
+    }
+
+    private void joinClosedMatch(MatchCreateDTO match, Match newMatch)
+            throws IllegalArgumentException, ItemNotFoundException, UserNotFoundException{
+        validationsClosedMatch(match);
+        Team homeTeam = loadAndValidateTeam(match.homeTeam().id(), "Home team");
+        Team awayTeam = loadAndValidateTeam(match.awayTeam().id(), "Away team");
+        newMatch.addHomeTeam(homeTeam);
+        newMatch.addAwayTeam(awayTeam);
+        notifyMatchCreation(match, homeTeam.getCaptain());
+        notifyMatchCreation(match, awayTeam.getCaptain());
     }
 
     private void validateFieldForMatch(Field field, MatchCreateDTO match) {
