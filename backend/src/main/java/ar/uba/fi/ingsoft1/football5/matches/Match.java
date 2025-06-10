@@ -209,6 +209,10 @@ public class Match {
     public void addHomeTeam(Team team) {
         homeTeam = team;
         homeTeam.getJoinedMatches().add(this); 
+
+        for (User player: homeTeam.getMembers()){
+            this.addPlayer(player);
+        }
     }
 
     public Team getHomeTeam() {
@@ -218,6 +222,10 @@ public class Match {
     public void addAwayTeam(Team team) {
         awayTeam = team;
         awayTeam.getJoinedMatches().add(this); 
+
+        for (User player: awayTeam.getMembers()){
+            this.addPlayer(player);
+        }
     }
 
     public Team getAwayTeam() {
