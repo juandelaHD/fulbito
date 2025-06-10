@@ -14,6 +14,8 @@ import { ForgotPasswordScreen } from "@/screens/ForgotPasswordScreen.tsx";
 import { ResetPasswordScreen } from "@/screens/ResetPasswordScreen.tsx";
 import {FieldsManagementScreen} from "@/screens/FieldManagementScreen.tsx";
 import { SignupInvitationScreen } from "@/screens/SignupWithInvitation.tsx";
+import { TeamCreateScreen } from "@/screens/TeamCreateScreen.tsx";
+import { TeamsScreen } from "@/screens/TeamsScreen.tsx";
 
 export const Navigation = () => {
   const [tokenState] = useToken();
@@ -47,6 +49,12 @@ export const Navigation = () => {
           </Route>
           <Route path="/player">
             <PlayerHomePage />
+          </Route>
+          <Route path="/teams/create">
+            <TeamCreateScreen />
+          </Route>
+          <Route path="/teams">
+            <TeamsScreen />
           </Route>
           <Route>
             <Redirect href="/" />
