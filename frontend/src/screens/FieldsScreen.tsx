@@ -5,7 +5,7 @@ import { toast } from "react-hot-toast"
 import { CommonLayout } from "@/components/CommonLayout/CommonLayout";
 import { useGetFields } from "@/services/FieldServices";
 import {GetFieldsRequest} from "@/models/GetFields.ts";
-
+import { ReviewsModal } from "@/components/modals/ReviewsModal"
 import type { Field as FieldForTable } from "@/components/tables/FieldsTable";
 
 export const FieldsScreen = () => {
@@ -19,6 +19,8 @@ export const FieldsScreen = () => {
     isEnabled: false
   });
 
+  const [openReviewsFor, setOpenReviewsFor] = useState<FieldForTable | null>(null);
+  
   const {
     data: fetchedFields,
     refetch,
@@ -93,16 +95,21 @@ export const FieldsScreen = () => {
 
         {/* Si la respuesta trae contenido, paso el array mapeado a la tabla */}
         {!isFetching && rowsForTable.length > 0 && (
-            <FieldsTable
-                data={rowsForTable}
-                onReserve={(f) =>
-                    toast.error(
-                        `⚠Reservations are not yet implemented for: ${f}`
-                    )
-                }
-            />
+        <FieldsTable
+          data={rowsForTable}
+          onReserve={(f) =>
+            toast.error(`⚠️ Reservations are not yet implemented for: ${f}`)
+          }
+          onViewReviews={(field) => setOpenReviewsFor(field)}
+        />
         )}
       </div>
+      <ReviewsModal
+        isOpen={!!openReviewsFor}
+        onClose={() => setOpenReviewsFor(null)}
+        fieldName={openReviewsFor?.name}
+      />
     </CommonLayout>
+    
   );
 };
