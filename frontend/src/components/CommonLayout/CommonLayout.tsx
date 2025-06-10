@@ -61,6 +61,9 @@ const LoggedInLinks = () => {
             <Link className={styles.navLink} href="/open-matches">
                 Open Matches
             </Link>
+            <Link className={styles.navLink} href="/teams">
+                Teams
+            </Link>
             <button onClick={logOut} className={styles.navLink}>
                 Log out
             </button>

@@ -61,7 +61,7 @@ export const FieldsScreen = () => {
       size: 50,
     };
 
-    console.log("📦 Payload for field search:", payload);
+    console.log("Payload for field search:", payload);
     await refetch();
   };
 
@@ -97,7 +97,7 @@ export const FieldsScreen = () => {
                 data={rowsForTable}
                 onReserve={(f) =>
                     toast.error(
-                        `⚠️ Reservations are not yet implemented for: ${f}`
+                        `⚠Reservations are not yet implemented for: ${f}`
                     )
                 }
             />
