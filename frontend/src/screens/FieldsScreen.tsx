@@ -61,9 +61,9 @@ export const FieldsScreen = () => {
       hasOpenScheduledMatch: filters.hasOpenScheduledMatch,
       page: 0,
       size: 50,
-    }; 
-    
-    console.log("📦 Payload for field search:", payload);
+    };
+
+    console.log("Payload for field search:", payload);
     await refetch();
   };
 
