@@ -53,9 +53,9 @@ public record MatchCreateDTO(
                     throw new IllegalArgumentException("Start time and end time cannot be the same");
             }
 
-            LocalDate today = LocalDate.now();
-            if (!date.isAfter(today)) {
-                    throw new IllegalArgumentException("Match date must be in the future");
+            LocalDateTime now = LocalDateTime.now();
+            if (!startTime.isAfter(now)) {
+                    throw new IllegalArgumentException("Time set for the match must be in the future");
             }
     }
 }

@@ -142,7 +142,8 @@ export async function getFieldSchedulesService(fieldId: number, date: string, to
     },
   });
   if (!res.ok) throw new Error("Error fetching schedules");
-  return await res.json();
+  const slots: ScheduleSlot[] = await res.json();
+  return slots.filter(slot => slot.available);
 }
 
 

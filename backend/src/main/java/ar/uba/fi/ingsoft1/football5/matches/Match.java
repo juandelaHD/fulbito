@@ -21,7 +21,7 @@ public class Match {
     private Long id;
 
     // Cancha donde se jugará el partido
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "field_id",
                 foreignKey = @ForeignKey(name = "fk_field_match",
                         foreignKeyDefinition = "FOREIGN KEY (field_id) REFERENCES field(id) ON DELETE SET NULL"))
@@ -29,7 +29,7 @@ public class Match {
     private Field field;
 
     // Organizador del partido
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     @JsonManagedReference("organizer-match")
     private User organizer;
@@ -45,11 +45,11 @@ public class Match {
     private Set<User> players = new HashSet<>();
 
     // Equipos del partido
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "home_team_id", nullable = true)
     private Team homeTeam;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "away_team_id", nullable = true)
     private Team awayTeam;
 
