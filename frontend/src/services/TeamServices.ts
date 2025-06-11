@@ -4,6 +4,29 @@ import { toast } from "react-hot-toast";
 import { BASE_API_URL } from "@/config/app-query-client";
 import { useToken } from "@/services/TokenContext.tsx";
 
+export type TeamMember = {
+  id: number;
+  firstName: string;
+  lastName: string;
+  username: string;
+  avatarUrl: string;
+  zone: string;
+  age: number;
+  gender: string;
+  role: string;
+  emailConfirmed: boolean;
+};
+
+export type Team = {
+  id: number;
+  name: string;
+  imageUrl: string;
+  mainColor: string;
+  secondaryColor: string;
+  ranking: number;
+  captain: TeamMember;
+  members: TeamMember[];
+};
 
 export function useCreateTeam() {
   const [tokenState] = useToken();
@@ -50,14 +73,40 @@ export function useCreateTeam() {
   });
 }
 
-export function useGetMyTeams() {
+export function useGetMyTeams(options?: { enabled?: boolean }) {
+  const [tokenState] = useToken();
+  const token = tokenState.state === "LOGGED_IN" ? tokenState.accessToken : "";
+
+  return useQuery<Team[]>({
+    queryKey: ["teams"],
+    queryFn: async () => {
+      const response = await fetch(`${BASE_API_URL}/teams/my`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          Accept: "application/json",
+        },
+      });
+
+      if (!response.ok) {
+        const errorMessage = await response.text();
+        toast.error(`Error fetching teams: ${errorMessage}`, { duration: 5000 });
+        throw new Error("Error fetching teams");
+      }
+
+      return response.json();
+    },
+    enabled: options?.enabled ?? !!token,
+  });
+}
+
+export function useGetTeams() {
   const [tokenState] = useToken();
   const token = tokenState.state === "LOGGED_IN" ? tokenState.accessToken : "";
 
   return useQuery({
     queryKey: ["teams"],
     queryFn: async () => {
-      const response = await fetch(`${BASE_API_URL}/teams/my`, {
+      const response = await fetch(`${BASE_API_URL}/teams`, {
         headers: {
           Authorization: `Bearer ${token}`,
           Accept: "application/json",

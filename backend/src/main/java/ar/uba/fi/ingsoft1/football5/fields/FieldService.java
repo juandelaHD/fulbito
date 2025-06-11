@@ -4,6 +4,7 @@ import ar.uba.fi.ingsoft1.football5.common.exception.ItemNotFoundException;
 import ar.uba.fi.ingsoft1.football5.config.security.JwtUserDetails;
 import ar.uba.fi.ingsoft1.football5.fields.filters.FieldFiltersDTO;
 import ar.uba.fi.ingsoft1.football5.fields.filters.SpecificationService;
+import ar.uba.fi.ingsoft1.football5.fields.schedules.ScheduleStatus;
 import ar.uba.fi.ingsoft1.football5.images.ImageService;
 import ar.uba.fi.ingsoft1.football5.matches.Match;
 import ar.uba.fi.ingsoft1.football5.matches.MatchRepository;
@@ -108,6 +109,19 @@ public class FieldService {
             LocalDateTime endTime) {
 
         List<Match> matches = matchRepository.findConflictingMatches(fieldId, date, startTime, endTime);
+
+        Field field = fieldRepository.findById(fieldId)
+                .orElseThrow(() -> new IllegalArgumentException("Field not found with id: " + fieldId));
+        boolean slotExists = field.getSchedules().stream()
+                .anyMatch(s -> s.getDate().equals(date)
+                        && s.getStatus() == ScheduleStatus.AVAILABLE
+                        && s.getStartTime().atDate(date).equals(startTime)
+                        && s.getEndTime().atDate(date).equals(endTime));
+        if (!slotExists) {
+            throw new IllegalArgumentException(String.format(
+                    "No available slot found for field with id '%s' on %s from %s to %s.",
+                    fieldId, date, startTime.toLocalTime(), endTime.toLocalTime()));
+        }
         if (!matches.isEmpty()) {
             throw new IllegalArgumentException(String.format("Field with id '%s' is not available on %s from %s to %s.",
                     fieldId, date, startTime, endTime));

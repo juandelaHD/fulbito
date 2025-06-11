@@ -56,16 +56,8 @@ public class MatchRestController {
     MatchDTO createMatch(@Valid @RequestBody MatchCreateDTO matchCreate,
                          @AuthenticationPrincipal JwtUserDetails userDetails)
             throws IllegalArgumentException, ItemNotFoundException, UserNotFoundException {
-        if (matchCreate.matchType() == MatchType.OPEN) {
-            // Validate that the match type is OPEN
-            return matchService.createOpenMatch(matchCreate, userDetails);
-        } else if (matchCreate.matchType() == MatchType.CLOSED) {
-            // Handle private match creation logic here
-            // For now, it thows an exception if the match type is CLOSED
-            throw new IllegalArgumentException("Match type CLOSED is not supported yet.");
-            // return matchService.createClosedMatch(matchCreate, userDetails);
-        }
-        return matchService.createOpenMatch(matchCreate, userDetails);
+            return matchService.createMatch(matchCreate, userDetails);
+            //TODO: ver que pasa en caso que le den un matchType erroneo
     }
 
     @PostMapping("/{matchId}/join")

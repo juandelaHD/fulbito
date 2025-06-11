@@ -6,6 +6,7 @@ import ar.uba.fi.ingsoft1.football5.config.security.JwtUserDetails;
 import ar.uba.fi.ingsoft1.football5.fields.Field;
 import ar.uba.fi.ingsoft1.football5.fields.FieldService;
 import ar.uba.fi.ingsoft1.football5.images.AvatarImage;
+import ar.uba.fi.ingsoft1.football5.matches.invitation.MatchInvitationService;
 import ar.uba.fi.ingsoft1.football5.user.Role;
 import ar.uba.fi.ingsoft1.football5.user.User;
 import ar.uba.fi.ingsoft1.football5.user.UserService;
@@ -24,7 +25,6 @@ import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.anyString;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -44,6 +44,9 @@ class MatchServiceTest {
 
     @Mock
     private EmailSenderService emailSenderService;
+
+    @Mock
+    private MatchInvitationService matchInvitationService;
 
     @Mock
     private Match openMatch;
@@ -200,6 +203,8 @@ class MatchServiceTest {
         MatchCreateDTO dto = new MatchCreateDTO(
                 MatchType.OPEN,
                 1L,
+                null,
+                null,
                 5,
                 10,
                 LocalDate.now().plusDays(1),
@@ -209,11 +214,11 @@ class MatchServiceTest {
 
         when(matchRepository.save(any(Match.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        MatchDTO result = matchService.createOpenMatch(dto, userDetails);
+        MatchDTO result = matchService.createMatch(dto, userDetails);
 
-        assertEquals(1, result.players().size());
+        assertEquals(0, result.players().size());
         assertEquals("testuser", result.organizer().username());
-        verify(emailSenderService).sendMailOfMatchScheduled(eq("testuser"), any(), any(), any());
+        verify(emailSenderService).sendReservationMail(eq("testuser"), any(), any(), any());
     }
  
     @Test
@@ -222,6 +227,8 @@ class MatchServiceTest {
             new MatchCreateDTO(
                     MatchType.OPEN,
                     1L,
+                    null,
+                    null,
                     5,
                     10,
                     LocalDate.now().minusDays(1),
@@ -239,6 +246,8 @@ class MatchServiceTest {
             new MatchCreateDTO(
                     MatchType.OPEN,
                     1L,
+                    null,
+                    null,
                     5,
                     10,
                     LocalDate.now().plusDays(1),
@@ -260,6 +269,8 @@ class MatchServiceTest {
         MatchCreateDTO dto = new MatchCreateDTO(
                 MatchType.OPEN,
                 1L,
+                null,
+                null,
                 5,
                 10,
                 LocalDate.now().plusDays(1),
@@ -268,7 +279,7 @@ class MatchServiceTest {
         );
 
         Exception ex = assertThrows(IllegalArgumentException.class, () -> {
-            matchService.createOpenMatch(dto, userDetails);
+            matchService.createMatch(dto, userDetails);
         });
 
         assertEquals("Field is not enabled for matches", ex.getMessage());
@@ -285,6 +296,8 @@ class MatchServiceTest {
         MatchCreateDTO dto = new MatchCreateDTO(
                 MatchType.OPEN,
                 1L,
+                null,
+                null,
                 5,
                 10,
                 LocalDate.now().plusDays(1),
@@ -293,7 +306,7 @@ class MatchServiceTest {
         );
 
         Exception ex = assertThrows(IllegalArgumentException.class, () -> {
-            matchService.createOpenMatch(dto, userDetails);
+            matchService.createMatch(dto, userDetails);
         });
 
         assertEquals("Field is not available at the specified date and time", ex.getMessage());

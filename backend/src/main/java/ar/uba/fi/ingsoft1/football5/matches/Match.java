@@ -21,7 +21,7 @@ public class Match {
     private Long id;
 
     // Cancha donde se jugará el partido
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "field_id",
                 foreignKey = @ForeignKey(name = "fk_field_match",
                         foreignKeyDefinition = "FOREIGN KEY (field_id) REFERENCES field(id) ON DELETE SET NULL"))
@@ -29,7 +29,7 @@ public class Match {
     private Field field;
 
     // Organizador del partido
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     @JsonManagedReference("organizer-match")
     private User organizer;
@@ -44,13 +44,14 @@ public class Match {
     @JsonManagedReference("player-match")
     private Set<User> players = new HashSet<>();
 
-    @OneToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name = "team_a_id")
-    private Team teamA;
+    // Equipos del partido
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "home_team_id", nullable = true)
+    private Team homeTeam;
 
-    @OneToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name = "team_b_id")
-    private Team teamB;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "away_team_id", nullable = true)
+    private Team awayTeam;
 
     @OneToOne(mappedBy = "match", cascade = CascadeType.ALL, orphanRemoval = true)
     private MatchInvitation invitation;
@@ -224,28 +225,38 @@ public class Match {
         this.confirmationSent = confirmationSent;
     }
 
+    public void addHomeTeam(Team team) {
+        homeTeam = team;
+        homeTeam.getJoinedMatches().add(this);
+
+        for (User player: homeTeam.getMembers()){
+            this.addPlayer(player);
+        }
+    }
+
+    public Team getHomeTeam() {
+        return homeTeam;
+    }
+
+    public void addAwayTeam(Team team) {
+        awayTeam = team;
+        awayTeam.getJoinedMatches().add(this);
+
+        for (User player: awayTeam.getMembers()){
+            this.addPlayer(player);
+        }
+    }
+
+    public Team getAwayTeam() {
+        return awayTeam;
+    }
+
     public String getResult() {
         return result;
     }
 
     public void setResult(String result) {
         this.result = result;
-    }
-
-    public Team getTeamA() {
-        return teamA;
-    }
-
-    public void setTeamA(Team teamA) {
-        this.teamA = teamA;
-    }
-
-    public Team getTeamB() {
-        return teamB;
-    }
-
-    public void setTeamB(Team teamB) {
-        this.teamB = teamB;
     }
 
 }

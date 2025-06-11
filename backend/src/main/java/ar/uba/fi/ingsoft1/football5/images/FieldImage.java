@@ -15,7 +15,7 @@ import jakarta.persistence.*;
 public class FieldImage extends Image {
 
     @JsonBackReference("field-image")
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "field_id")
     private Field field;
 

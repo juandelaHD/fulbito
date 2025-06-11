@@ -28,18 +28,8 @@ public class EmailSenderService {
         mailSender.send(message);
     }
 
-    /*
-    public void sendPasswordChangedMail(String recipientEmailAddress) {
-        this.sendMail(recipientEmailAddress, new PasswordChangeMailWriter());
-    }
-    */
-
     public void sendMailToVerifyAccount(String recipientEmailAddress, String token) {
         this.sendMail(recipientEmailAddress, new AccountVerificationMailWriter(token));
-    }
-
-    public void sendMailOfMatchScheduled(String recipientEmailAddress, LocalDate date, LocalDateTime startDate, LocalDateTime endDate){
-        this.sendMail(recipientEmailAddress, new MatchConfirmationMailWriter(date,startDate,endDate));
     }
 
     public void sendPasswordResetMail(String recipientEmailAddress, String token) {
@@ -50,5 +40,12 @@ public class EmailSenderService {
         this.sendMail(recipientEmailAddress, new PasswordChangeMailWriter());
     }
 
+    public void sendReservationMail(String recipientEmail, LocalDate date, LocalDateTime start, LocalDateTime end) {
+        this.sendMail(recipientEmail, new MatchReservationMailWriter(date, start, end));
+    }
+
+    public void sendTeamCaptainMail(String recipientEmail, LocalDate date, LocalDateTime start, LocalDateTime end, String OrganizerUsername) {
+        this.sendMail(recipientEmail, new TeamCaptainMatchMailWriter(date, start, end, OrganizerUsername));
+    }
 
 }

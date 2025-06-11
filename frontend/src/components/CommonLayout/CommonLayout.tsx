@@ -56,10 +56,7 @@ const LoggedInLinks = () => {
                 View Fields
             </Link>
             <Link className={styles.navLink} href="/match">
-                Create Match
-            </Link>
-            <Link className={styles.navLink} href="/open-matches">
-                Open Matches
+                Matches
             </Link>
             <Link className={styles.navLink} href="/teams">
                 Teams

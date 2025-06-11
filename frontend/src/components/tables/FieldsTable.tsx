@@ -1,6 +1,6 @@
 import { ColumnDef } from "@tanstack/react-table"
 import { Table } from "@/components/tables/Table"
-import {useImageById} from "@/services/ImageServices.ts";
+import { useImageById } from "@/services/ImageServices"
 
 export type Field = {
   id: number
@@ -16,14 +16,15 @@ export type Field = {
 type FieldsTableProps = {
   data: Field[]
   onReserve: (field: Field) => void
+  onViewReviews: (field: Field) => void
 }
 
-export function FieldsTable({ data, onReserve }: FieldsTableProps) {
+export function FieldsTable({ data, onReserve , onViewReviews }: FieldsTableProps) {
   const columns: ColumnDef<Field>[] = [
     { accessorKey: "name", header: "Name" },
     { accessorKey: "grassType", header: "Grass Type" },
     { accessorKey: "lighting", header: "Lighting" },
-    { accessorKey: "zone",  header: "Zone" },
+    { accessorKey: "zone", header: "Zone" },
     { accessorKey: "address", header: "Address" },
     {
       id: "actions",
@@ -41,30 +42,47 @@ export function FieldsTable({ data, onReserve }: FieldsTableProps) {
       ),
     },
     {
+      id: "reviews",
+      header: "Reviews",
+      cell: ({ row }) => (
+        <button
+        onClick={(e) => {
+          e.stopPropagation();
+          onViewReviews(row.original)
+        }}
+          className="text-sm text-white bg-blue-600 px-2 py-1 rounded hover:bg-blue-700"
+        >
+          Reviews
+        </button>
+      ),
+    },
+    {
       id: "image",
       header: "Image",
       cell: ({ row }) => {
-        const imageEndpoint = row.original.imageUrl;
-        const imageUrl = useImageById(imageEndpoint);
+        const imageEndpoint = row.original.imageUrl
+        const imageUrl = useImageById(imageEndpoint)
 
         return (
-            <div
-                className="w-[120px] h-[100px] overflow-hidden rounded bg-black/10 flex items-center justify-center"
-            >
-              {imageUrl ? (
-                  <img
-                      src={imageUrl}
-                      alt={row.original.name}
-                      className="w-full h-full object-cover block"
-                  />
-              ) : (
-                  <span className="text-xs">🖼️</span>
-              )}
-            </div>
-        );
+          <div className="w-[120px] h-[100px] overflow-hidden rounded bg-black/10 flex items-center justify-center">
+            {imageUrl ? (
+              <img
+                src={imageUrl}
+                alt={row.original.name}
+                className="w-full h-full object-cover block"
+              />
+            ) : (
+              <span className="text-xs">🖼️</span>
+            )}
+          </div>
+        )
       },
-    }
+    },
   ]
 
-  return <Table columns={columns} data={data} />
+  return (
+    <>
+      <Table columns={columns} data={data} />
+    </>
+  )
 }

@@ -4,6 +4,7 @@ import ar.uba.fi.ingsoft1.football5.common.exception.ItemNotFoundException;
 import ar.uba.fi.ingsoft1.football5.config.security.JwtService;
 import ar.uba.fi.ingsoft1.football5.config.security.JwtUserDetails;
 import ar.uba.fi.ingsoft1.football5.matches.invitation.MatchInvitationDTO;
+import ar.uba.fi.ingsoft1.football5.matches.invitation.MatchInvitationService;
 import ar.uba.fi.ingsoft1.football5.user.Role;
 import ar.uba.fi.ingsoft1.football5.user.UserDTO;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -50,6 +51,10 @@ class MatchRestControllerTest {
     @MockBean
     private JwtService jwtService;
 
+    @SuppressWarnings("deprecation")
+    @MockBean
+    private MatchInvitationService matchInvitationService;
+
     private JwtUserDetails userDetails;
     private UserDTO organizer;
     private MatchDTO match;
@@ -70,6 +75,8 @@ class MatchRestControllerTest {
                 null,
                 organizer,
                 List.of(),
+                null,
+                null,
                 MatchStatus.SCHEDULED,
                 MatchType.OPEN,
                 5,
@@ -117,6 +124,8 @@ class MatchRestControllerTest {
                                 null,
                                 null,
                                 null,
+                                null,
+                                null,
                                 LocalDate.of(2025,6,15),
                                 LocalDateTime.now().plusHours(1),
                                 LocalDateTime.now().plusHours(2)
@@ -136,6 +145,8 @@ class MatchRestControllerTest {
                 null,
                 organizer,
                 List.of(),
+                null,
+                null,
                 MatchStatus.SCHEDULED,
                 MatchType.OPEN,
                 4,

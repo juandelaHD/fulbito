@@ -3,6 +3,7 @@ package ar.uba.fi.ingsoft1.football5.matches;
 import ar.uba.fi.ingsoft1.football5.fields.FieldDTO;
 import ar.uba.fi.ingsoft1.football5.matches.invitation.MatchInvitationDTO;
 import ar.uba.fi.ingsoft1.football5.user.UserDTO;
+import ar.uba.fi.ingsoft1.football5.teams.TeamDTO;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 import java.time.LocalDate;
@@ -23,10 +24,11 @@ public record MatchDTO(
         @Schema(description = "List of players in the match")
         List<UserDTO> players,
 
-        /* TODO: Uncomment when teams are implemented
-        @Schema(description = "List of teams in the match")
-        List<TeamDTO> teams,
-        */
+        @Schema(description = "TeamDTO of team A", nullable = true)
+        TeamDTO homeTeam,
+
+        @Schema(description = "TeamDTO of team B", nullable = true)
+        TeamDTO awayTeam,
 
         @Schema(description = "Current status of the match", example = "SCHEDULED")
         MatchStatus status,
@@ -65,8 +67,8 @@ public record MatchDTO(
                 new FieldDTO(match.getField()),
                 new UserDTO(match.getOrganizer()),
                 match.getPlayers().stream().map(UserDTO::new).toList(),
-                // TODO: Uncomment when teams are implemented
-                // match.getTeams().stream().map(TeamDTO::new).toList(),
+                match.getHomeTeam() != null ? new TeamDTO(match.getHomeTeam()) : null,
+                match.getAwayTeam() != null ? new TeamDTO(match.getAwayTeam()) : null,
                 match.getStatus(),
                 match.getType(),
                 match.getMinPlayers(),

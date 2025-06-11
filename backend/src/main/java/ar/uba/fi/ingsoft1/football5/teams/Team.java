@@ -1,6 +1,7 @@
 package ar.uba.fi.ingsoft1.football5.teams;
 
 import ar.uba.fi.ingsoft1.football5.images.TeamImage;
+import ar.uba.fi.ingsoft1.football5.matches.Match;
 import ar.uba.fi.ingsoft1.football5.user.User;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
@@ -34,7 +35,13 @@ public class Team {
     @ManyToMany
     private Set<User> members = new HashSet<>();
 
-    public Team() {}
+    @OneToMany(mappedBy = "homeTeam")
+    private Set<Match> homeMatches = new HashSet<>();
+
+    @OneToMany(mappedBy = "awayTeam")
+    private Set<Match> awayMatches = new HashSet<>();
+
+    protected Team() {}
 
     public Team(String name, User captain) {
         this.name = name.toLowerCase();
@@ -111,5 +118,12 @@ public class Team {
 
     public void removeMember(User user) {
         this.members.remove(user);
+    }
+
+    public Set<Match> getJoinedMatches() {
+        Set<Match> allMatches = new HashSet<>();
+        allMatches.addAll(homeMatches);
+        allMatches.addAll(awayMatches);
+        return allMatches;
     }
 }

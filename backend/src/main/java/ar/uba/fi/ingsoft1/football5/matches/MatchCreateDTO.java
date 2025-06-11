@@ -17,15 +17,11 @@ public record MatchCreateDTO(
         @Schema(description = "ID of the field where the match will take place", example = "1")
         Long fieldId,
 
-        /*
-        @Schema(description = "IDs of players") // (only for OPEN matches)
-        List<Long> playerIds,
-        */
+        @Schema(description = "Team ID of team A", example = "1", nullable = true)
+        Long homeTeamId,
 
-        /*
-        @Schema(description = "IDs of teams") //  (only for CLOSED matches)
-        List<Long> teamIds,
-        */
+        @Schema(description = "Team ID of team B", example = "2", nullable = true)
+        Long awayTeamId,
 
         @Min(value = 1, message = "Minimum number of players must be at least 1")
         @Schema(description = "Minimum number of players required", example = "1")
@@ -57,9 +53,9 @@ public record MatchCreateDTO(
                     throw new IllegalArgumentException("Start time and end time cannot be the same");
             }
 
-            LocalDate today = LocalDate.now();
-            if (!date.isAfter(today)) {
-                    throw new IllegalArgumentException("Match date must be in the future");
+            LocalDateTime now = LocalDateTime.now();
+            if (!startTime.isAfter(now)) {
+                    throw new IllegalArgumentException("Time set for the match must be in the future");
             }
     }
 }

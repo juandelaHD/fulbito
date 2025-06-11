@@ -11,6 +11,8 @@ import ar.uba.fi.ingsoft1.football5.teams.formation.TeamFormationResult;
 import ar.uba.fi.ingsoft1.football5.teams.formation.TeamFormationStrategy;
 import ar.uba.fi.ingsoft1.football5.user.User;
 import ar.uba.fi.ingsoft1.football5.user.UserService;
+import ar.uba.fi.ingsoft1.football5.teams.Team;
+import ar.uba.fi.ingsoft1.football5.teams.TeamRepository;
 import ar.uba.fi.ingsoft1.football5.user.email.EmailSenderService;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
@@ -26,6 +28,7 @@ import java.util.stream.Collectors;
 public class MatchService {
 
     private final MatchRepository matchRepository;
+    private final TeamRepository teamRepository;
     private final UserService userService;
     private final FieldService fieldService;
     private final EmailSenderService emailSenderService;
@@ -33,12 +36,14 @@ public class MatchService {
 
     public MatchService(
             MatchRepository matchRepository,
+            TeamRepository teamRepository,
             UserService userService,
             FieldService fieldService,
             EmailSenderService emailSenderService,
             MatchInvitationService matchInvitationService
     ) {
         this.matchRepository = matchRepository;
+        this. teamRepository = teamRepository;
         this.userService = userService;
         this.fieldService = fieldService;
         this.emailSenderService = emailSenderService;
@@ -56,8 +61,58 @@ public class MatchService {
                 .orElseThrow(() -> new ItemNotFoundException("match", id));
     }
 
-    public MatchDTO createOpenMatch(MatchCreateDTO match, JwtUserDetails userDetails)
+    public void validationsClosedMatch(MatchCreateDTO match, Team homeTeam, Team awayTeam)
+        throws IllegalArgumentException, UserNotFoundException {
+
+        if (match.homeTeamId().equals(match.awayTeamId())) {
+            throw new IllegalArgumentException("Home and away teams must be different");
+        }
+
+        if (homeTeam.getMembers().size() + awayTeam.getMembers().size() < match.minPlayers()) {
+            throw new IllegalArgumentException("Total players in both teams must be at least " + match.minPlayers() + ". Change the teams or the match limits.");
+        }
+
+        if (homeTeam.getMembers().size() + awayTeam.getMembers().size() > match.maxPlayers()) {
+            throw new IllegalArgumentException("Total players in both teams must not exceed " + match.maxPlayers() + ". Change the teams or the match limits.");
+        }
+
+        List<String> membersA = homeTeam.getMembers().stream()
+                .map(User::getUsername)
+                .toList();
+        List<String> membersB = awayTeam.getMembers().stream()
+                .map(User::getUsername)
+                .toList();
+
+        for (String member : membersA) {
+            if (membersB.contains(member)) {
+                throw new IllegalArgumentException("Teams cannot have players in common: " + member);
+            }
+        }
+    }
+
+    private void notifyReservation(MatchCreateDTO match, User user) {
+        emailSenderService.sendReservationMail(
+                user.getUsername(),
+                match.date(),
+                match.startTime(),
+                match.endTime()
+        );
+    }
+
+    private void notifyTeamCaptain(MatchCreateDTO match, User captain, User organizer) {
+        emailSenderService.sendTeamCaptainMail(
+                captain.getUsername(),
+                match.date(),
+                match.startTime(),
+                match.endTime(),
+                organizer.getUsername()
+        );
+    }
+
+
+    public MatchDTO createMatch(MatchCreateDTO match, JwtUserDetails userDetails)
             throws IllegalArgumentException, ItemNotFoundException, UserNotFoundException {
+
         Field field = fieldService.loadFieldById(match.fieldId());
         validateFieldForMatch(field, match);
 
@@ -90,19 +145,19 @@ public class MatchService {
                 match.startTime(),
                 match.endTime()
         );
-        newMatch.addPlayer(organizerUser);
 
-        emailSenderService.sendMailOfMatchScheduled(
-                organizerUser.getUsername(),
-                match.date(),
-                match.startTime(),
-                match.endTime()
-        );
+        if(match.matchType() == MatchType.CLOSED){
+            joinClosedMatch(match, newMatch);
+        }
+
+        notifyReservation(match, organizerUser);
         newMatch.setConfirmationSent(true);
 
         Match savedMatch = matchRepository.save(newMatch);
 
-        matchInvitationService.createInvitation(savedMatch.getId());
+        if (match.matchType() == MatchType.OPEN) {
+            matchInvitationService.createInvitation(savedMatch.getId());
+        }
         return new MatchDTO(savedMatch);
     }
 
@@ -149,6 +204,20 @@ public class MatchService {
         Match savedMatch = matchRepository.save(match);
 
         return new MatchDTO(savedMatch);
+    }
+
+    private void joinClosedMatch(MatchCreateDTO match, Match newMatch)
+            throws IllegalArgumentException, ItemNotFoundException, UserNotFoundException{
+        Team homeTeam = teamRepository.findById(match.homeTeamId())
+                .orElseThrow( () -> new IllegalArgumentException("Home team with ID " + match.homeTeamId() + " does not exist"));
+        Team awayTeam = teamRepository.findById(match.awayTeamId())
+                .orElseThrow( () -> new IllegalArgumentException("Away team with ID " + match.homeTeamId() + " does not exist"));
+        validationsClosedMatch(match, homeTeam, awayTeam);
+        newMatch.addHomeTeam(homeTeam);
+        newMatch.addAwayTeam(awayTeam);
+        notifyTeamCaptain(match, homeTeam.getCaptain(), newMatch.getOrganizer());
+        notifyTeamCaptain(match, awayTeam.getCaptain(), newMatch.getOrganizer());
+        newMatch.setStatus(MatchStatus.COMPLETED);
     }
 
     private void validateFieldForMatch(Field field, MatchCreateDTO match) {
@@ -205,8 +274,8 @@ public class MatchService {
 
         TeamFormationResult result = strategy.formTeams(players, teamSize, matchId);
 
-        match.setTeamA(result.teamA());
-        match.setTeamB(result.teamB());
+        match.addHomeTeam(result.teamA());
+        match.addAwayTeam(result.teamB());
 
         match.setStatus(MatchStatus.COMPLETED);
         matchRepository.save(match);

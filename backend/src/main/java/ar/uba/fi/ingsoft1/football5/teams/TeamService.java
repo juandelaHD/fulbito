@@ -1,6 +1,7 @@
 package ar.uba.fi.ingsoft1.football5.teams;
 
 import ar.uba.fi.ingsoft1.football5.common.exception.ItemNotFoundException;
+import ar.uba.fi.ingsoft1.football5.common.exception.UserNotFoundException;
 import ar.uba.fi.ingsoft1.football5.images.ImageService;
 import ar.uba.fi.ingsoft1.football5.user.User;
 import ar.uba.fi.ingsoft1.football5.user.UserService;
@@ -43,7 +44,7 @@ public class TeamService {
         return Optional.of(new TeamDTO(teamSaved));
     }
 
-    public List<TeamDTO> getTeamsByCaptain(String username) {
+    public List<TeamDTO> getTeamsByCaptain(String username) throws UserNotFoundException {
         User captain = userService.loadUserByUsername(username);
         return teamRepository.findByCaptainId(captain.getId()).stream().map(TeamDTO::new).toList();
     }
@@ -52,7 +53,7 @@ public class TeamService {
         return teamRepository.findAll().stream().map(TeamDTO::new).toList();
     }
 
-    public TeamDTO addMember(Long teamId, String usernameToAdd, String captainUsername) throws ItemNotFoundException, IllegalArgumentException {
+    public TeamDTO addMember(Long teamId, String usernameToAdd, String captainUsername) throws UserNotFoundException, ItemNotFoundException, IllegalArgumentException {
         Team team = teamRepository.findById(teamId)
                 .orElseThrow(() -> new ItemNotFoundException("team", teamId));
         if (!team.getCaptain().getUsername().equalsIgnoreCase(captainUsername)) {
