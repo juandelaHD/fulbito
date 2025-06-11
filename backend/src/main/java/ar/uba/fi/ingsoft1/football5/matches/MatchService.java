@@ -9,6 +9,7 @@ import ar.uba.fi.ingsoft1.football5.matches.invitation.MatchInvitationService;
 import ar.uba.fi.ingsoft1.football5.teams.formation.TeamFormationRequestDTO;
 import ar.uba.fi.ingsoft1.football5.teams.formation.TeamFormationResult;
 import ar.uba.fi.ingsoft1.football5.teams.formation.TeamFormationStrategy;
+import ar.uba.fi.ingsoft1.football5.teams.formation.TeamFormationStrategyType;
 import ar.uba.fi.ingsoft1.football5.user.User;
 import ar.uba.fi.ingsoft1.football5.user.UserService;
 import ar.uba.fi.ingsoft1.football5.teams.Team;
@@ -180,6 +181,8 @@ public class MatchService {
         }
         if (match.getPlayers().size() >= match.getMaxPlayers()) {
             match.setStatus(MatchStatus.COMPLETED);
+            matchInvitationService.invalidateMatchInvitation(match);
+            matchRepository.save(match);
             throw new IllegalArgumentException("Match is full");
         }
 
@@ -190,7 +193,7 @@ public class MatchService {
             if (userMatch.getDate().equals(match.getDate()) &&
                     userMatch.getStartTime().isBefore(match.getEndTime()) &&
                     userMatch.getEndTime().isAfter(match.getStartTime())) {
-                throw new IllegalArgumentException("Ya tienes un partido en este horario.");
+                throw new IllegalArgumentException("You are already registered in a match at this time");
             }
         }
 
@@ -235,49 +238,61 @@ public class MatchService {
         }
     }
 
-    public MatchDTO formTeams(Long matchId, TeamFormationRequestDTO request, JwtUserDetails userDetails) throws UserNotFoundException, ItemNotFoundException, IllegalArgumentException {
-        Match match = loadMatchById(matchId);
+    public MatchDTO formTeams(Long matchId, TeamFormationRequestDTO request, JwtUserDetails userDetails)
+            throws UserNotFoundException, ItemNotFoundException, IllegalArgumentException {
+        TeamFormationStrategyType strategyType;
+        try {
+            strategyType = TeamFormationStrategyType.valueOf(request.strategy().toUpperCase());
+        } catch (IllegalArgumentException ex) {
+            throw new IllegalArgumentException(
+                    "Invalid strategy type: " + request.strategy() +
+                            ". Possible values are: " + TeamFormationStrategyType.ALL_VALUES + "."
+            );
+        }
 
-        validateMatchIsModifiable(match);
+        Match match = loadMatchById(matchId);
 
         if (!match.getOrganizer().getUsername().equals(userDetails.username())) {
             throw new IllegalArgumentException("Only the match organizer can form teams");
         }
 
-        if (match.getStatus() != MatchStatus.SCHEDULED) {
-            throw new IllegalArgumentException("Teams can only be formed for scheduled matches");
-        }
-
-        if (match.getPlayers().size() < match.getMinPlayers()){
-            throw new IllegalArgumentException("Not enough players to form teams");
+        if (match.getPlayers().size() < match.getMinPlayers()) {
+            int actualAmountOfPlayers = match.getPlayers().size();
+            throw new IllegalArgumentException("Not enough players to form teams. Missing " + (match.getMinPlayers() - actualAmountOfPlayers) + " players.");
         }
 
         if (match.getPlayers().size() % 2 != 0) {
             throw new IllegalArgumentException("Cannot form teams with an odd number of players");
         }
 
+        if (match.getStatus() != MatchStatus.SCHEDULED) {
+            throw new IllegalArgumentException("Match is available to form teams, current status: " + match.getStatus());
+        }
+
         Set<User> players = match.getPlayers();
         int teamSize = players.size() / 2;
 
         TeamFormationStrategy strategy;
-        if ("MANUAL".equalsIgnoreCase(request.strategy())) {
+        if (strategyType == TeamFormationStrategyType.MANUAL) {
             Set<User> teamA = request.teamAPlayerIds().stream()
                     .map(userService::loadUserById)
                     .collect(Collectors.toSet());
             Set<User> teamB = request.teamBPlayerIds().stream()
                     .map(userService::loadUserById)
                     .collect(Collectors.toSet());
-            strategy = TeamFormationStrategy.getStrategy(request.strategy(), teamA, teamB);
+            strategy = TeamFormationStrategy.getStrategy(strategyType, teamA, teamB);
         } else {
-            strategy = TeamFormationStrategy.getStrategy(request.strategy(), null, null);
+            strategy = TeamFormationStrategy.getStrategy(strategyType, null, null);
         }
 
         TeamFormationResult result = strategy.formTeams(players, teamSize, matchId);
 
-        match.addHomeTeam(result.teamA());
-        match.addAwayTeam(result.teamB());
+        Team teamA = teamRepository.save(result.teamA());
+        Team teamB = teamRepository.save(result.teamB());
 
-        match.setStatus(MatchStatus.COMPLETED);
+        match.addHomeTeam(teamA);
+        match.addAwayTeam(teamB);
+
         matchRepository.save(match);
         return new MatchDTO(match);
     }
@@ -294,9 +309,13 @@ public class MatchService {
     }
 
     public List<MatchDTO> getAvailableOpenMatches() {
-        List<Match> matches = matchRepository.findAvailableOpenMatches(LocalDateTime.now());
+        List<Match> matches = matchRepository.findByTypeAndStatusInAndStartTimeAfterAndPlayers_SizeLessThan(
+                List.of(MatchStatus.SCHEDULED),
+                LocalDateTime.now()
+        );
         return matches.stream().map(MatchDTO::new).toList();
     }
+
 
     private static void validateMatchIsModifiable(Match match) throws IllegalArgumentException {
         MatchStatus status = match.getStatus();

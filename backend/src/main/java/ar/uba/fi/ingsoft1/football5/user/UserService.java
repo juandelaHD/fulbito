@@ -205,6 +205,12 @@ public class UserService implements UserDetailsService {
                     throw new IllegalArgumentException("Cannot join match that has already started.");
                 }
                 match.addPlayer(user);
+
+                // Actualizar estado del partido si corresponde
+                if (match.getPlayers().size() >= match.getMaxPlayers()) {
+                    match.setStatus(MatchStatus.COMPLETED);
+                    matchInvitationService.invalidateMatchInvitation(match);
+                }
             } catch (IllegalArgumentException e) {
                 // Optional?: log.warn("No se pudo unir al partido con invitación: " + e.getMessage());
             }
