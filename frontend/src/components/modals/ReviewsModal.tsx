@@ -67,7 +67,7 @@ export const ReviewsModal = ({ isOpen, onClose, fieldName, fieldId }: Props) => 
         )}
 
         {!isLoading && !isError && reviewList.length === 0 && (
-          <p className="text-gray-400 italic mb-6">No reviews yet for this field.</p>
+          <p className="text-gray-400 italic mb-6">No reviews yet for this field. Consider adding one!</p>
         )}
 
         <div className="mt-6 flex justify-end space-x-4">
