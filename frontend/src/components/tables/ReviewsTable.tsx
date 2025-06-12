@@ -1,26 +1,35 @@
-import { ColumnDef } from "@tanstack/react-table"
-import { Table } from "@/components/tables/Table"
-
 type Review = {
-  score: number
+  rating: number
   comment: string
-  user: string
-  date: string
+  createdAt: string
+  userId: number
 }
 
-const mockReviews: Review[] = [
-  { score: 5, comment: "Excelente cancha, súper cuidada", user: "maria_22", date: "2025-06-01" },
-  { score: 4, comment: "Muy buena iluminación y césped", user: "juancho", date: "2025-05-27" },
-  { score: 3, comment: "Todo bien, pero un poco caro", user: "nico_b", date: "2025-05-20" },
-]
+type Props = {
+  reviews: Review[]
+}
 
-const columns: ColumnDef<Review>[] = [
-  { accessorKey: "score", header: "Score" },
-  { accessorKey: "comment", header: "Comment" },
-  { accessorKey: "user", header: "User" },
-  { accessorKey: "date", header: "Date" },
-]
-
-export const ReviewsTable = () => {
-  return <Table columns={columns} data={mockReviews} />
+export const ReviewsTable = ({ reviews }: Props) => {
+  return (
+    <table className="min-w-full text-white">
+      <thead>
+        <tr>
+          <th className="px-4 py-2 text-left">User</th>
+          <th className="px-4 py-2 text-left">Rating</th>
+          <th className="px-4 py-2 text-left">Comment</th>
+          <th className="px-4 py-2 text-left">Date</th>
+        </tr>
+      </thead>
+      <tbody>
+        {reviews.map((review, idx) => (
+          <tr key={idx} className="border-t border-green-800">
+            <td className="px-4 py-2">#{review.userId}</td>
+            <td className="px-4 py-2">{"⭐".repeat(review.rating)}</td>
+            <td className="px-4 py-2">{review.comment}</td>
+            <td className="px-4 py-2">{new Date(review.createdAt).toLocaleDateString()}</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  )
 }
