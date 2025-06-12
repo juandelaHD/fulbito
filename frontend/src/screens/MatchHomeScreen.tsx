@@ -48,6 +48,10 @@ export const MatchHomeScreen = () => {
     }
   };
 
+  const handleFormTeams = (matchId: number) => {
+    navigate(`/matches/${matchId}/teams`);
+  };
+
   return (
     <CommonLayout>
       <section>
@@ -82,7 +86,13 @@ export const MatchHomeScreen = () => {
         {isFetchingMatches && <div>Loading open matches</div>}
         {isError && <div className="text-red-500">Error while loading open matches.</div>}
         {!isFetchingMatches && !isError && (
-          <OpenMatchesTable data={matches} onJoin={handleJoin} onGetInviteLink={handleGetInviteLink} joiningId={null} />
+          <OpenMatchesTable
+            data={matches}
+            onJoin={handleJoin}
+            onGetInviteLink={handleGetInviteLink}
+            onFormTeams={handleFormTeams}
+            joiningId={null}
+          />
         )}
       </div>
     </CommonLayout>
