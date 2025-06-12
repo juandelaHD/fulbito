@@ -9,6 +9,7 @@ type Props = {
     children?: React.ReactNode;
     submitLabel?: string;
     submitDisabled?: boolean;
+    hideSubmitButton?: boolean;
 };
 
 export const FormContainer = ({
@@ -17,6 +18,7 @@ export const FormContainer = ({
     children, 
     submitLabel = "Submit",
     submitDisabled = false,
+    hideSubmitButton = false,
 }: Props) => {
     const form = useFormContext();
 
@@ -24,21 +26,22 @@ export const FormContainer = ({
         <form
             className={`flex flex-col ${className}`}
             onSubmit={(e) => {
+                form.handleSubmit();
                 e.preventDefault();
                 e.stopPropagation();
-                form.handleSubmit();
-
             }}
         >
             {children}
             {extraError && <ErrorContainer errors={[extraError]} />}
-        <button
-        type="submit"
-        disabled={submitDisabled}
-        className={`${styles.submitButton} w-full bg-green-700 hover:bg-green-800 text-white py-2 px-4 rounded transition`}
-        >
-        {submitLabel}
-        </button>  
+            {!hideSubmitButton && (
+              <button
+                type="submit"
+                disabled={submitDisabled}
+                className={`${styles.submitButton} w-full bg-green-700 hover:bg-green-800 text-white py-2 px-4 rounded transition`}
+              >
+                  {submitLabel}
+              </button>
+            )}
         </form>
     );
 };

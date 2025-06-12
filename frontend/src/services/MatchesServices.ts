@@ -247,7 +247,7 @@ export function useCreateMatch() {
 
 
 export type TeamFormationRequestDTO = {
-  strategy: "MANUAL" | "RANDOM" | "BY_AGE" | "BY_EXPERIENCE" | "BY_GENDER" | "BY_ZONE";
+  strategy: string;
   teamAPlayerIds?: number[];
   teamBPlayerIds?: number[];
 };
