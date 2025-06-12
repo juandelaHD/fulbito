@@ -252,6 +252,10 @@ public class MatchService {
 
         Match match = loadMatchById(matchId);
 
+        if (match.getHomeTeam() != null || match.getAwayTeam() != null) {
+            throw new IllegalArgumentException("Teams already formed for this match");
+        }
+
         if (!match.getOrganizer().getUsername().equals(userDetails.username())) {
             throw new IllegalArgumentException("Only the match organizer can form teams");
         }
