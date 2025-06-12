@@ -56,4 +56,16 @@ public class EmailSenderService {
         this.sendMail(recipientEmail, new UnsubscribeMailWriter(date, start, end));
     }
 
+    public void sendReservationConfirmedMail(String recipientEmail, LocalDate date, LocalDateTime start, LocalDateTime end) {
+        this.sendMail(recipientEmail, new MatchReservationConfirmedMailWriter(date, start, end));
+    }
+
+    public void sendMatchFinishedMail(String recipientEmail, LocalDate date, LocalDateTime start, LocalDateTime end) {
+        this.sendMail(recipientEmail, new MatchFinishedMailWriter(date, start, end));
+    }
+
+    public void sendMatchCancelledMail(String recipientEmail, LocalDate date, LocalDateTime start, LocalDateTime end) {
+        this.sendMail(recipientEmail, new MatchCancelledMailWriter(date, start, end));
+    }
+
 }

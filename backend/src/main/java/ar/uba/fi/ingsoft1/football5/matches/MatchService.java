@@ -100,6 +100,18 @@ public class MatchService {
         );
     }
 
+    private void notifyFieldAdmin(MatchCreateDTO match, Field field) {
+        User admin = field.getOwner();
+        if (admin != null) {
+            emailSenderService.sendReservationMail(
+                    admin.getUsername(),
+                    match.date(),
+                    match.startTime(),
+                    match.endTime()
+            );
+        }
+    }
+
     private void notifyTeamCaptain(MatchCreateDTO match, User captain, User organizer) {
         emailSenderService.sendTeamCaptainMail(
                 captain.getUsername(),
@@ -138,7 +150,7 @@ public class MatchService {
         Match newMatch = new Match(
                 field,
                 organizerUser,
-                MatchStatus.SCHEDULED,
+                MatchStatus.PENDING,
                 match.matchType(),
                 match.minPlayers(),
                 match.maxPlayers(),
@@ -152,7 +164,7 @@ public class MatchService {
         }
 
         notifyReservation(match, organizerUser);
-        newMatch.setConfirmationSent(true);
+        notifyFieldAdmin(match, field);
 
         Match savedMatch = matchRepository.save(newMatch);
 
@@ -180,7 +192,6 @@ public class MatchService {
             throw new IllegalArgumentException("Cannot join a match that already started");
         }
         if (match.getPlayers().size() >= match.getMaxPlayers()) {
-            match.setStatus(MatchStatus.COMPLETED);
             matchInvitationService.invalidateMatchInvitation(match);
             matchRepository.save(match);
             throw new IllegalArgumentException("Match is full");
@@ -200,7 +211,6 @@ public class MatchService {
         match.addPlayer(user);
 
         if (match.getPlayers().size() >= match.getMaxPlayers()) {
-            match.setStatus(MatchStatus.COMPLETED);
             matchInvitationService.invalidateMatchInvitation(match);
         }
 
@@ -220,7 +230,6 @@ public class MatchService {
         newMatch.addAwayTeam(awayTeam);
         notifyTeamCaptain(match, homeTeam.getCaptain(), newMatch.getOrganizer());
         notifyTeamCaptain(match, awayTeam.getCaptain(), newMatch.getOrganizer());
-        newMatch.setStatus(MatchStatus.COMPLETED);
     }
 
     private void validateFieldForMatch(Field field, MatchCreateDTO match) {
@@ -269,8 +278,8 @@ public class MatchService {
             throw new IllegalArgumentException("Cannot form teams with an odd number of players");
         }
 
-        if (match.getStatus() != MatchStatus.SCHEDULED) {
-            throw new IllegalArgumentException("Match is available to form teams, current status: " + match.getStatus());
+        if (match.getStatus() != MatchStatus.ACCEPTED) {
+            throw new IllegalArgumentException("Match is not available to form teams, current status: " + match.getStatus());
         }
 
         Set<User> players = match.getPlayers();
@@ -297,6 +306,7 @@ public class MatchService {
         match.addHomeTeam(teamA);
         match.addAwayTeam(teamB);
 
+        match.setStatus(MatchStatus.SCHEDULED);
         matchRepository.save(match);
 
         // Notificar a los jugadores de cada equipo
@@ -343,95 +353,12 @@ public class MatchService {
 
     private static void validateMatchIsModifiable(Match match) throws IllegalArgumentException {
         MatchStatus status = match.getStatus();
-        if (status == MatchStatus.IN_PROGRESS ||
-                status == MatchStatus.COMPLETED ||
+        if (status == MatchStatus.SCHEDULED ||
+                status == MatchStatus.IN_PROGRESS ||
                 status == MatchStatus.FINISHED ||
                 status == MatchStatus.CANCELLED) {
             throw new IllegalArgumentException("Cannot modify match with status: " + status);
         }
-    }
-
-    public MatchDTO updateMatch(Long matchId, MatchUpdateDTO updateDTO, JwtUserDetails userDetails) throws ItemNotFoundException, IllegalArgumentException {
-        Match match = this.loadMatchById(matchId);
-        Field field = fieldService.loadFieldById(match.getField().getId());
-
-        // Validar que el usuario sea el organizador del partido o bien el administrador de cancha
-        if (!match.getOrganizer().getUsername().equals(userDetails.username()) && (!fieldService.isFieldAdmin(field.getId(), userDetails))               ) {
-            throw new IllegalArgumentException("Only the match organizer or field admin can update the match");
-        }
-
-        // Solo se puede actualizar si el partido no está cancelado o finalizado
-        if (match.getStatus() == MatchStatus.CANCELLED || match.getStatus() == MatchStatus.FINISHED) {
-            throw new IllegalArgumentException("Match is already cancelled.");
-        }
-
-        if (updateDTO.status() != null) {
-            MatchStatus current = match.getStatus();
-            MatchStatus next = updateDTO.status();
-            // SCHEDULED or COMPLETED -> IN_PROGRESS
-            // IN_PROGRESS -> FINISHED
-            // SCHEDULED or COMPLETED -> CANCELLED
-            if (next == MatchStatus.IN_PROGRESS) {
-                if (!(current == MatchStatus.SCHEDULED || current == MatchStatus.COMPLETED)) {
-                    throw new IllegalArgumentException("Can only transition to IN_PROGRESS from SCHEDULED or COMPLETED. Actual status: " + current);
-                }
-                match.setStatus(MatchStatus.IN_PROGRESS);
-            } else if (next == MatchStatus.FINISHED) {
-                if (current != MatchStatus.IN_PROGRESS) {
-                    throw new IllegalArgumentException("Can only transition to FINISHED from IN_PROGRESS. Actual status: " + current);
-                }
-                match.setStatus(MatchStatus.FINISHED);
-                // invalidate the invitation if it exists
-                if (match.getInvitation() != null) {
-                    matchInvitationService.invalidateMatchInvitation(match);
-                }
-            } else if (next == MatchStatus.CANCELLED) {
-                if (!(current == MatchStatus.SCHEDULED || current == MatchStatus.COMPLETED)) {
-                    throw new IllegalArgumentException("Can only cancel from SCHEDULED or COMPLETED. Actual status: " + current);
-                }
-                match.setStatus(MatchStatus.CANCELLED);
-            } else {
-                throw new IllegalArgumentException("State transition not allowed.");
-            }
-        }
-
-        // Actualizar resultado solo si el partido está finalizado
-        if (updateDTO.result() != null) {
-            if (match.getStatus() != MatchStatus.FINISHED) {
-                throw new IllegalArgumentException("Match is already in progress.");
-            }
-            match.setResult(updateDTO.result());
-        }
-
-        // Actualizar fechas y horarios si se proveen
-        if (updateDTO.date() != null) {
-            match.setDate(updateDTO.date().toLocalDate());
-        }
-        if (updateDTO.startTime() != null && updateDTO.endTime() != null) {
-            match.setStartTime(updateDTO.startTime());
-            match.setEndTime(updateDTO.endTime());
-            // Validar que los horarios sean consistentes
-            if (match.getStartTime() != null && match.getEndTime() != null &&
-                    !match.getEndTime().isAfter(match.getStartTime())) {
-                throw new IllegalArgumentException("Match start time cannot be after end time.");
-            }
-
-            // Validar que los horarios estén dentro de los slots habilitados para la cancha
-            if (!field.isEnabled()) {
-                throw new IllegalArgumentException("Field is not enabled for matches");
-            }
-            if (!fieldService.validateFieldAvailability(
-                    field.getId(),
-                    match.getDate(),
-                    match.getStartTime(),
-                    match.getEndTime()
-            )) {
-                throw new IllegalArgumentException("Field is not available at the specified date and time");
-            }
-        }
-
-        matchRepository.save(match);
-        return new MatchDTO(match);
     }
 
     public void leaveOpenMatch(Long matchId, JwtUserDetails userDetails)
@@ -463,5 +390,101 @@ public class MatchService {
                 match.getStartTime(),
                 match.getEndTime()
         );
+    }
+
+    public MatchDTO confirmMatch(Long matchId, JwtUserDetails userDetails)
+            throws ItemNotFoundException, IllegalArgumentException {
+        Match match = loadMatchById(matchId);
+
+        if (match.getStatus() != MatchStatus.PENDING)
+            throw new IllegalArgumentException("The match is not in a PENDING state.");
+        Field field = match.getField();
+        if (!fieldService.isFieldAdmin(field.getId(), userDetails))
+            throw new IllegalArgumentException("Only the field admin can confirm an open match.");
+
+        if (match.getType() == MatchType.CLOSED) {
+            match.setStatus(MatchStatus.SCHEDULED);
+        } else if (match.getType() == MatchType.OPEN) {
+            match.setStatus(MatchStatus.ACCEPTED);
+        } else {
+            throw new IllegalArgumentException("Match type not supported for confirmation.");
+        }
+        // Notificar al organizador
+        emailSenderService.sendReservationConfirmedMail(
+                match.getOrganizer().getUsername(),
+                match.getDate(),
+                match.getStartTime(),
+                match.getEndTime()
+        );
+        match.setConfirmationSent(true);
+
+        matchRepository.save(match);
+
+
+        return new MatchDTO(match);
+    }
+
+    public MatchDTO startMatch(Long matchId, JwtUserDetails userDetails)
+            throws ItemNotFoundException, IllegalArgumentException {
+        Match match = loadMatchById(matchId);
+
+        if (match.getStatus() != MatchStatus.SCHEDULED)
+            throw new IllegalArgumentException("The match is not in a SCHEDULED state.");
+        Field field = match.getField();
+        if (!fieldService.isFieldAdmin(field.getId(), userDetails))
+            throw new IllegalArgumentException("Only the field admin can start a match.");
+
+        match.setStatus(MatchStatus.IN_PROGRESS);
+        matchRepository.save(match);
+
+        return new MatchDTO(match);
+    }
+
+    public MatchDTO finishMatch(Long matchId, JwtUserDetails userDetails)
+            throws ItemNotFoundException, IllegalArgumentException {
+        Match match = loadMatchById(matchId);
+
+        if (match.getStatus() != MatchStatus.IN_PROGRESS)
+            throw new IllegalArgumentException("The match is not in an IN_PROGRESS state.");
+        Field field = match.getField();
+        if (!fieldService.isFieldAdmin(field.getId(), userDetails))
+            throw new IllegalArgumentException("Only the field admin can finish a match.");
+
+        match.setStatus(MatchStatus.FINISHED);
+        matchRepository.save(match);
+
+        // Notificar al organizador
+        emailSenderService.sendMatchFinishedMail(
+                match.getOrganizer().getUsername(),
+                match.getDate(),
+                match.getStartTime(),
+                match.getEndTime()
+        );
+
+        return new MatchDTO(match);
+    }
+
+    public MatchDTO cancelMatch(Long matchId, JwtUserDetails userDetails)
+            throws ItemNotFoundException, IllegalArgumentException {
+        Match match = loadMatchById(matchId);
+
+        if (match.getStatus() == MatchStatus.CANCELLED || match.getStatus() == MatchStatus.FINISHED)
+            throw new IllegalArgumentException("The match is already cancelled or finished.");
+        Field field = match.getField();
+        if (!fieldService.isFieldAdmin(field.getId(), userDetails))
+            throw new IllegalArgumentException("Only the field admin can cancel an open match.");
+
+        match.setStatus(MatchStatus.CANCELLED);
+        matchRepository.save(match);
+
+        // Notificar al organizador
+        emailSenderService.sendMatchCancelledMail(
+                match.getOrganizer().getUsername(),
+                match.getDate(),
+                match.getStartTime(),
+                match.getEndTime()
+        );
+
+        return new MatchDTO(match);
     }
 }

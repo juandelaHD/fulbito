@@ -107,7 +107,7 @@ class UserRestController {
         LocalDateTime now = LocalDateTime.now();
         return user.getJoinedMatches().stream()
                 .filter(match -> match.getEndTime().isAfter(now)
-                        && (match.getStatus() == MatchStatus.COMPLETED || match.getStatus() == MatchStatus.SCHEDULED))
+                        && (match.getStatus() == MatchStatus.SCHEDULED))
                 .map(MatchHistoryDTO::new)
                 .toList();
     }

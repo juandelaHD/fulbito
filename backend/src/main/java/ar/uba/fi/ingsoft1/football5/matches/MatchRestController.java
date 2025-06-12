@@ -97,21 +97,59 @@ public class MatchRestController {
         return matchService.formTeams(matchId, request, userDetails);
     }
 
-    @PutMapping("/{matchId}/update")
+    @PutMapping("/{matchId}/confirm")
     @Operation(
-            summary = "Update match details",
-            description = "Allows the organizer to update the details of a match to IN_PROGRESS, FINISHED or CANCELLED."
+            summary = "Confirm match (field admin only)",
+            description = "Allows the field admin to confirm a match, changing its status to CONFIRMED."
     )
     @PreAuthorize("hasRole('ADMIN')")
-    public MatchDTO updateMatch(
+    public MatchDTO confirmMatch(
             @PathVariable Long matchId,
-            @Valid @RequestBody MatchUpdateDTO updateDTO,
             @AuthenticationPrincipal JwtUserDetails userDetails
-    ) throws IllegalArgumentException, ItemNotFoundException, UserNotFoundException {
-        return matchService.updateMatch(matchId, updateDTO, userDetails);
+    ) throws ItemNotFoundException, IllegalArgumentException {
+        return matchService.confirmMatch(matchId, userDetails);
     }
 
-    @DeleteMapping("/{matchId}/leave")
+    @PutMapping("/{matchId}/cancel")
+    @Operation(
+            summary = "Cancel open match (field admin only)",
+            description = "Allows the field admin to cancel an open match, changing its status to CANCELLED."
+    )
+    @PreAuthorize("hasRole('ADMIN')")
+    public MatchDTO cancelMatch(
+            @PathVariable Long matchId,
+            @AuthenticationPrincipal JwtUserDetails userDetails
+    ) throws ItemNotFoundException, IllegalArgumentException {
+        return matchService.cancelMatch(matchId, userDetails);
+    }
+
+    @PutMapping("/{matchId}/start")
+    @Operation(
+            summary = "Start match (field admin only)",
+            description = "Allows the field admin to start a match, changing its status to IN_PROGRESS."
+    )
+    @PreAuthorize("hasRole('ADMIN')")
+    public MatchDTO startMatch(
+            @PathVariable Long matchId,
+            @AuthenticationPrincipal JwtUserDetails userDetails
+    ) throws ItemNotFoundException, IllegalArgumentException {
+        return matchService.startMatch(matchId, userDetails);
+    }
+
+    @PutMapping("/{matchId}/finish")
+    @Operation(
+            summary = "Finish match (field admin only)",
+            description = "Allows the field admin to finish a match, changing its status to FINISHED."
+    )
+    @PreAuthorize("hasRole('ADMIN')")
+    public MatchDTO finishMatch(
+            @PathVariable Long matchId,
+            @AuthenticationPrincipal JwtUserDetails userDetails
+    ) throws ItemNotFoundException, IllegalArgumentException {
+        return matchService.finishMatch(matchId, userDetails);
+    }
+
+    @DeleteMapping("/{matchId}/leave-open")
     @Operation(
             summary = "Leave an open match",
             description = "Allows a user to leave an open match they have joined."
