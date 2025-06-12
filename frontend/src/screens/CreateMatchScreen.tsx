@@ -121,7 +121,8 @@ export const CreateMatchScreen = ({ defaultMatchType = "OPEN" }: { defaultMatchT
         format(date, "yyyy-MM-dd"),
         token
       );
-      setSchedules(result.filter((s: ScheduleSlot) => s.available));
+      setSchedules(result);
+      console.log("Fetched schedules:", result);
       setSchedulesFetched(true);
       if (result.filter((s: ScheduleSlot) => s.available).length === 0) {
         toast("No hours available for this field on the selected date.", { icon: "ℹ️", duration: 4000 });
@@ -209,15 +210,17 @@ export const CreateMatchScreen = ({ defaultMatchType = "OPEN" }: { defaultMatchT
               <formData.AppField name="scheduleId">
                 {(field) => (
                   <field.SelectField
-                    label="Horario disponible"
-                    options={
-                      schedules.length === 0
-                        ? [{ label: "No available schedules", value: "" }]
-                        : schedules.map(s => ({
-                          label: `${s.start} - ${s.end}`,
-                          value: s.id.toString(),
-                        }))
-                    }
+                    label="Hour Schedule"
+                    options={[
+                      { label: "Select your schedule", value: "" },
+                      ...(schedules.length === 0
+                              ? [{ label: "No available schedules", value: "" }]
+                              : schedules.map(s => ({
+                                label: `${s.start} - ${s.end}`,
+                                value: s.id.toString(),
+                              }))
+                      )
+                    ]}
                   />
                 )}
               </formData.AppField>

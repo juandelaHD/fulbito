@@ -4,13 +4,16 @@ import ar.uba.fi.ingsoft1.football5.common.exception.ItemNotFoundException;
 import ar.uba.fi.ingsoft1.football5.config.security.JwtService;
 import ar.uba.fi.ingsoft1.football5.config.security.JwtUserDetails;
 import ar.uba.fi.ingsoft1.football5.matches.invitation.MatchInvitationDTO;
+import ar.uba.fi.ingsoft1.football5.matches.invitation.MatchInvitationService;
 import ar.uba.fi.ingsoft1.football5.user.Role;
 import ar.uba.fi.ingsoft1.football5.user.UserDTO;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
@@ -49,6 +52,10 @@ class MatchRestControllerTest {
     @SuppressWarnings("deprecation")
     @MockBean
     private JwtService jwtService;
+
+    @SuppressWarnings("deprecation")
+    @MockBean
+    private MatchInvitationService matchInvitationService;
 
     private JwtUserDetails userDetails;
     private UserDTO organizer;
