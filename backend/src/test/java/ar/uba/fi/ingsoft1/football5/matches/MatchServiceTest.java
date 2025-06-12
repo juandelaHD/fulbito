@@ -23,6 +23,7 @@ import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.Set;
 
+import static java.time.temporal.ChronoUnit.HOURS;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
@@ -223,6 +224,8 @@ class MatchServiceTest {
  
     @Test
     void testCreateOpenMatch_dateInPast_throwsException() {
+        LocalDate yesterdayDate = LocalDate.now().minusDays(1);
+        LocalDateTime yesterdayDateTime = LocalDateTime.now().minusDays(1);
         Exception ex = assertThrows(IllegalArgumentException.class, () -> {
             new MatchCreateDTO(
                     MatchType.OPEN,
@@ -231,13 +234,13 @@ class MatchServiceTest {
                     null,
                     5,
                     10,
-                    LocalDate.now().minusDays(1),
-                    LocalDateTime.now().plusHours(1),
-                    LocalDateTime.now().plusHours(2)
+                    yesterdayDate,
+                    yesterdayDateTime,
+                    yesterdayDateTime.plusHours(1)
             );
         });
 
-        assertEquals("Match date must be in the future", ex.getMessage());
+        assertEquals("Time set for the match must be in the future", ex.getMessage());
     }
 
     @Test
