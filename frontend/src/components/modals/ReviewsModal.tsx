@@ -17,6 +17,7 @@ export const ReviewsModal = ({ isOpen, onClose, fieldName, fieldId }: Props) => 
   const queryClient = useQueryClient()
   const { mutate } = useCreateReview(fieldId)
   const { data: reviews, isLoading, isError } = useGetReviews(fieldId)
+  const reviewList = reviews?.content ?? []
 
   return (
     <>
@@ -44,10 +45,10 @@ export const ReviewsModal = ({ isOpen, onClose, fieldName, fieldId }: Props) => 
           },
         }}
       >
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-2xl font-bold">
-            {fieldName ? `Reviews for ${fieldName}` : "Reviews"}
-          </h2>
+        <div className="flex justify-between items-start mb-4 gap-4">
+        <h2 className="text-2xl font-bold mt-1">
+          Reviews for {fieldName}
+        </h2>
           <button
             onClick={onClose}
             className="text-white hover:text-green-400 transition"
@@ -59,11 +60,17 @@ export const ReviewsModal = ({ isOpen, onClose, fieldName, fieldId }: Props) => 
 
         {isLoading && <p>Loading...</p>}
         {isError && <p>Error loading reviews.</p>}
-        {!isLoading && !isError && reviews && (
-          <ReviewsTable reviews={reviews.content} />
+        {!isLoading && !isError && reviewList.length > 0 && (
+          <div className="mb-6">
+            <ReviewsTable reviews={reviewList} />
+          </div>
         )}
 
-        <div className="mt-4 flex justify-end gap-2">
+        {!isLoading && !isError && reviewList.length === 0 && (
+          <p className="text-gray-400 italic mb-6">No reviews yet for this field.</p>
+        )}
+
+        <div className="mt-6 flex justify-end space-x-4">
           <button
             onClick={() => setShowAdd(true)}
             className="bg-blue-600 text-white px-4 py-2 rounded"

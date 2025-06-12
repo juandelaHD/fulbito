@@ -1,7 +1,6 @@
 import { useState } from "react"
 import Modal from "react-modal"
 import { z } from "zod"
-import { toast } from "react-hot-toast"
 
 const schema = z.object({
   rating: z.string().min(1, "Rating is required"),
@@ -33,12 +32,10 @@ export const AddReviewModal = ({ isOpen, onClose, onSubmit }: Props) => {
     try {
       setSubmitting(true)
       await onSubmit({ rating, comment })
-      toast.success("Review submitted!")
       setRating("")
       setComment("")
       onClose()
     } catch (err) {
-      toast.error("Something went wrong")
       console.error(err)
     } finally {
       setSubmitting(false)
@@ -90,15 +87,15 @@ export const AddReviewModal = ({ isOpen, onClose, onSubmit }: Props) => {
           </select>
         </label>
 
-        <label className="flex flex-col">
+        <label className="flex flex-col mt-2">
           <span className="mb-1">Comment</span>
           <textarea
             value={comment}
             onChange={(e) => setComment(e.target.value)}
-            className="px-2 py-1 rounded bg-white text-black"
-            rows={3}
+            className="px-3 py-2 rounded bg-white text-black font-sans text-sm leading-snug shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+            rows={4}
             maxLength={100}
-            placeholder="Your comment..."
+            placeholder="Write your comment..."
           />
         </label>
 
