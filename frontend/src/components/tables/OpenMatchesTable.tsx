@@ -17,9 +17,10 @@ type OpenMatchesTableProps = {
   onJoin: (matchId: number) => void
   onGetInviteLink: (id: number) => void
   joiningId: number | null
+  onFormTeams: (matchId: number) => void
 }
 
-export function OpenMatchesTable({ data, onJoin, onGetInviteLink, joiningId }: OpenMatchesTableProps) {
+export function OpenMatchesTable({ data, onJoin, onGetInviteLink, joiningId, onFormTeams }: OpenMatchesTableProps) {
   const columns: ColumnDef<Match>[] = [
     {
       accessorKey: "fieldName",
@@ -77,21 +78,39 @@ export function OpenMatchesTable({ data, onJoin, onGetInviteLink, joiningId }: O
       },
     },
     {
-      id: "link",
-      header: "Link",
+      id: "inviteLink",
+      header: "Invite Link",
       cell: ({ row }) => {
-        const match = row.original
+        const match = row.original;
         return (
           <button
             onClick={(e) => {
-              e.stopPropagation()
-              onGetInviteLink(match.id)
+              e.stopPropagation();
+              onGetInviteLink(match.id);
             }}
             className="text-sm text-white px-2 py-1 rounded bg-blue-600 hover:bg-blue-700 transition-all"
           >
             Get Link
           </button>
-        )
+        );
+      },
+    },
+    {
+      id: "formTeams",
+      header: "Form Teams",
+      cell: ({ row }) => {
+        const match = row.original;
+        return (
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onFormTeams(match.id);
+            }}
+            className="text-sm text-white px-2 py-1 rounded bg-purple-600 hover:bg-purple-700 transition-all"
+          >
+            Form Teams
+          </button>
+        );
       },
     },
   ]

@@ -30,10 +30,13 @@ public interface MatchRepository extends JpaRepository<Match, Long> {
 
     @Query("""
     SELECT m FROM Match m
-    WHERE m.type = 'OPEN'
-    AND m.status = 'SCHEDULED'
-    AND m.startTime > :now
-    AND size(m.players) < m.maxPlayers
-    """)
-    List<Match> findAvailableOpenMatches(@Param("now") LocalDateTime now);
+    WHERE m.type = ar.uba.fi.ingsoft1.football5.matches.MatchType.OPEN
+      AND m.status IN :statuses
+      AND m.startTime > :now
+      AND SIZE(m.players) < m.maxPlayers
+""")
+    List<Match> findByTypeAndStatusInAndStartTimeAfterAndPlayers_SizeLessThan(
+            @Param("statuses") List<MatchStatus> statuses,
+            @Param("now") LocalDateTime now
+    );
 }
