@@ -35,19 +35,26 @@ export const AddReviewModal = ({ isOpen, onClose, onSubmit }: Props) => {
       shouldCloseOnOverlayClick
       style={{
         overlay: {
-          backgroundColor: "rgba(0,0,0,0.5)",
-          backdropFilter: "blur(5px)",
+          backgroundColor: "rgba(0,0,0,0.4)",
+          backdropFilter: "blur(6px)",
           zIndex: 1100,
         },
         content: {
-          maxWidth: "400px",
+          backgroundColor: "#0f1e11",
+          color: "#f0f0f0",
+          maxWidth: "fit-content",
+          width: "fit-content",
+          maxHeight: "fit-content",
           margin: "auto",
           borderRadius: "12px",
           padding: "24px",
+          border: "1px solid #3a4d39",
+          position: "relative",
         },
       }}
     >
-      <h2 className="text-xl font-semibold mb-4">Add Review</h2>
+
+      <h2 className="text-2xl font-bold mb-4">Add Review</h2>
       <formData.AppForm>
         <formData.FormContainer extraError={null} submitLabel="Submit Review">
           <formData.AppField name="rating">
