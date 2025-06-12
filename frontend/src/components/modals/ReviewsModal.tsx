@@ -1,7 +1,7 @@
 import Modal from "react-modal"
 import { ReviewsTable } from "@/components/tables/ReviewsTable"
 import { AddReviewModal } from "@/components/modals/AddReviewModal"
-import { useCreateReview } from "@/services/ReviewServices"
+import { useCreateReview, useGetReviews } from "@/services/ReviewServices"
 import { useState } from "react"
 
 type Props = {
@@ -14,6 +14,12 @@ type Props = {
 export const ReviewsModal = ({ isOpen, onClose, fieldName, fieldId }: Props) => {
   const [showAdd, setShowAdd] = useState(false)
   const { mutate } = useCreateReview(fieldId)
+
+  const {
+    data: reviews = [],
+    isLoading,
+    isError,
+  } = useGetReviews(fieldId)
 
   return (
     <>
@@ -54,7 +60,9 @@ export const ReviewsModal = ({ isOpen, onClose, fieldName, fieldId }: Props) => 
           </button>
         </div>
 
-        <ReviewsTable />
+        {isLoading && <p>Loading...</p>}
+        {isError && <p>Error loading reviews.</p>}
+        {!isLoading && !isError && <ReviewsTable reviews={reviews} />}
 
         <div className="mt-4 flex justify-end gap-2">
           <button

@@ -23,6 +23,7 @@ export const AddReviewModal = ({ isOpen, onClose, onSubmit }: Props) => {
     },
     onSubmit: ({ value }) => {
       onSubmit(value)
+      console.log(value)
       onClose()
     },
   })
@@ -61,9 +62,9 @@ export const AddReviewModal = ({ isOpen, onClose, onSubmit }: Props) => {
             {(field) => (
               <field.SelectField
                 label="Rating"
-                options={Array.from({ length: 10 }, (_, i) => ({
+                options={Array.from({ length: 5 }, (_, i) => ({
                   value: (i + 1).toString(),
-                  label: (i + 1).toString(),
+                  label: ("⭐".repeat(i + 1)).toString(),
                 }))}
               />
             )}
