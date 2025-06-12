@@ -61,6 +61,12 @@ const LoggedInLinks = () => {
             <Link className={styles.navLink} href="/teams">
                 Teams
             </Link>
+            <Link className={styles.navLink} href="/profile">
+                Mi Perfil
+            </Link>
+            <Link className={styles.navLink} href="/search">
+                Buscar Jugador
+            </Link>
             <button onClick={logOut} className={styles.navLink}>
                 Log out
             </button>

@@ -18,6 +18,9 @@ import { TeamsScreen } from "@/screens/TeamsScreen.tsx";
 import { MatchHomeScreen } from "@/screens/MatchHomeScreen.tsx";
 import { CreateClosedMatchScreen } from "@/screens/CreateClosedMatchScreen.tsx";
 import { CreateOpenMatchScreen } from "@/screens/CreateOpenMatchScreen.tsx";
+import { CommonLayout } from "@/components/CommonLayout/CommonLayout"; 
+import UserProfileScreen from "@/screens/UserProfileScreen";
+import SearchUsersScreen from "@/screens/SearchUsersScreen";
 
 export const Navigation = () => {
   const [tokenState] = useToken();
@@ -63,6 +66,16 @@ export const Navigation = () => {
           </Route>
           <Route path="/teams">
             <TeamsScreen />
+          </Route>
+          <Route path="/profile">
+            <CommonLayout>
+              <UserProfileScreen />
+            </CommonLayout>
+          </Route>
+          <Route path="/search">
+            <CommonLayout>
+              <SearchUsersScreen />
+            </CommonLayout>
           </Route>
           <Route>
             <Redirect href="/" />

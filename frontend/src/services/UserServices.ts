@@ -7,6 +7,8 @@ import { SignupRequest, SignupResponseSchema } from "@/models/Signup";
 import { ForgotPasswordRequest, ForgotPasswordRequestSchema, ResetPasswordRequest, ResetPasswordRequestSchema } from "@/models/PasswordReset";
 import {handleErrorResponse} from "@/services/ApiUtils.ts";
 
+import { useQuery } from "@tanstack/react-query";
+
 export function useLogin() {
   const [, setToken] = useToken();
 
@@ -114,3 +116,79 @@ export async function resetPasswordService(req: ResetPasswordRequest) {
     await handleErrorResponse(response, "in reset password");
   }
 }
+
+
+export const useGetMyProfile = () => {
+  const [tokenState] = useToken();
+
+  return useQuery({
+    queryKey: ["myProfile"],
+    enabled: tokenState.state === "LOGGED_IN", // no hace la query si no estás logueado
+    queryFn: async () => {
+      if (tokenState.state !== "LOGGED_IN") {
+        throw new Error("No estás logueado");
+      }
+
+      const response = await fetch(`${BASE_API_URL}/users/me`, {
+        headers: { Authorization: `Bearer ${tokenState.accessToken}` },
+      });
+
+      if (!response.ok) {
+        await handleErrorResponse(response, "al obtener el perfil");
+      }
+
+      return await response.json();
+    },
+  });
+};
+
+
+export const useGetMyTeams = () => {
+  const [tokenState] = useToken();
+
+  return useQuery({
+    queryKey: ["myTeams"],
+    enabled: tokenState.state === "LOGGED_IN",
+    queryFn: async () => {
+      if (tokenState.state !== "LOGGED_IN") {
+        throw new Error("No estás logueado");
+      }
+
+      const response = await fetch(`${BASE_API_URL}/users/me/teams`, {
+        headers: { Authorization: `Bearer ${tokenState.accessToken}` },
+      });
+
+      if (!response.ok) {
+        await handleErrorResponse(response, "al obtener los equipos");
+      }
+
+      return await response.json();
+    },
+  });
+};
+
+
+// --------------------------------SEARCH USERS---------------------------------------------
+export const useSearchUserByUsername = (username: string | null) => {
+  const [tokenState] = useToken();
+
+  return useQuery({
+    queryKey: ["searchUser", username],
+    enabled: !!username && tokenState.state === "LOGGED_IN",
+    queryFn: async () => {
+      if (!username || tokenState.state !== "LOGGED_IN") return;
+
+      const response = await fetch(`${BASE_API_URL}/users/${username}`, {
+        headers: {
+          Authorization: `Bearer ${tokenState.accessToken}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error("No se encontró el usuario");
+      }
+
+      return await response.json();
+    },
+  });
+};
