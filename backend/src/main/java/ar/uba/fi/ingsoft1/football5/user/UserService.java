@@ -75,6 +75,12 @@ public class UserService implements UserDetailsService {
                 .orElseThrow(() -> new UserNotFoundException(USER_NOT_FOUND, username));
     }
 
+    public User loadUserById(Long id) {
+        return userRepository
+                .findById(id)
+                .orElseThrow(() -> new UserNotFoundException(USER_NOT_FOUND, id.toString()));
+    }
+
     public Optional<UserDTO> getUserByUsername(String username) throws UserNotFoundException {
         User user = loadUserByUsername(username);
         return Optional.of(new UserDTO(user));
@@ -162,11 +168,10 @@ public class UserService implements UserDetailsService {
 
     public List<MatchHistoryDTO> getReservationsByUser(JwtUserDetails userDetails) throws UserNotFoundException {
         User user = loadUserByUsername(userDetails.username());
-        List<MatchHistoryDTO> reservations = new ArrayList<>();
-        for (Match match : user.getOrganizedMatches()) {
-            reservations.add(new MatchHistoryDTO(match));
-        }
-        return reservations;
+        return user.getOrganizedMatches().stream()
+                .filter(match -> match.getStatus() == MatchStatus.SCHEDULED || match.getStatus() == MatchStatus.COMPLETED || match.getStatus() == MatchStatus.CANCELLED)
+                .map(MatchHistoryDTO::new)
+                .toList();
     }
 
     Optional<TokenDTO> refresh(RefreshDTO data) {
@@ -199,6 +204,12 @@ public class UserService implements UserDetailsService {
                     throw new IllegalArgumentException("Cannot join match that has already started.");
                 }
                 match.addPlayer(user);
+
+                // Actualizar estado del partido si corresponde
+                if (match.getPlayers().size() >= match.getMaxPlayers()) {
+                    match.setStatus(MatchStatus.COMPLETED);
+                    matchInvitationService.invalidateMatchInvitation(match);
+                }
             } catch (IllegalArgumentException e) {
                 // Optional?: log.warn("No se pudo unir al partido con invitación: " + e.getMessage());
             }

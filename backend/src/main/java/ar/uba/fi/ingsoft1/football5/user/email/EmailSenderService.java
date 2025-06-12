@@ -48,4 +48,8 @@ public class EmailSenderService {
         this.sendMail(recipientEmail, new TeamCaptainMatchMailWriter(date, start, end, OrganizerUsername));
     }
 
+    public void sendTeamAssignmentMail(String recipientEmail, String teamName, LocalDate date, LocalDateTime start, LocalDateTime end) {
+        this.sendMail(recipientEmail, new TeamAssignmentMailWriter(teamName, date, start, end));
+    }
+
 }
