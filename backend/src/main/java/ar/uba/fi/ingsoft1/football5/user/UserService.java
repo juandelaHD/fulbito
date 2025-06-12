@@ -168,11 +168,10 @@ public class UserService implements UserDetailsService {
 
     public List<MatchHistoryDTO> getReservationsByUser(JwtUserDetails userDetails) throws UserNotFoundException {
         User user = loadUserByUsername(userDetails.username());
-        List<MatchHistoryDTO> reservations = new ArrayList<>();
-        for (Match match : user.getOrganizedMatches()) {
-            reservations.add(new MatchHistoryDTO(match));
-        }
-        return reservations;
+        return user.getOrganizedMatches().stream()
+                .filter(match -> match.getStatus() == MatchStatus.SCHEDULED || match.getStatus() == MatchStatus.COMPLETED || match.getStatus() == MatchStatus.CANCELLED)
+                .map(MatchHistoryDTO::new)
+                .toList();
     }
 
     Optional<TokenDTO> refresh(RefreshDTO data) {

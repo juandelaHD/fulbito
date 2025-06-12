@@ -9,8 +9,8 @@ public class TeamFormationUtils {
     public static TeamFormationResult buildTeams(
             List<User> teamAPlayers, List<User> teamBPlayers, Long matchId) {
         String uniqueSuffix = "-" + System.currentTimeMillis();
-        String teamAName = "Team A - Match " + matchId + uniqueSuffix;
-        String teamBName = "Team B - Match " + matchId + uniqueSuffix;
+        String teamAName = "Team A - Match " + matchId + " - " + uniqueSuffix;
+        String teamBName = "Team B - Match " + matchId + " - " + uniqueSuffix;
         Random random = new Random();
         User captainA = teamAPlayers.get(random.nextInt(teamAPlayers.size()));
         User captainB = teamBPlayers.get(random.nextInt(teamBPlayers.size()));

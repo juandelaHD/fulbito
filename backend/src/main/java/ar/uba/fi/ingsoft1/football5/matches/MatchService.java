@@ -210,7 +210,7 @@ public class MatchService {
     }
 
     private void joinClosedMatch(MatchCreateDTO match, Match newMatch)
-            throws IllegalArgumentException, ItemNotFoundException, UserNotFoundException{
+            throws IllegalArgumentException, UserNotFoundException{
         Team homeTeam = teamRepository.findById(match.homeTeamId())
                 .orElseThrow( () -> new IllegalArgumentException("Home team with ID " + match.homeTeamId() + " does not exist"));
         Team awayTeam = teamRepository.findById(match.awayTeamId())
@@ -294,6 +294,26 @@ public class MatchService {
         match.addAwayTeam(teamB);
 
         matchRepository.save(match);
+
+        // Notificar a los jugadores de cada equipo
+        for (User player : teamA.getMembers()) {
+            emailSenderService.sendTeamAssignmentMail(
+                    player.getUsername(),
+                    teamA.getName(),
+                    match.getDate(),
+                    match.getStartTime(),
+                    match.getEndTime()
+            );
+        }
+        for (User player : teamB.getMembers()) {
+            emailSenderService.sendTeamAssignmentMail(
+                    player.getUsername(),
+                    teamB.getName(),
+                    match.getDate(),
+                    match.getStartTime(),
+                    match.getEndTime()
+            );
+        }
         return new MatchDTO(match);
     }
 
@@ -327,4 +347,86 @@ public class MatchService {
         }
     }
 
+    public MatchDTO updateMatch(Long matchId, MatchUpdateDTO updateDTO, JwtUserDetails userDetails) throws ItemNotFoundException, IllegalArgumentException {
+        Match match = this.loadMatchById(matchId);
+        Field field = fieldService.loadFieldById(match.getField().getId());
+
+        // Validar que el usuario sea el organizador del partido o bien el administrador de cancha
+        if (!match.getOrganizer().getUsername().equals(userDetails.username()) && (!fieldService.isFieldAdmin(field.getId(), userDetails))               ) {
+            throw new IllegalArgumentException("Only the match organizer or field admin can update the match");
+        }
+
+        // Solo se puede actualizar si el partido no está cancelado o finalizado
+        if (match.getStatus() == MatchStatus.CANCELLED || match.getStatus() == MatchStatus.FINISHED) {
+            throw new IllegalArgumentException("Match is already cancelled.");
+        }
+
+        if (updateDTO.status() != null) {
+            MatchStatus current = match.getStatus();
+            MatchStatus next = updateDTO.status();
+            // SCHEDULED or COMPLETED -> IN_PROGRESS
+            // IN_PROGRESS -> FINISHED
+            // SCHEDULED or COMPLETED -> CANCELLED
+            if (next == MatchStatus.IN_PROGRESS) {
+                if (!(current == MatchStatus.SCHEDULED || current == MatchStatus.COMPLETED)) {
+                    throw new IllegalArgumentException("Can only transition to IN_PROGRESS from SCHEDULED or COMPLETED. Actual status: " + current);
+                }
+                match.setStatus(MatchStatus.IN_PROGRESS);
+            } else if (next == MatchStatus.FINISHED) {
+                if (current != MatchStatus.IN_PROGRESS) {
+                    throw new IllegalArgumentException("Can only transition to FINISHED from IN_PROGRESS. Actual status: " + current);
+                }
+                match.setStatus(MatchStatus.FINISHED);
+                // invalidate the invitation if it exists
+                if (match.getInvitation() != null) {
+                    matchInvitationService.invalidateMatchInvitation(match);
+                }
+            } else if (next == MatchStatus.CANCELLED) {
+                if (!(current == MatchStatus.SCHEDULED || current == MatchStatus.COMPLETED)) {
+                    throw new IllegalArgumentException("Can only cancel from SCHEDULED or COMPLETED. Actual status: " + current);
+                }
+                match.setStatus(MatchStatus.CANCELLED);
+            } else {
+                throw new IllegalArgumentException("State transition not allowed.");
+            }
+        }
+
+        // Actualizar resultado solo si el partido está finalizado
+        if (updateDTO.result() != null) {
+            if (match.getStatus() != MatchStatus.FINISHED) {
+                throw new IllegalArgumentException("Match is already in progress.");
+            }
+            match.setResult(updateDTO.result());
+        }
+
+        // Actualizar fechas y horarios si se proveen
+        if (updateDTO.date() != null) {
+            match.setDate(updateDTO.date().toLocalDate());
+        }
+        if (updateDTO.startTime() != null && updateDTO.endTime() != null) {
+            match.setStartTime(updateDTO.startTime());
+            match.setEndTime(updateDTO.endTime());
+            // Validar que los horarios sean consistentes
+            if (match.getStartTime() != null && match.getEndTime() != null &&
+                    !match.getEndTime().isAfter(match.getStartTime())) {
+                throw new IllegalArgumentException("Match start time cannot be after end time.");
+            }
+
+            // Validar que los horarios estén dentro de los slots habilitados para la cancha
+            if (!field.isEnabled()) {
+                throw new IllegalArgumentException("Field is not enabled for matches");
+            }
+            if (!fieldService.validateFieldAvailability(
+                    field.getId(),
+                    match.getDate(),
+                    match.getStartTime(),
+                    match.getEndTime()
+            )) {
+                throw new IllegalArgumentException("Field is not available at the specified date and time");
+            }
+        }
+
+        matchRepository.save(match);
+        return new MatchDTO(match);
+    }
 }

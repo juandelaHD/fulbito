@@ -93,10 +93,26 @@ public class MatchRestController {
             @PathVariable Long matchId,
             @RequestBody TeamFormationRequestDTO request,
             @AuthenticationPrincipal JwtUserDetails userDetails
-    ) throws Exception {
+    ) throws IllegalArgumentException, ItemNotFoundException, UserNotFoundException {
         return matchService.formTeams(matchId, request, userDetails);
     }
+
+    @PutMapping("/{matchId}/update")
+    @Operation(
+            summary = "Update match details",
+            description = "Allows the organizer to update the details of a match to IN_PROGRESS, FINISHED or CANCELLED."
+    )
+    @PreAuthorize("hasRole('ADMIN')")
+    public MatchDTO updateMatch(
+            @PathVariable Long matchId,
+            @Valid @RequestBody MatchUpdateDTO updateDTO,
+            @AuthenticationPrincipal JwtUserDetails userDetails
+    ) throws IllegalArgumentException, ItemNotFoundException, UserNotFoundException {
+        return matchService.updateMatch(matchId, updateDTO, userDetails);
+    }
 }
+
+
 
 
 

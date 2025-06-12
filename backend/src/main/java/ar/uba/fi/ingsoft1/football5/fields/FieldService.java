@@ -63,6 +63,20 @@ public class FieldService {
                 .orElseThrow(() -> new ItemNotFoundException("field", id));
     }
 
+    public boolean isFieldAdmin(
+            Long fieldId,
+            JwtUserDetails userDetails) throws ItemNotFoundException, AccessDeniedException {
+
+        Field field = fieldRepository.findById(fieldId)
+                .orElseThrow(() -> new ItemNotFoundException("field", fieldId));
+
+        if (!field.getOwner().getUsername().equalsIgnoreCase(userDetails.username())) {
+            throw new AccessDeniedException(String.format("User does not have access to field with id '%s'.",
+                    fieldId));
+        }
+        return true;
+    }
+
     public void deleteField(Long id, JwtUserDetails userDetails)
             throws ItemNotFoundException, IllegalArgumentException {
         Field field = fieldRepository.findById(id)
