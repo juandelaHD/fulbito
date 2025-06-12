@@ -433,4 +433,35 @@ public class MatchService {
         matchRepository.save(match);
         return new MatchDTO(match);
     }
+
+    public void leaveOpenMatch(Long matchId, JwtUserDetails userDetails)
+            throws ItemNotFoundException, IllegalArgumentException, UserNotFoundException {
+
+        Match match = loadMatchById(matchId);
+        User user = userService.loadUserByUsername(userDetails.username());
+
+        // Solo partidos OPEN y en estado PENDING o CONFIRMED (no SCHEDULED ni posteriores)
+        if (match.getType() != MatchType.OPEN) {
+            throw new IllegalArgumentException("Only open matches can be left.");
+        }
+        if (match.getStatus() == MatchStatus.SCHEDULED ||
+                match.getStatus() == MatchStatus.IN_PROGRESS ||
+                match.getStatus() == MatchStatus.FINISHED ||
+                match.getStatus() == MatchStatus.CANCELLED) {
+            throw new IllegalArgumentException("Cannot leave a match that is already " + match.getStatus() + ".");
+        }
+        if (!match.getPlayers().contains(user)) {
+            throw new IllegalArgumentException("You are not registered in this match.");
+        }
+
+        match.removePlayer(user);
+        matchRepository.save(match);
+
+        emailSenderService.sendUnsubscribeMail(
+                user.getUsername(),
+                match.getDate(),
+                match.getStartTime(),
+                match.getEndTime()
+        );
+    }
 }

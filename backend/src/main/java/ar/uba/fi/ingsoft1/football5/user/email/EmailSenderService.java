@@ -52,4 +52,8 @@ public class EmailSenderService {
         this.sendMail(recipientEmail, new TeamAssignmentMailWriter(teamName, date, start, end));
     }
 
+    public void sendUnsubscribeMail(String recipientEmail, LocalDate date, LocalDateTime start, LocalDateTime end) {
+        this.sendMail(recipientEmail, new UnsubscribeMailWriter(date, start, end));
+    }
+
 }

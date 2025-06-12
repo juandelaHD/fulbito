@@ -110,6 +110,21 @@ public class MatchRestController {
     ) throws IllegalArgumentException, ItemNotFoundException, UserNotFoundException {
         return matchService.updateMatch(matchId, updateDTO, userDetails);
     }
+
+    @DeleteMapping("/{matchId}/leave")
+    @Operation(
+            summary = "Leave an open match",
+            description = "Allows a user to leave an open match they have joined."
+    )
+    @PreAuthorize("hasRole('USER')")
+    @ApiResponse(responseCode = "204", description = "Successfully left the match")
+    @ApiResponse(responseCode = "404", description = "Match not found or user not found")
+    public void leaveOpenMatch(
+            @PathVariable Long matchId,
+            @AuthenticationPrincipal JwtUserDetails userDetails
+    ) throws ItemNotFoundException, IllegalArgumentException, UserNotFoundException {
+        matchService.leaveOpenMatch(matchId, userDetails);
+    }
 }
 
 
