@@ -2,6 +2,7 @@ package ar.uba.fi.ingsoft1.football5.user;
 
 import ar.uba.fi.ingsoft1.football5.common.exception.UserNotFoundException;
 import ar.uba.fi.ingsoft1.football5.config.security.JwtUserDetails;
+import ar.uba.fi.ingsoft1.football5.matches.MatchStatus;
 import ar.uba.fi.ingsoft1.football5.teams.TeamDTO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -11,8 +12,10 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.HttpStatus;
 import org.springframework.lang.NonNull;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
@@ -88,6 +91,28 @@ class UserRestController {
         return userService.getTeamsByUserDetails(userDetails);
     }
 
+    @Transactional(readOnly = true)
+    @GetMapping("/me/upcoming-matches")
+    @Operation(
+            summary = "Get upcoming matches which I am involved in",
+            description = "Returns only the matches organized by the authenticated user.",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "Upcoming matches retrieved successfully"),
+                    @ApiResponse(responseCode = "404", description = "User not found")
+            }
+    )
+    @ResponseStatus(HttpStatus.OK)
+    public List<MatchHistoryDTO> getUpcomingMatches(@AuthenticationPrincipal JwtUserDetails userDetails) throws UserNotFoundException {
+        User user = userService.loadUserByUsername(userDetails.username());
+        LocalDateTime now = LocalDateTime.now();
+        return user.getJoinedMatches().stream()
+                .filter(match -> match.getEndTime().isAfter(now)
+                        && (match.getStatus() == MatchStatus.COMPLETED || match.getStatus() == MatchStatus.SCHEDULED))
+                .map(MatchHistoryDTO::new)
+                .toList();
+    }
+
+
     @GetMapping("/me/played-matches")
     @Operation(
             summary = "Get matches I played",
@@ -99,7 +124,11 @@ class UserRestController {
     )
     @ResponseStatus(HttpStatus.OK)
     public List<MatchHistoryDTO> getMyPlayedMatches(@AuthenticationPrincipal JwtUserDetails userDetails) throws UserNotFoundException {
-        return userService.getPlayedMatches(userDetails);
+        User user = userService.loadUserByUsername(userDetails.username());
+        return user.getJoinedMatches().stream()
+                .filter(match ->match.getStatus() == MatchStatus.FINISHED)
+                .map(MatchHistoryDTO::new)
+                .toList();
     }
 
     @GetMapping(path = "/me/reservations", produces = "application/json")

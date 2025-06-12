@@ -36,12 +36,11 @@ public record MatchHistoryDTO(
         @Schema(description = "Match result (may be null if not played or not set)", example = "5-3")
         String result,
 
-        @Schema(description = "List of players who participated (only for open matches)")
-        List<UserDTO> players
+        @Schema(description = "List of players who participated")
+        List<UserDTO> players,
 
-        // TODO: Uncomment when teams are implemented
-        // @Schema(description = "List of teams that participated (only for closed matches)")
-        // List<TeamDTO> teams
+        @Schema(description = "List of teams that participated")
+        List<TeamDTO> teams
 ) {
     public MatchHistoryDTO(Match match) {
         this (
@@ -53,8 +52,11 @@ public record MatchHistoryDTO(
                 match.getField().getName(),
                 match.getField().getLocation(),
                 match.getResult() != null ? match.getResult().toString() : null,
-                match.getPlayers().stream().map(UserDTO::new).toList()
-                // match.getTeams().stream().map(TeamDTO::new).toList()
+                match.getPlayers().stream().map(UserDTO::new).toList(),
+                java.util.stream.Stream.of(match.getHomeTeam(), match.getAwayTeam())
+                        .filter(java.util.Objects::nonNull)
+                        .map(TeamDTO::new)
+                        .toList()
         );
     }
 }

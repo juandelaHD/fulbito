@@ -2,8 +2,8 @@ package ar.uba.fi.ingsoft1.football5.matches;
 
 import ar.uba.fi.ingsoft1.football5.fields.Field;
 import ar.uba.fi.ingsoft1.football5.matches.invitation.MatchInvitation;
-import ar.uba.fi.ingsoft1.football5.user.User;
 import ar.uba.fi.ingsoft1.football5.teams.Team;
+import ar.uba.fi.ingsoft1.football5.user.User;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 
@@ -227,7 +227,7 @@ public class Match {
 
     public void addHomeTeam(Team team) {
         homeTeam = team;
-        homeTeam.getJoinedMatches().add(this); 
+        homeTeam.getJoinedMatches().add(this);
 
         for (User player: homeTeam.getMembers()){
             this.addPlayer(player);
@@ -236,11 +236,11 @@ public class Match {
 
     public Team getHomeTeam() {
         return homeTeam;
-    }    
-    
+    }
+
     public void addAwayTeam(Team team) {
         awayTeam = team;
-        awayTeam.getJoinedMatches().add(this); 
+        awayTeam.getJoinedMatches().add(this);
 
         for (User player: awayTeam.getMembers()){
             this.addPlayer(player);
@@ -258,4 +258,5 @@ public class Match {
     public void setResult(String result) {
         this.result = result;
     }
+
 }

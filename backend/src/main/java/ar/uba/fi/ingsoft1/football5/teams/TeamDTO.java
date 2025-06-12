@@ -49,7 +49,7 @@ public record TeamDTO(
         this(
                 team.getId(),
                 team.getName(),
-                "/images/" + team.getImage().getId(),
+                team.getImage() != null ? "/images/" + team.getImage().getId() : null,
                 team.getMainColor(),
                 team.getSecondaryColor(),
                 team.getRanking(),
