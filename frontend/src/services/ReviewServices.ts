@@ -1,10 +1,13 @@
-import { BASE_API_URL } from "@/config/app-query-client"
-import { useMutation } from "@tanstack/react-query"
-import { useToken } from "@/services/TokenContext"
 import { toast } from "react-hot-toast"
+import { useMutation, useQuery } from "@tanstack/react-query"
+import { BASE_API_URL } from "@/config/app-query-client"
+import { useToken } from "@/services/TokenContext"
 import { handleErrorResponse } from "@/services/ApiUtils"
-import { CreateReviewRequest } from "@/models/CreateReview"
-import { useQuery } from "@tanstack/react-query"
+import {
+  GetReviewsResponseSchema,
+  GetReviewsResponse,
+  CreateReviewRequest,
+} from "@/models/GetReviews"
 
 export function useCreateReview(fieldId: number) {
   const [tokenState] = useToken()
@@ -24,20 +27,49 @@ export function useCreateReview(fieldId: number) {
       if (!res.ok) {
         await handleErrorResponse(res, "creating review")
       } else {
-        toast.success("Review created successfully")
+        toast.success("Review created successfully!", { duration: 4000 })
       }
     },
   })
 }
 
 export function useGetReviews(fieldId: number) {
-  return useQuery({
+  const [tokenState] = useToken()
+  const token = tokenState.state === "LOGGED_IN" ? tokenState.accessToken : ""
+
+  return useQuery<GetReviewsResponse, Error>({
     queryKey: ["reviews", fieldId],
     queryFn: async () => {
-      const res = await fetch(`/reviews?fieldId=${fieldId}`)
-      if (!res.ok) throw new Error("Error fetching reviews")
-      const data = await res.json()
-      return data.content 
+      const url = `${BASE_API_URL}/fields/${fieldId}/reviews`
+
+      try {
+        const response = await fetch(url, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            Accept: "application/json",
+          },
+        })
+
+        const json = await response.json()
+
+        if (!response.ok) {
+          await handleErrorResponse(response, "fetching reviews")
+        }
+
+        const parsed = GetReviewsResponseSchema.parse(json)
+
+        if (parsed.content.length === 0) {
+          toast("No reviews found for this field.", {
+            icon: "ℹ️",
+            duration: 4000,
+          })
+        }
+
+        return parsed
+      } catch (err) {
+        console.error("Error fetching reviews:", err)
+        throw err
+      }
     },
   })
 }

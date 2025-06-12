@@ -1,8 +1,9 @@
+import { useState } from "react"
 import Modal from "react-modal"
+import { useQueryClient } from "@tanstack/react-query"
 import { ReviewsTable } from "@/components/tables/ReviewsTable"
 import { AddReviewModal } from "@/components/modals/AddReviewModal"
 import { useCreateReview, useGetReviews } from "@/services/ReviewServices"
-import { useState } from "react"
 
 type Props = {
   isOpen: boolean
@@ -13,13 +14,9 @@ type Props = {
 
 export const ReviewsModal = ({ isOpen, onClose, fieldName, fieldId }: Props) => {
   const [showAdd, setShowAdd] = useState(false)
+  const queryClient = useQueryClient()
   const { mutate } = useCreateReview(fieldId)
-
-  const {
-    data: reviews = [],
-    isLoading,
-    isError,
-  } = useGetReviews(fieldId)
+  const { data: reviews, isLoading, isError } = useGetReviews(fieldId)
 
   return (
     <>
@@ -62,7 +59,9 @@ export const ReviewsModal = ({ isOpen, onClose, fieldName, fieldId }: Props) => 
 
         {isLoading && <p>Loading...</p>}
         {isError && <p>Error loading reviews.</p>}
-        {!isLoading && !isError && <ReviewsTable reviews={reviews} />}
+        {!isLoading && !isError && reviews && (
+          <ReviewsTable reviews={reviews.content} />
+        )}
 
         <div className="mt-4 flex justify-end gap-2">
           <button
@@ -75,7 +74,7 @@ export const ReviewsModal = ({ isOpen, onClose, fieldName, fieldId }: Props) => 
             onClick={onClose}
             className="bg-green-700 text-white px-4 py-2 rounded"
           >
-            Cerrar
+            Close
           </button>
         </div>
       </Modal>
@@ -83,7 +82,20 @@ export const ReviewsModal = ({ isOpen, onClose, fieldName, fieldId }: Props) => 
       <AddReviewModal
         isOpen={showAdd}
         onClose={() => setShowAdd(false)}
-        onSubmit={(data) => mutate(data)}
+        onSubmit={(data) => {
+          mutate(
+            {
+              rating: Number(data.rating), 
+              comment: data.comment,
+            },
+            {
+              onSuccess: () => {
+                setShowAdd(false) 
+                queryClient.invalidateQueries({ queryKey: ["reviews", fieldId] })
+              },
+            }
+          )
+        }}
       />
     </>
   )

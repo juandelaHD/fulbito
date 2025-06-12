@@ -1,6 +1,12 @@
+import { useState } from "react"
 import Modal from "react-modal"
-import { useAppForm } from "@/config/use-app-form"
-import { CreateReviewSchema } from "@/models/CreateReview"
+import { z } from "zod"
+import { toast } from "react-hot-toast"
+
+const schema = z.object({
+  rating: z.string().min(1, "Rating is required"),
+  comment: z.string().min(1, "Comment is required").max(100),
+})
 
 type Props = {
   isOpen: boolean
@@ -9,24 +15,35 @@ type Props = {
 }
 
 export const AddReviewModal = ({ isOpen, onClose, onSubmit }: Props) => {
-  const formData = useAppForm({
-    defaultValues: { rating: "", comment: "" },
-    validators: {
-      onSubmit: () => {
-        const values = formData.store.state.values
-        const result = CreateReviewSchema.safeParse(values)
-        if (!result.success) {
-          const firstError = result.error.issues[0]
-          return { isValid: false, error: new Error(firstError.message) }
-        }
-      },
-    },
-    onSubmit: ({ value }) => {
-      onSubmit(value)
-      console.log(value)
+  const [rating, setRating] = useState("")
+  const [comment, setComment] = useState("")
+  const [error, setError] = useState<string | null>(null)
+  const [submitting, setSubmitting] = useState(false)
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setError(null)
+
+    const result = schema.safeParse({ rating, comment })
+    if (!result.success) {
+      setError(result.error.issues[0].message)
+      return
+    }
+
+    try {
+      setSubmitting(true)
+      await onSubmit({ rating, comment })
+      toast.success("Review submitted!")
+      setRating("")
+      setComment("")
       onClose()
-    },
-  })
+    } catch (err) {
+      toast.error("Something went wrong")
+      console.error(err)
+    } finally {
+      setSubmitting(false)
+    }
+  }
 
   return (
     <Modal
@@ -54,26 +71,47 @@ export const AddReviewModal = ({ isOpen, onClose, onSubmit }: Props) => {
         },
       }}
     >
-
       <h2 className="text-2xl font-bold mb-4">Add Review</h2>
-      <formData.AppForm>
-        <formData.FormContainer extraError={null} submitLabel="Submit Review">
-          <formData.AppField name="rating">
-            {(field) => (
-              <field.SelectField
-                label="Rating"
-                options={Array.from({ length: 5 }, (_, i) => ({
-                  value: (i + 1).toString(),
-                  label: ("⭐".repeat(i + 1)).toString(),
-                }))}
-              />
-            )}
-          </formData.AppField>
-          <formData.AppField name="comment">
-            {(field) => <field.TextField label="Comment" />}
-          </formData.AppField>
-        </formData.FormContainer>
-      </formData.AppForm>
+
+      <form onSubmit={handleSubmit} className="flex flex-col gap-4 w-80">
+        <label className="flex flex-col">
+          <span className="mb-1">Rating</span>
+          <select
+            value={rating}
+            onChange={(e) => setRating(e.target.value)}
+            className="px-2 py-1 rounded bg-white text-black"
+          >
+            <option value="">Select rating</option>
+            {[1, 2, 3, 4, 5].map((r) => (
+              <option key={r} value={r}>
+                {"⭐".repeat(r)}
+              </option>
+            ))}
+          </select>
+        </label>
+
+        <label className="flex flex-col">
+          <span className="mb-1">Comment</span>
+          <textarea
+            value={comment}
+            onChange={(e) => setComment(e.target.value)}
+            className="px-2 py-1 rounded bg-white text-black"
+            rows={3}
+            maxLength={100}
+            placeholder="Your comment..."
+          />
+        </label>
+
+        {error && <p className="text-red-400 text-sm">{error}</p>}
+
+        <button
+          type="submit"
+          disabled={submitting}
+          className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 disabled:opacity-50"
+        >
+          {submitting ? "Submitting..." : "Submit Review"}
+        </button>
+      </form>
     </Modal>
   )
 }
