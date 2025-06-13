@@ -2,6 +2,7 @@ import { useState } from "react"
 import Modal from "react-modal"
 import { z } from "zod"
 import { TournamentFormatEnum } from "@/models/GetTournaments"
+import styles from "./AddTournamentModal.module.css"
 
 const schema = z.object({
   name: z.string().min(1, "Tournament name is required"),
@@ -56,114 +57,135 @@ export const AddTournamentModal = ({ isOpen, onClose, onSubmit }: Props) => {
 
   return (
     <Modal
-      isOpen={isOpen}
-      onRequestClose={onClose}
-      shouldCloseOnOverlayClick
-      contentLabel="Add Tournament"
-      style={{
+    isOpen={isOpen}
+    onRequestClose={onClose}
+    shouldCloseOnOverlayClick
+    contentLabel="Add Tournament"
+    style={{
         overlay: {
-          backgroundColor: "rgba(0,0,0,0.5)",
-          backdropFilter: "blur(5px)",
-          zIndex: 1000,
+        backgroundColor: "rgba(0, 0, 0, 0.5)", // como otros modales
+        backdropFilter: "blur(6px)",
+        zIndex: 1000,
         },
         content: {
-          backgroundColor: "#111",
-          color: "#f0f0f0",
-          width: "90%",
-          maxWidth: "500px",
-          margin: "auto",
-          padding: "24px",
-          borderRadius: "12px",
-          border: "1px solid #333",
+        inset: 0, // ocupa todo el viewport
+        border: "none",
+        background: "none",
+        padding: 0,
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
         },
-      }}
+    }}
     >
-      <h2 className="text-2xl font-semibold mb-4">Hungry for glory? Create a New Tournament! 🏆</h2>
 
-      <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-        <input
-          name="name"
-          placeholder="Tournament Name *"
-          value={formState.name || ""}
-          onChange={handleChange}
-          className="bg-white text-black px-3 py-2 rounded shadow-sm"
-        />
+        <form onSubmit={handleSubmit} className={styles.modalContainer}>
+            <h2 className={styles.modalTitle}>
+                Hungry for glory? Create a New Tournament! 🏆
+            </h2>
 
-        <input
-          name="startDate"
-          type="date"
-          value={formState.startDate || ""}
-          onChange={handleChange}
-          className="bg-white text-black px-3 py-2 rounded shadow-sm"
-        />
+            <div className={styles.fieldGroup}>
+                <label className={styles.label}>Tournament Name *</label>
+                <input
+                name="name"
+                value={formState.name || ""}
+                onChange={handleChange}
+                className={styles.input}
+                />
+            </div>
 
-        <select
-          name="format"
-          value={formState.format || ""}
-          onChange={handleChange}
-          className="bg-white text-black px-3 py-2 rounded shadow-sm"
-        >
-          <option value="">Select Format *</option>
-          <option value="SINGLE_ELIMINATION">Eliminación directa</option>
-          <option value="GROUPS_AND_ELIMINATION">Grupos + Eliminación</option>
-          <option value="ROUND_ROBIN">Todos contra todos</option>
-        </select>
+            <div className={styles.fieldGroup}>
+                <label className={styles.label}>Start Date *</label>
+                <input
+                name="startDate"
+                type="date"
+                value={formState.startDate || ""}
+                onChange={handleChange}
+                className={styles.input}
+                />
+            </div>
 
-        <input
-          name="maxTeams"
-          type="number"
-          min={2}
-          placeholder="Max Teams *"
-          value={formState.maxTeams || ""}
-          onChange={handleChange}
-          className="bg-white text-black px-3 py-2 rounded shadow-sm"
-        />
+            <div className={styles.fieldGroup}>
+                <label className={styles.label}>Format *</label>
+                <select
+                name="format"
+                value={formState.format || ""}
+                onChange={handleChange}
+                className={styles.select}
+                >
+                <option value="">Select Format</option>
+                <option value="SINGLE_ELIMINATION">Direct Elimination</option>
+                <option value="GROUPS_AND_ELIMINATION">Group Stage + Elimination</option>
+                <option value="ROUND_ROBIN">League</option>
+                </select>
+            </div>
 
-        <input
-          name="endDate"
-          type="date"
-          value={formState.endDate || ""}
-          onChange={handleChange}
-          className="bg-white text-black px-3 py-2 rounded shadow-sm"
-        />
+            <div className={styles.fieldGroup}>
+                <label className={styles.label}>Max Teams *</label>
+                <input
+                name="maxTeams"
+                type="number"
+                min={2}
+                value={formState.maxTeams || ""}
+                onChange={handleChange}
+                className={styles.input}
+                />
+            </div>
 
-        <textarea
-          name="description"
-          placeholder="Rules / Description"
-          value={formState.description || ""}
-          onChange={handleChange}
-          rows={3}
-          className="bg-white text-black px-3 py-2 rounded shadow-sm"
-        />
+            <div className={styles.fieldGroup}>
+                <label className={styles.label}>End Date</label>
+                <input
+                name="endDate"
+                type="date"
+                value={formState.endDate || ""}
+                onChange={handleChange}
+                className={styles.input}
+                />
+            </div>
 
-        <input
-          name="prizes"
-          placeholder="Prizes"
-          value={formState.prizes || ""}
-          onChange={handleChange}
-          className="bg-white text-black px-3 py-2 rounded shadow-sm"
-        />
+            <div className={styles.fieldGroup}>
+                <label className={styles.label}>Rules / Description</label>
+                <textarea
+                name="description"
+                value={formState.description || ""}
+                onChange={handleChange}
+                rows={3}
+                className={styles.textarea}
+                />
+            </div>
 
-        <input
-          name="entryFee"
-          type="number"
-          min={0}
-          placeholder="Entry Fee"
-          value={formState.entryFee ?? ""}
-          onChange={handleChange}
-          className="bg-white text-black px-3 py-2 rounded shadow-sm"
-        />
+            <div className={styles.fieldGroup}>
+                <label className={styles.label}>Prizes</label>
+                <input
+                name="prizes"
+                value={formState.prizes || ""}
+                onChange={handleChange}
+                className={styles.input}
+                />
+            </div>
 
-        {error && <p className="text-red-400 text-sm">{error}</p>}
+            <div className={styles.fieldGroup}>
+                <label className={styles.label}>Entry Fee</label>
+                <input
+                name="entryFee"
+                type="number"
+                min={0}
+                value={formState.entryFee ?? ""}
+                onChange={handleChange}
+                className={styles.input}
+                />
+            </div>
 
-        <button
-          type="submit"
-          disabled={submitting}
-          className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 disabled:opacity-50"
-        >
-          {submitting ? "Submitting..." : "Create Tournament"}
-        </button>
-      </form>
+            {error && <p className="text-red-400 text-sm">{error}</p>}
+
+            <button
+                type="submit"
+                disabled={submitting}
+                className={styles.submitButton}
+            >
+                {submitting ? "Submitting..." : "Create Tournament"}
+            </button>
+        </form>
     </Modal>
   )
 }

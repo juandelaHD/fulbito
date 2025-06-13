@@ -83,8 +83,8 @@ export const Navigation = () => {
           <Route path="/login">
             <LoginScreen />
           </Route>
-          <Route path="/fields">
-            <FieldsScreen />
+          <Route path="/tournaments">
+            <TournamentsScreen />
           </Route>
           <Route path="/signup">
             <SignupScreen />
