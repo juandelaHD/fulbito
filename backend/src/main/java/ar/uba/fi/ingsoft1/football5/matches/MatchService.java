@@ -388,6 +388,13 @@ public class MatchService {
 
         if (match.getOrganizer().getUsername().equals(user.getUsername())) {
 
+            emailSenderService.sendMatchCancelledMail(
+                match.getOrganizer().getUsername(),
+                match.getDate(),
+                match.getStartTime(),
+                match.getEndTime()
+            );
+
             for (User player : match.getPlayers()) {
                 emailSenderService.sendMatchCancelledMail(
                     player.getUsername(),
