@@ -14,6 +14,7 @@ import ar.uba.fi.ingsoft1.football5.teams.TeamDTO;
 import ar.uba.fi.ingsoft1.football5.teams.TeamRepository;
 import ar.uba.fi.ingsoft1.football5.user.Role;
 import ar.uba.fi.ingsoft1.football5.user.User;
+import ar.uba.fi.ingsoft1.football5.user.UserRepository;
 import ar.uba.fi.ingsoft1.football5.user.UserService;
 import ar.uba.fi.ingsoft1.football5.user.email.EmailSenderService;
 
@@ -62,6 +63,9 @@ public class MatchServiceClosedMatchTest {
     private MatchInvitationService matchInvitationService;
 
     @Mock
+    private UserRepository userRepository;
+
+    @Mock
     private Match closedMatch;
 
     @Mock
@@ -91,21 +95,14 @@ public class MatchServiceClosedMatchTest {
     @BeforeEach
     void setUp() {
         Field field = mock(Field.class);
-        AvatarImage avatar = mock(AvatarImage.class);
         //Se crean los usuarios para conformar los equipos y configuracion para los testeos
+        
         organizer = new User("organizer", "Org", "anizer", "M", "Zone", 30, "pass", Role.USER);
         playerA = new User("playerA", "jorge", "A", "M", "ZoneA", 33, "pass", Role.USER);
         playerB = new User("playerB", "juan", "B", "M", "ZoneB", 28, "pass", Role.USER);
         playerC = new User("playerC", "agustin", "C", "Other", "ZoneC", 42, "pass", Role.USER);
 
-        organizer.setAvatar(avatar);
-        playerA.setAvatar(avatar);
-        playerB.setAvatar(avatar);
-        playerC.setAvatar(avatar);
         //Setean los team con 2 player para los test
-        TeamCreateDTO homeTeamDTO = new TeamCreateDTO("organizer", "red", "blue", 3);
-        teamService.createTeam(homeTeamDTO,"homeTeam", null);
-        /* 
         homeTeam = new Team("homeTeam", organizer);
         homeTeam.setId(1l);
         homeTeam.setMainColor("red");
@@ -113,16 +110,18 @@ public class MatchServiceClosedMatchTest {
         homeTeam.setRanking(3);
         homeTeam.addMember(organizer);
         homeTeam.addMember(playerA);
+
         awayTeam = new Team("awayTeam", playerB);
         awayTeam.setId(2l);
-        homeTeam.setMainColor("black");
-        homeTeam.setSecondaryColor("orange");
-        homeTeam.setRanking(5);
+        awayTeam.setMainColor("black");
+        awayTeam.setSecondaryColor("orange");
+        awayTeam.setRanking(5);
         awayTeam.addMember(playerB);
         awayTeam.addMember(playerC);
-        */
 
-
+        when(teamRepository.findById(1L)).thenReturn(Optional.of(homeTeam));
+        when(teamRepository.findById(2L)).thenReturn(Optional.of(awayTeam));
+        
         //Se crea el partido para no tener que irlo generando en cada test
         closedMatch = new Match(field, organizer, MatchStatus.PENDING, MatchType.CLOSED,
                 1,

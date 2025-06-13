@@ -77,6 +77,7 @@ class MatchServiceOpenMatchTest {
                 LocalDateTime.now().plusHours(3)
         );
         user = new User("testuser", "Test", "User", "M", "Zone1", 25, "pass123", Role.USER);
+
         AvatarImage avatar = mock(AvatarImage.class);
         user.setAvatar(avatar);
         openMatch.getOrganizer().setAvatar(avatar);
