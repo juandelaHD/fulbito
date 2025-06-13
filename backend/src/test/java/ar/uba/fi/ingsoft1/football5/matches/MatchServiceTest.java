@@ -64,7 +64,7 @@ class MatchServiceTest {
     void setUp() {
         Field field = mock(Field.class);
         User organizer = mock(User.class);
-        openMatch = new Match(field, organizer, MatchStatus.SCHEDULED, MatchType.OPEN,
+        openMatch = new Match(field, organizer, MatchStatus.PENDING, MatchType.OPEN,
                 1,
                 10,
                 LocalDate.now().plusDays(1),
@@ -231,9 +231,10 @@ class MatchServiceTest {
                     null,
                     5,
                     10,
-                    LocalDate.now().minusDays(1),
+                    LocalDate.now().minusDays(3),
                     LocalDateTime.now().plusHours(1),
                     LocalDateTime.now().plusHours(2)
+                   
             );
         });
 
