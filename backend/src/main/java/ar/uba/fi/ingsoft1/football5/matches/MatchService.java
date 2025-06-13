@@ -455,16 +455,16 @@ public class MatchService {
         } else {
             throw new IllegalArgumentException("Match type not supported for confirmation.");
         }
-        // Notificar al organizador
-        emailSenderService.sendReservationConfirmedMail(
-                match.getOrganizer().getUsername(),
-                match.getDate(),
-                match.getStartTime(),
-                match.getEndTime()
-        );
         match.setConfirmationSent(true);
 
-        matchRepository.save(match);
+        Match savedMatch = matchRepository.save(match);
+        // Notificar al organizador
+        emailSenderService.sendReservationConfirmedMail(
+                savedMatch.getOrganizer().getUsername(),
+                savedMatch.getDate(),
+                savedMatch.getStartTime(),
+                savedMatch.getEndTime()
+        );
 
         return new MatchDTO(match);
     }
