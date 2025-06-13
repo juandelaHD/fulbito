@@ -1,12 +1,12 @@
-import { FieldsTable} from "@/components/tables/FieldsTable"
-import { FieldsFilters, FieldsFiltersContainer } from "@/components/filters/FieldsFilters"
+import { FieldsTable} from "@/components/tables/FieldsTable.tsx"
+import { FieldsFilters, FieldsFiltersContainer } from "@/components/filters/FieldsFilters.tsx"
 import { useState } from "react"
 import { toast } from "react-hot-toast"
-import { CommonLayout } from "@/components/CommonLayout/CommonLayout";
-import { useGetFields } from "@/services/FieldServices";
+import { CommonLayout } from "@/components/CommonLayout/CommonLayout.tsx";
+import { useGetFields } from "@/services/FieldServices.ts";
 import {GetFieldsRequest} from "@/models/GetFields.ts";
-import { ReviewsModal } from "@/components/modals/ReviewsModal"
-import type { Field as FieldForTable } from "@/components/tables/FieldsTable";
+import { ReviewsModal } from "@/components/modals/ReviewsModal.tsx"
+import type { Field as FieldForTable } from "@/components/tables/FieldsTable.tsx";
 
 export const FieldsScreen = () => {
   const [hasSearched, setHasSearched] = useState(false);

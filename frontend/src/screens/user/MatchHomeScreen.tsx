@@ -1,8 +1,8 @@
 import { useLocation } from "wouter";
 import { Match as TableMatch, OpenMatchesTable } from "@/components/tables/OpenMatchesTable.tsx";
 import { useEffect, useState } from "react";
-import { useGetMatchInviteLink, useGetOpenMatches, useJoinMatch } from "@/services/MatchesServices";
-import { CommonLayout } from "@/components/CommonLayout/CommonLayout";
+import { useGetMatchInviteLink, useGetOpenMatches, useJoinMatch } from "@/services/MatchesServices.ts";
+import { CommonLayout } from "@/components/CommonLayout/CommonLayout.tsx";
 import { toast } from "react-hot-toast";
 
 export const MatchHomeScreen = () => {

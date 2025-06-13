@@ -1,4 +1,4 @@
-import { CommonLayout } from "@/components/CommonLayout/CommonLayout";
+import { CommonLayout } from "@/components/CommonLayout/CommonLayout.tsx";
 import { useLocation } from "wouter";
 
 export const PlayerHomePage = () => {

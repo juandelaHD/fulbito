@@ -3,9 +3,9 @@ import {
   useFormTeams,
   TeamFormationRequestDTO,
   useGetMatchById
-} from "@/services/MatchesServices";
+} from "@/services/MatchesServices.ts";
 import { toast } from "react-hot-toast";
-import { useAppForm } from "@/config/use-app-form";
+import { useAppForm } from "@/config/use-app-form.ts";
 import { CommonLayout } from "@/components/CommonLayout/CommonLayout.tsx";
 import { FormTeamsSchema } from "@/models/FormTeamsSchema.ts";
 

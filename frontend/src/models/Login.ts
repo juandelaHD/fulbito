@@ -10,6 +10,7 @@ export type LoginRequest = z.infer<typeof LoginRequestSchema>;
 export const LoginResponseSchema = z.object({
   accessToken: z.string().min(1),
   refreshToken: z.string().nullable(),
+  role: z.enum(["USER", "ADMIN"]),
 });
 
 export type LoginResponse = z.infer<typeof LoginResponseSchema>;

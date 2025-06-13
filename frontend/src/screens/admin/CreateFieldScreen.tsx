@@ -1,6 +1,6 @@
-import { useAppForm } from "@/config/use-app-form";
-import { CommonLayout } from "@/components/CommonLayout/CommonLayout";
-import { CreateFieldSchema } from "@/models/CreateField";
+import { useAppForm } from "@/config/use-app-form.ts";
+import { CommonLayout } from "@/components/CommonLayout/CommonLayout.tsx";
+import { CreateFieldSchema } from "@/models/CreateField.ts";
 import { toast } from "react-hot-toast";
 import {useCreateField} from "@/services/FieldServices.ts";
 

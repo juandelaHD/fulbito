@@ -1,4 +1,4 @@
-import { TeamCreateRequest } from "@/models/CreateTeam";
+import { TeamCreateRequest } from "@/models/CreateTeam.ts";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { toast } from "react-hot-toast";
 import { BASE_API_URL } from "@/config/app-query-client";
