@@ -14,13 +14,13 @@ export type Match = {
 
 type OpenMatchesTableProps = {
   data: Match[]
-  onJoin: (matchId: number) => void
   onGetInviteLink: (id: number) => void
+  onJoin: (matchId: number) => void
   joiningId: number | null
   onFormTeams: (matchId: number) => void
 }
 
-export function OpenMatchesTable({ data, onJoin, onGetInviteLink, joiningId, onFormTeams }: OpenMatchesTableProps) {
+export function OpenMatchesTable({ data, onGetInviteLink, onJoin, joiningId, onFormTeams }: OpenMatchesTableProps) {
   const columns: ColumnDef<Match>[] = [
     {
       accessorKey: "fieldName",

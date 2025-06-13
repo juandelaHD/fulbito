@@ -5,12 +5,13 @@ import styles from "./CommonLayout.module.css";
 
 export const CommonLayout = ({ children }: React.PropsWithChildren) => {
   const [tokenState, setTokenState] = useToken();
-  const [location] = useLocation();
+  const [location, navigate] = useLocation();
 
   const hideNav = location === "/login" || location === "/signup";
 
   const logOut = () => {
     setTokenState({ state: "LOGGED_OUT" });
+    navigate("/login");
   };
 
   return (

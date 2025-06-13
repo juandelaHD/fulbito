@@ -124,7 +124,7 @@ export const CreateMatchScreen = ({ defaultMatchType = "OPEN" }: { defaultMatchT
       setSchedules(result);
       console.log("Fetched schedules:", result);
       setSchedulesFetched(true);
-      if (result.filter((s: ScheduleSlot) => s.available).length === 0) {
+      if (result.filter((s: ScheduleSlot) => s.status === "AVAILABLE").length === 0) {
         toast("No hours available for this field on the selected date.", { icon: "ℹ️", duration: 4000 });
       }
     } catch (e) {

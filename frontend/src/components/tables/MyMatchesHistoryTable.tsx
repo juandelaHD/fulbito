@@ -25,12 +25,11 @@ export type MyMatch = {
   result: string
 }
 
-
 type MyMatchesTableProps = {
   data: MyMatch[]
 }
 
-export function MyMatchesTable({ data  }: MyMatchesTableProps) {
+export function MyMatchesHistoryTable({ data  }: MyMatchesTableProps) {
   const columns: ColumnDef<MyMatch>[] = [
     {
       accessorKey: "fieldName",

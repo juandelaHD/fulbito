@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useGetMyMatchesPlayed } from "@/services/UserServices";
-import { MyMatch, MyMatchesTable } from "@/components/tables/MyMatchesTable.tsx";
+import { MyMatch, MyMatchesHistoryTable } from "@/components/tables/MyMatchesHistoryTable.tsx";
 
 export const MyMatchesHistoryScreen = () => {
   const { data: RawBasicMatchDTO, isLoading, error } = useGetMyMatchesPlayed();
@@ -33,7 +33,7 @@ export const MyMatchesHistoryScreen = () => {
       </div>
       {isLoading && <p>Loading teams...</p>}
       {error && <p className="text-red-500">Error while loading teams</p>}
-      {Array.isArray(matches) && matches.length > 0 && <MyMatchesTable data={matches} />}
+      {Array.isArray(matches) && matches.length > 0 && <MyMatchesHistoryTable data={matches} />}
       {Array.isArray(matches) && matches.length === 0 && (
         <p className="text-gray-400 text-center">You don't have any teams yet.</p>
       )}

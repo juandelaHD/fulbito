@@ -177,6 +177,36 @@ export function useJoinMatch() {
   });
 }
 
+export async function leaveMatchService(matchId: number, token: string): Promise<void> {
+  const response = await fetch(`${BASE_API_URL}/matches/${matchId}/leave-open`, {
+    method: "DELETE",
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+    },
+  });
+
+  if (!response.ok) {
+    await handleErrorResponse(response, "leaving match");
+  }
+}
+
+export function useLeaveMatch() {
+  const [tokenState] = useToken();
+  const token = tokenState.state === "LOGGED_IN" ? tokenState.accessToken : "";
+
+  return useMutation({
+    mutationFn: (matchId: number) => leaveMatchService(matchId, token),
+    onSuccess: () => {
+      toast.success("Successfully left match!", { duration: 5000 });
+    },
+    onError: (err: unknown) => {
+      console.log("Error while leaving match:", err);
+    },
+  });
+}
+
+
 export async function getMatchInviteLinkService(matchId: number, token: string): Promise<string> {
   const response = await fetch(`${BASE_API_URL}/matches/${matchId}/link-invite`, {
     method: "GET",
@@ -311,3 +341,5 @@ export function useGetMatchById(matchId?: number) {
     enabled: !!token && !!matchId,
   });
 }
+
+

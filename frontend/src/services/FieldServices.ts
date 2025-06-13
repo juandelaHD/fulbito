@@ -129,9 +129,11 @@ export function useAvailableFields(token: string) {
 
 export type ScheduleSlot = {
   id: number;
+  Date: string; // "YYYY-MM-DD"
   start: string; // "HH:mm"
   end: string;   // "HH:mm"
-  available: boolean;
+  status: string; // "AVAILABLE"
+
 };
 
 export async function getFieldSchedulesService(fieldId: number, date: string, token: string): Promise<ScheduleSlot[]> {
@@ -143,7 +145,7 @@ export async function getFieldSchedulesService(fieldId: number, date: string, to
   });
   if (!res.ok) throw new Error("Error fetching schedules");
   const slots: ScheduleSlot[] = await res.json();
-  return slots.filter(slot => slot.available);
+  return slots.filter(slot => slot.status === "AVAILABLE");
 }
 
 
