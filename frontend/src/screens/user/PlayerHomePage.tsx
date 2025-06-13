@@ -1,5 +1,5 @@
 import { CommonLayout } from "@/components/CommonLayout/CommonLayout.tsx";
-import { useLocation } from "wouter";
+import {useLocation} from "wouter";
 
 export const PlayerHomePage = () => {
   const [, navigate] = useLocation();
@@ -8,18 +8,24 @@ export const PlayerHomePage = () => {
    <CommonLayout>
         <section>
             <h1 className="text-center text-2xl font-semibold mb-4">Welcome, Player</h1>
-            <div className="grid grid-cols-2 gap-12 justify-items-center">
+            <div className="flex flex-wrap gap-8 justify-center">
                 <button
-                onClick={() => navigate("/matches")}
-                className="w-50 h-50 text-xl font-bold text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition mb-2"
+                    onClick={() => navigate("/match")}
+                    className="w-48 h-20 text-xl font-bold text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition mb-2"
                 >
-                View Matches
+                    View Matches
                 </button>
                 <button
-                onClick={() => navigate("/tournaments")}
-                className="w-50 h-50 text-xl font-bold text-white bg-green-600 rounded-lg hover:bg-green-700 transition mb-2"
+                    onClick={() => navigate("/fields")}
+                    className="w-48 h-20 text-xl font-bold text-white bg-green-600 rounded-lg hover:bg-green-700 transition mb-2"
                 >
-                Join Tournaments
+                    View Fields
+                </button>
+                <button
+                    onClick={() => navigate("/teams")}
+                    className="w-48 h-20 text-xl font-bold text-white bg-green-600 rounded-lg hover:bg-green-700 transition mb-2"
+                >
+                    View Teams
                 </button>
             </div>
         </section>

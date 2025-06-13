@@ -10,16 +10,16 @@ export const AdminHomePage = () => {
             <h1 className="text-2xl font-bold mb-4 text-center">Admin Panel</h1>
             <div className="grid grid-cols-2 gap-12 justify-items-center">
                 <button
-                onClick={() => navigate("/fields")}
-                className="w-50 h-50 text-xl font-bold text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition mb-2"
+                    onClick={() => navigate("/fields/new")}
+                    className="w-50 h-50 text-xl font-bold text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition mb-2"
                 >
-                Manage Fields
+                    Create Field
                 </button>
                 <button
-                onClick={() => navigate("/reservations")}
-                className="w-50 h-50 text-xl font-bold text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition mb-2"
+                    onClick={() => navigate("/fields/management")}
+                    className="w-50 h-50 text-xl font-bold text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition mb-2"
                 >
-                Manage Reservations
+                    Manage Fields
                 </button>
             </div>
         </section>

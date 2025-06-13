@@ -18,7 +18,6 @@ import { MatchHomeScreen } from "@/screens/user/MatchHomeScreen.tsx";
 import { CreateClosedMatchScreen } from "@/screens/user/CreateClosedMatchScreen.tsx";
 import { CreateOpenMatchScreen } from "@/screens/user/CreateOpenMatchScreen.tsx";
 import { FormTeamsScreen } from "@/screens/user/FormTeamsScreen.tsx";
-import {MainScreen} from "@/screens/MainScreen.tsx";
 
 export const Navigation = () => {
   const [tokenState] = useToken();
@@ -27,7 +26,7 @@ export const Navigation = () => {
       return (
         <Switch>
           <Route path="/">
-            <MainScreen />
+              {tokenState.role === "ADMIN" ? <Redirect href="/admin" /> : <Redirect href="/player" />}
           </Route>
           <Route path="/login">
             <LoginScreen />
