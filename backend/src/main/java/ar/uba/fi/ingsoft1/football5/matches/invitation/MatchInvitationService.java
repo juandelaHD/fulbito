@@ -24,7 +24,7 @@ public class MatchInvitationService {
     public void createInvitation(Long matchId) throws IllegalArgumentException {
         Match match = matchRepository.findById(matchId)
                 .orElseThrow(() -> new IllegalArgumentException("Match not found with id: " + matchId));
-        if (match.getStatus() != MatchStatus.SCHEDULED) {
+        if (match.getStatus() != MatchStatus.PENDING && match.getStatus() != MatchStatus.ACCEPTED) {
             throw new IllegalArgumentException("Cannot create invitation for this match. Current status: " + match.getStatus());
         }
         if (match.getInvitation() != null && match.getInvitation().isValid()) {

@@ -45,17 +45,20 @@ public record MatchCreateDTO(
 
 ) {
     public MatchCreateDTO {
-            if (startTime.isAfter(endTime)) {
-                    throw new IllegalArgumentException("Start time must be before end time");
-            }
+        if (startTime.isAfter(endTime)) {
+              throw new IllegalArgumentException("Start time must be before end time");
+        }
 
-            if (startTime.isEqual(endTime)) {
-                    throw new IllegalArgumentException("Start time and end time cannot be the same");
-            }
+        if (startTime.isEqual(endTime)) {
+                 throw new IllegalArgumentException("Start time and end time cannot be the same");
+        }
 
-            LocalDateTime now = LocalDateTime.now();
-            if (!startTime.isAfter(now)) {
-                    throw new IllegalArgumentException("Time set for the match must be in the future");
-            }
+        if (!startTime.isAfter(LocalDateTime.now())) {
+                throw new IllegalArgumentException("Time set for the match must be in the future");
+        }
+
+        if (date.isBefore(LocalDate.now())) {
+            throw new IllegalArgumentException("Match date must be in the future");
+        }
     }
 }

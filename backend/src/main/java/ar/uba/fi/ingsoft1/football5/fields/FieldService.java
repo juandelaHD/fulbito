@@ -4,6 +4,8 @@ import ar.uba.fi.ingsoft1.football5.common.exception.ItemNotFoundException;
 import ar.uba.fi.ingsoft1.football5.config.security.JwtUserDetails;
 import ar.uba.fi.ingsoft1.football5.fields.filters.FieldFiltersDTO;
 import ar.uba.fi.ingsoft1.football5.fields.filters.SpecificationService;
+import ar.uba.fi.ingsoft1.football5.fields.schedules.ScheduleDTO;
+import ar.uba.fi.ingsoft1.football5.fields.schedules.ScheduleService;
 import ar.uba.fi.ingsoft1.football5.fields.schedules.ScheduleStatus;
 import ar.uba.fi.ingsoft1.football5.images.ImageService;
 import ar.uba.fi.ingsoft1.football5.matches.Match;
@@ -22,6 +24,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -35,14 +38,16 @@ public class FieldService {
     private final ImageService imageService;
     private final UserService userService;
     private final SpecificationService<Field, FieldFiltersDTO> specificationService;
+    private final ScheduleService scheduleService;
 
     FieldService(FieldRepository fieldRepository, MatchRepository matchRepository, ImageService imageService,
-                 UserService userService, SpecificationService<Field, FieldFiltersDTO> specificationService) {
+                 UserService userService, SpecificationService<Field, FieldFiltersDTO> specificationService, ScheduleService scheduleService) {
         this.fieldRepository = fieldRepository;
         this.matchRepository = matchRepository;
         this.imageService = imageService;
         this.userService = userService;
         this.specificationService = specificationService;
+        this.scheduleService = scheduleService;
     }
 
     FieldDTO createField(FieldCreateDTO fieldCreate, List<MultipartFile> images, JwtUserDetails userDetails)
@@ -141,6 +146,81 @@ public class FieldService {
                     fieldId, date, startTime, endTime));
         }
         return true;
+    }
+
+    public ScheduleDTO markAsOccupied(Long fieldId, LocalDate date, LocalDateTime startTime, LocalDateTime endTime) throws IllegalArgumentException, ItemNotFoundException{
+        Field field = fieldRepository.findById(fieldId)
+                .orElseThrow(() -> new IllegalArgumentException("Field not found with id: " + fieldId));
+
+        LocalTime startTimeOfDay = startTime.toLocalTime();
+        LocalTime endTimeOfDay = endTime.toLocalTime();
+
+        ScheduleDTO slotDTO = scheduleService.getScheduleSlotsByFieldAndDate(fieldId, date)
+                .stream()
+                .filter(slot -> slot.startTime().equals(startTimeOfDay)
+                        && slot.endTime().equals(endTimeOfDay))
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException(String.format(
+                        "No available slot found for field with id '%s' on %s from %s to %s.",
+                        fieldId, date, startTimeOfDay, endTimeOfDay)));
+
+        if (slotDTO.status() != ScheduleStatus.AVAILABLE) {
+            throw new IllegalArgumentException(String.format(
+                    "Slot for field with id '%s' on %s from %s to %s is not available.",
+                    fieldId, date, startTimeOfDay, endTimeOfDay));
+        }
+
+        return scheduleService.markAsReserved(slotDTO.id());
+    }
+
+    public ScheduleDTO markAsAvailable(Long fieldId, LocalDate date, LocalDateTime startTime, LocalDateTime endTime) throws IllegalArgumentException, ItemNotFoundException {
+        Field field = fieldRepository.findById(fieldId)
+                .orElseThrow(() -> new IllegalArgumentException("Field not found with id: " + fieldId));
+
+        LocalTime startTimeOfDay = startTime.toLocalTime();
+        LocalTime endTimeOfDay = endTime.toLocalTime();
+
+        ScheduleDTO slotDTO = scheduleService.getScheduleSlotsByFieldAndDate(fieldId, date)
+                .stream()
+                .filter(slot -> slot.startTime().equals(startTimeOfDay)
+                        && slot.endTime().equals(endTimeOfDay))
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException(String.format(
+                        "No available slot found for field with id '%s' on %s from %s to %s.",
+                        fieldId, date, startTimeOfDay, endTimeOfDay)));
+
+        if (slotDTO.status() != ScheduleStatus.RESERVED) {
+            throw new IllegalArgumentException(String.format(
+                    "Slot for field with id '%s' on %s from %s to %s is not occupied.",
+                    fieldId, date, startTimeOfDay, endTimeOfDay));
+        }
+
+        return scheduleService.markAsAvailable(slotDTO.id());
+    }
+
+    public ScheduleDTO markAsBlocked(Long fieldId, LocalDate date, LocalDateTime startTime, LocalDateTime endTime) throws IllegalArgumentException, ItemNotFoundException {
+        Field field = fieldRepository.findById(fieldId)
+                .orElseThrow(() -> new IllegalArgumentException("Field not found with id: " + fieldId));
+
+        LocalTime startTimeOfDay = startTime.toLocalTime();
+        LocalTime endTimeOfDay = endTime.toLocalTime();
+
+        ScheduleDTO slotDTO = scheduleService.getScheduleSlotsByFieldAndDate(fieldId, date)
+                .stream()
+                .filter(slot -> slot.startTime().equals(startTimeOfDay)
+                        && slot.endTime().equals(endTimeOfDay))
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException(String.format(
+                        "No available slot found for field with id '%s' on %s from %s to %s.",
+                        fieldId, date, startTimeOfDay, endTimeOfDay)));
+
+        if (slotDTO.status() != ScheduleStatus.AVAILABLE) {
+            throw new IllegalArgumentException(String.format(
+                    "Slot for field with id '%s' on %s from %s to %s is not available.",
+                    fieldId, date, startTimeOfDay, endTimeOfDay));
+        }
+
+        return scheduleService.markAsBlocked(slotDTO.id());
     }
 
     private void validateUniqueName(FieldCreateDTO fieldCreate, Long id) {
