@@ -6,6 +6,7 @@ import ar.uba.fi.ingsoft1.football5.config.security.JwtUserDetails;
 import ar.uba.fi.ingsoft1.football5.fields.Field;
 import ar.uba.fi.ingsoft1.football5.fields.FieldService;
 import ar.uba.fi.ingsoft1.football5.fields.schedules.ScheduleDTO;
+import ar.uba.fi.ingsoft1.football5.fields.schedules.ScheduleService;
 import ar.uba.fi.ingsoft1.football5.matches.invitation.MatchInvitationService;
 import ar.uba.fi.ingsoft1.football5.teams.formation.TeamFormationRequestDTO;
 import ar.uba.fi.ingsoft1.football5.teams.formation.TeamFormationResult;
@@ -35,6 +36,7 @@ public class MatchService {
     private final FieldService fieldService;
     private final EmailSenderService emailSenderService;
     private final MatchInvitationService matchInvitationService;
+    private final ScheduleService scheduleService;
 
     public MatchService(
             MatchRepository matchRepository,
@@ -42,7 +44,8 @@ public class MatchService {
             UserService userService,
             FieldService fieldService,
             EmailSenderService emailSenderService,
-            MatchInvitationService matchInvitationService
+            MatchInvitationService matchInvitationService,
+            ScheduleService scheduleService
     ) {
         this.matchRepository = matchRepository;
         this. teamRepository = teamRepository;
@@ -50,6 +53,7 @@ public class MatchService {
         this.fieldService = fieldService;
         this.emailSenderService = emailSenderService;
         this.matchInvitationService = matchInvitationService;
+        this.scheduleService = scheduleService;
     }
 
     public Match loadMatchById(Long id) throws ItemNotFoundException {
@@ -64,7 +68,7 @@ public class MatchService {
     }
 
     public void validationsClosedMatch(MatchCreateDTO match, Team homeTeam, Team awayTeam)
-        throws IllegalArgumentException, UserNotFoundException {
+            throws IllegalArgumentException, UserNotFoundException {
 
         if (match.homeTeamId().equals(match.awayTeamId())) {
             throw new IllegalArgumentException("Home and away teams must be different");
@@ -81,8 +85,8 @@ public class MatchService {
         }
 
         if(homeTeamSize != awayTeamSize){
-                throw new IllegalArgumentException("Team sizes mismatch: home team has " + homeTeamSize +
-                        " players, but away team has " + awayTeamSize + ". Both teams must have the same number of players.");
+            throw new IllegalArgumentException("Team sizes mismatch: home team has " + homeTeamSize +
+                    " players, but away team has " + awayTeamSize + ". Both teams must have the same number of players.");
         }
 
         List<String> membersA = homeTeam.getMembers().stream()
@@ -173,11 +177,11 @@ public class MatchService {
         }
 
         // TODO: REFACTOR - Change "times" to "slots" in the DTO and method names?
-        ScheduleDTO slot = fieldService.markAsOccupied(
-                field.getId(),
+        ScheduleDTO slot = scheduleService.markAsReserved(
+                field,
                 match.date(),
-                match.startTime(),
-                match.endTime()
+                match.startTime().toLocalTime(),
+                match.endTime().toLocalTime()
         );
 
         Match savedMatch = matchRepository.save(newMatch);
@@ -391,31 +395,31 @@ public class MatchService {
         }
         MatchStatus status = match.getStatus();
         if (status == MatchStatus.SCHEDULED ||
-            status == MatchStatus.IN_PROGRESS ||
-            status == MatchStatus.FINISHED ||
-            status == MatchStatus.CANCELLED) {
+                status == MatchStatus.IN_PROGRESS ||
+                status == MatchStatus.FINISHED ||
+                status == MatchStatus.CANCELLED) {
             throw new IllegalArgumentException("Cannot leave a match that is already " + status + ".");
         }
 
         if (match.getOrganizer().getUsername().equals(user.getUsername())) {
 
             emailSenderService.sendMatchCancelledMail(
-                match.getOrganizer().getUsername(),
-                match.getDate(),
-                match.getStartTime(),
-                match.getEndTime()
+                    match.getOrganizer().getUsername(),
+                    match.getDate(),
+                    match.getStartTime(),
+                    match.getEndTime()
             );
 
             for (User player : match.getPlayers()) {
                 emailSenderService.sendMatchCancelledMail(
-                    player.getUsername(),
-                    match.getDate(),
-                    match.getStartTime(),
-                    match.getEndTime()
+                        player.getUsername(),
+                        match.getDate(),
+                        match.getStartTime(),
+                        match.getEndTime()
                 );
-           }
+            }
 
-           if (match.getInvitation() != null) {
+            if (match.getInvitation() != null) {
                 matchInvitationService.invalidateMatchInvitation(match);
             }
             match.setStatus(MatchStatus.CANCELLED);
@@ -435,7 +439,7 @@ public class MatchService {
                     match.getStartTime(),
                     match.getEndTime()
             );
-        } 
+        }
     }
 
     public MatchDTO confirmMatch(Long matchId, JwtUserDetails userDetails)
@@ -534,11 +538,11 @@ public class MatchService {
             match.clearPlayers();
         }
 
-        fieldService.markAsAvailable(
-                field.getId(),
+        scheduleService.markAsAvailable(
+                field,
                 match.getDate(),
-                match.getStartTime(),
-                match.getEndTime()
+                match.getStartTime().toLocalTime(),
+                match.getEndTime().toLocalTime()
         );
 
         matchRepository.save(match);

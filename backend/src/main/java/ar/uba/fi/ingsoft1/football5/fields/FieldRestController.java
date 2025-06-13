@@ -220,6 +220,9 @@ class FieldRestController {
     ) throws ItemNotFoundException {
         return scheduleService.getAvailableSchedulesByFieldId(fieldId, pageable);
     }
+
+    // TODO --- Mark a schedule for a match as blocked
+
 }
 
 

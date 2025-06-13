@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.List;
 
 @Service
@@ -78,9 +79,11 @@ public class ScheduleService {
                 .toList();
     }
 
-    public ScheduleDTO markAsReserved(Long scheduleId) throws ItemNotFoundException {
-        Schedule schedule = scheduleRepository.findById(scheduleId)
-                .orElseThrow(() -> new ItemNotFoundException("Schedule not found with id: ", scheduleId));
+    public ScheduleDTO markAsReserved(Field Field, LocalDate date, LocalTime startTime, LocalTime endTime) throws ItemNotFoundException {
+        Schedule schedule = scheduleRepository.findByFieldAndDateAndStartTimeAndEndTime(Field, date, startTime, endTime)
+                .stream()
+                .findFirst()
+                .orElseThrow(() -> new ItemNotFoundException("Schedule", Field.getId()));
 
         if (schedule.getStatus() != ScheduleStatus.AVAILABLE) {
             throw new IllegalArgumentException("Schedule is not available for booking.");
@@ -99,10 +102,13 @@ public class ScheduleService {
         );
     }
 
-    public ScheduleDTO markAsAvailable(Long scheduleId) throws ItemNotFoundException {
-        Schedule schedule = scheduleRepository.findById(scheduleId)
-                .orElseThrow(() -> new ItemNotFoundException("Schedule not found with id: ", scheduleId));
+    public ScheduleDTO markAsAvailable(Field Field, LocalDate date, LocalTime startTime, LocalTime endTime) throws ItemNotFoundException {
+        Schedule schedule = scheduleRepository.findByFieldAndDateAndStartTimeAndEndTime(Field, date, startTime, endTime)
+                .stream()
+                .findFirst()
+                .orElseThrow(() -> new ItemNotFoundException("Schedule", Field.getId()));
 
+        // Check if the schedule is reserved before marking it as available
         if (schedule.getStatus() != ScheduleStatus.RESERVED) {
             throw new IllegalArgumentException("Schedule is not reserved and cannot be marked as available.");
         }
@@ -119,9 +125,11 @@ public class ScheduleService {
         );
     }
 
-    public ScheduleDTO markAsBlocked(Long scheduleId) throws ItemNotFoundException {
-        Schedule schedule = scheduleRepository.findById(scheduleId)
-                .orElseThrow(() -> new ItemNotFoundException("Schedule not found with id: ", scheduleId));
+    public ScheduleDTO markAsBlocked(Field Field, LocalDate date, LocalTime startTime, LocalTime endTime) throws ItemNotFoundException {
+        Schedule schedule = scheduleRepository.findByFieldAndDateAndStartTimeAndEndTime(Field, date, startTime, endTime)
+                .stream()
+                .findFirst()
+                .orElseThrow(() -> new ItemNotFoundException("Schedule", Field.getId()));
 
         if (schedule.getStatus() != ScheduleStatus.AVAILABLE) {
             throw new IllegalArgumentException("Schedule is not available and cannot be marked as blocked.");
