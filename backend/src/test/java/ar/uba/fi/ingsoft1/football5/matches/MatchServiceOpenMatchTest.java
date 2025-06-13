@@ -30,7 +30,7 @@ import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-class MatchServiceTest {
+class MatchServiceOpenMatchTest {
 
     @Mock
     private JwtUserDetails userDetails;
