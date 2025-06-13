@@ -3,6 +3,8 @@ import { useGetMyProfile } from "@/services/UserServices";
 import { useImageById } from "@/services/ImageServices.ts";
 import { CommonLayout } from "@/components/CommonLayout/CommonLayout.tsx";
 import { TeamsScreen } from "@/screens/TeamsScreen.tsx";
+import { MyMatchesHistoryScreen } from "@/screens/MyMatchesScreen.tsx";
+
 
 export default function UserProfileScreen() {
   const { data: user, isLoading: loadingUser } = useGetMyProfile();
@@ -63,6 +65,13 @@ export default function UserProfileScreen() {
         {/* Equipos */}
         {user.role === "USER" && <TeamsScreen />}
       </section>
+
+      {/* Sección de historial de partidos */}
+      <section style={{ marginTop: "3rem" }}>
+        {/* Partidos */}
+        {user.role === "USER" && <MyMatchesHistoryScreen />}
+      </section>
+
     </div>
     </CommonLayout>
   );

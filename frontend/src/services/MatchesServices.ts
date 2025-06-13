@@ -38,7 +38,6 @@ export type RawMatchDTO = {
   endTime: string;
 };
 
-// 1) Función que hace el fetch de partidos abiertos
 export async function getOpenMatchesService(token: string): Promise<RawMatchDTO[]> {
   const response = await fetch(`${BASE_API_URL}/matches/open-available`, {
     method: "GET",
@@ -54,7 +53,17 @@ export async function getOpenMatchesService(token: string): Promise<RawMatchDTO[
   return (await response.json()) as RawMatchDTO[];
 }
 
-// 2) Función que hace el “join” a un partido
+export function useGetOpenMatches() {
+  const [tokenState] = useToken();
+  const token = tokenState.state === "LOGGED_IN" ? tokenState.accessToken : "";
+
+  return useQuery<RawMatchDTO[], Error>({
+    queryKey: ["openMatches"],
+    queryFn: () => getOpenMatchesService(token),
+    enabled: token !== "",
+  });
+}
+
 export async function joinMatchService(matchId: number, token: string): Promise<void> {
   const response = await fetch(`${BASE_API_URL}/matches/${matchId}/join`, {
     method: "POST",
@@ -69,19 +78,6 @@ export async function joinMatchService(matchId: number, token: string): Promise<
   }
 }
 
-// 3) Hook para “GET /matches/open-available”
-export function useGetOpenMatches() {
-  const [tokenState] = useToken();
-  const token = tokenState.state === "LOGGED_IN" ? tokenState.accessToken : "";
-
-  return useQuery<RawMatchDTO[], Error>({
-    queryKey: ["openMatches"],
-    queryFn: () => getOpenMatchesService(token),
-    enabled: token !== "",
-  });
-}
-
-// 4) Hook para “join” a un partido
 export function useJoinMatch() {
   const [tokenState] = useToken();
   const token = tokenState.state === "LOGGED_IN" ? tokenState.accessToken : "";

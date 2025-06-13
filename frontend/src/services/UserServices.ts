@@ -6,8 +6,32 @@ import { LoginRequest, LoginResponseSchema } from "@/models/Login";
 import { SignupRequest, SignupResponseSchema } from "@/models/Signup";
 import { ForgotPasswordRequest, ForgotPasswordRequestSchema, ResetPasswordRequest, ResetPasswordRequestSchema } from "@/models/PasswordReset";
 import {handleErrorResponse} from "@/services/ApiUtils.ts";
-
 import { useQuery } from "@tanstack/react-query";
+
+export interface RawPlayerDTO {
+  id: number;
+  firstName: string;
+  lastName: string;
+  username: string;
+  avatarUrl: string;
+  zone: string;
+  age: number;
+  gender: string;
+  role: string;
+  emailConfirmed: boolean;
+}
+
+export interface RawBasicMatchDTO {
+  matchId: number;
+  matchType: string;
+  date: string;
+  startTime: string;
+  endTime: string;
+  fieldName: string;
+  fieldLocation: number;
+  result: string;
+  players: RawPlayerDTO[];
+}
 
 export function useLogin() {
   const [, setToken] = useToken();
@@ -142,30 +166,31 @@ export const useGetMyProfile = () => {
   });
 };
 
-
-export const useGetMyTeams = () => {
-  const [tokenState] = useToken();
-
-  return useQuery({
-    queryKey: ["myTeams"],
-    enabled: tokenState.state === "LOGGED_IN",
-    queryFn: async () => {
-      if (tokenState.state !== "LOGGED_IN") {
-        throw new Error("No estás logueado");
-      }
-
-      const response = await fetch(`${BASE_API_URL}/users/me/teams`, {
-        headers: { Authorization: `Bearer ${tokenState.accessToken}` },
-      });
-
-      if (!response.ok) {
-        await handleErrorResponse(response, "al obtener los equipos");
-      }
-
-      return await response.json();
+export async function getMyMatchesService(token: string): Promise<RawBasicMatchDTO[]> {
+  const response = await fetch(`${BASE_API_URL}/users/me/played-matches`, {
+    method: "GET",
+    headers: {
+      Authorization: `Bearer ${token}`,
+      Accept: "application/json",
     },
   });
-};
+
+  if (!response.ok) {
+    await handleErrorResponse(response, "fetching open matches");
+  }
+  return (await response.json()) as RawBasicMatchDTO[];
+}
+
+export function useGetMyMatchesPlayed() {
+  const [tokenState] = useToken();
+  const token = tokenState.state === "LOGGED_IN" ? tokenState.accessToken : "";
+
+  return useQuery<RawBasicMatchDTO[], Error>({
+    queryKey: ["openMatches"],
+    queryFn: () => getMyMatchesService(token),
+    enabled: token !== "",
+  });
+}
 
 
 // --------------------------------SEARCH USERS---------------------------------------------
