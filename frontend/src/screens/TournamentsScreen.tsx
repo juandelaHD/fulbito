@@ -4,6 +4,13 @@ import { CommonLayout } from "@/components/CommonLayout/CommonLayout";
 import { AddTournamentModal } from "@/components/modals/AddTournamentModal";
 import { useGetTournaments } from "@/services/TournamentServices";
 import type { GetTournamentsRequest, Tournament } from "@/models/GetTournaments";
+import {
+  TournamentFiltersContainer,
+} from "@/components/filters/TournamentFilters";
+import {
+  TournamentTable,
+  TournamentForTable,
+} from "@/components/tables/TournamentsTable";
 
 export const TournamentsScreen = () => {
   const [filters, setFilters] = useState<GetTournamentsRequest>({
@@ -24,6 +31,14 @@ export const TournamentsScreen = () => {
 
   const tournaments: Tournament[] = fetchedTournaments?.content || [];
 
+  const rowsForTable: TournamentForTable[] = tournaments.map((t) => ({
+    id: t.id,
+    name: t.name,
+    startDate: t.startDate,
+    format: t.format,
+    status: t.status,
+  }));
+
   return (
     <CommonLayout>
       <div className="w-[1040px] mx-auto px-4">
@@ -38,56 +53,26 @@ export const TournamentsScreen = () => {
           </button>
         </div>
 
-        {/* ACA VAN LOS FILTROS, como hiciste en FieldsFiltersContainer */}
-        {/* De momento lo dejamos para después si querés separar en componente */}
-        <div className="flex gap-4 mb-4">
-          <input
-            type="text"
-            placeholder="Tournament name"
-            className="px-3 py-2 rounded bg-white text-black border w-full"
-            value={filters.name || ""}
-            onChange={(e) => setFilters((prev) => ({ ...prev, name: e.target.value }))}
-          />
-
-          <select
-            className="px-3 py-2 rounded bg-white text-black border"
-            value={filters.status || ""}
-            onChange={(e) =>
-              setFilters((prev) => ({
-                ...prev,
-                status: e.target.value === "" ? undefined : (e.target.value as GetTournamentsRequest["status"]),
-              }))
-            }
-          >
-            <option value="">All</option>
-            <option value="OPEN">Open</option>
-            <option value="ONGOING">Ongoing</option>
-            <option value="FINISHED">Finished</option>
-          </select>
-
-          <button
-            onClick={handleSearch}
-            className="bg-blue-600 text-white px-4 py-2 rounded-xl"
-          >
-            Search
-          </button>
-        </div>
+        <TournamentFiltersContainer
+        filters={{
+            name: filters.name ?? "", // 👈 asegura que sea string
+            status: filters.status,
+        }}
+        setFilters={setFilters}
+        onSearch={handleSearch}
+        />
 
         {isFetching ? (
           <p className="text-sm text-gray-500">Loading tournaments...</p>
-        ) : tournaments.length === 0 ? (
+        ) : rowsForTable.length === 0 ? (
           <p className="text-sm text-gray-500">No tournaments found matching your filters.</p>
         ) : (
-          <div className="grid gap-4">
-            {tournaments.map((tournament) => (
-              <div key={tournament.id} className="border p-4 rounded-xl shadow">
-                <h3 className="text-lg font-bold">{tournament.name}</h3>
-                <p>📅 Start Date: {tournament.startDate}</p>
-                <p>🏁 Format: {tournament.format}</p>
-                <p>📌 Status: {tournament.status}</p>
-              </div>
-            ))}
-          </div>
+          <TournamentTable
+            data={rowsForTable}
+            onClickTournament={(t) =>
+              toast(`You clicked on ${t.name}`)
+            }
+          />
         )}
       </div>
 
