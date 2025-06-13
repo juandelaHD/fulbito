@@ -106,7 +106,7 @@ public class UserService implements UserDetailsService {
                 if (match.getPlayers().size() >= match.getMaxPlayers()) {
                     throw new IllegalArgumentException("The match is already full");
                 }
-                if (match.getStatus() != MatchStatus.SCHEDULED) {
+                if (match.getStatus() != MatchStatus.PENDING && match.getStatus() != MatchStatus.ACCEPTED) {
                     throw new IllegalArgumentException("The match is not open for joining");
                 }
                 user.setInvitationToken(data.invitationToken());
@@ -157,19 +157,26 @@ public class UserService implements UserDetailsService {
         return teams;
     }
 
-    public List<MatchHistoryDTO> getPlayedMatches(JwtUserDetails userDetails) throws UserNotFoundException{
+    public List<MatchHistoryDTO> getPlayedMatchesByUser(JwtUserDetails userDetails) throws UserNotFoundException{
         User user = loadUserByUsername(userDetails.username());
-        List<MatchHistoryDTO> playedMatches = new ArrayList<>();
-        for (Match match : user.getJoinedMatches()) {
-            playedMatches.add(new MatchHistoryDTO(match));
-        }
-        return playedMatches;
+        return user.getJoinedMatches().stream()
+                .filter(match -> match.getStatus() == MatchStatus.FINISHED)
+                .map(MatchHistoryDTO::new)
+                .toList();
     }
 
     public List<MatchHistoryDTO> getReservationsByUser(JwtUserDetails userDetails) throws UserNotFoundException {
         User user = loadUserByUsername(userDetails.username());
         return user.getOrganizedMatches().stream()
-                .filter(match -> match.getStatus() == MatchStatus.SCHEDULED || match.getStatus() == MatchStatus.COMPLETED || match.getStatus() == MatchStatus.CANCELLED)
+                .filter(match -> match.isConfirmationSent() )
+                .map(MatchHistoryDTO::new)
+                .toList();
+    }
+
+    public List<MatchHistoryDTO> getJoinedMatchesByUser(JwtUserDetails userDetails) throws UserNotFoundException {
+        User user = loadUserByUsername(userDetails.username());
+        return user.getJoinedMatches().stream()
+                .filter(match -> match.getStatus() != MatchStatus.FINISHED                )
                 .map(MatchHistoryDTO::new)
                 .toList();
     }
@@ -207,7 +214,6 @@ public class UserService implements UserDetailsService {
 
                 // Actualizar estado del partido si corresponde
                 if (match.getPlayers().size() >= match.getMaxPlayers()) {
-                    match.setStatus(MatchStatus.COMPLETED);
                     matchInvitationService.invalidateMatchInvitation(match);
                 }
             } catch (IllegalArgumentException e) {

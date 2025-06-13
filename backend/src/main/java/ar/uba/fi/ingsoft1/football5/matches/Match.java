@@ -259,4 +259,21 @@ public class Match {
         this.result = result;
     }
 
+    public void clearTeams() {
+        if (homeTeam != null) {
+            homeTeam.getJoinedMatches().remove(this);
+            homeTeam = null;
+        }
+        if (awayTeam != null) {
+            awayTeam.getJoinedMatches().remove(this);
+            awayTeam = null;
+        }
+    }
+
+    public void clearPlayers() {
+        for (User player : new HashSet<>(players)) {
+            removePlayer(player);
+        }
+    }
+
 }

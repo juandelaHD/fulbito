@@ -11,6 +11,7 @@ import ar.uba.fi.ingsoft1.football5.user.Role;
 import ar.uba.fi.ingsoft1.football5.user.User;
 import ar.uba.fi.ingsoft1.football5.user.UserService;
 import ar.uba.fi.ingsoft1.football5.user.email.EmailSenderService;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -20,6 +21,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -28,7 +30,7 @@ import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-class MatchServiceTest {
+class MatchServiceOpenMatchTest {
 
     @Mock
     private JwtUserDetails userDetails;
@@ -52,6 +54,9 @@ class MatchServiceTest {
     private Match openMatch;
 
     @Mock
+    private User organizer;
+
+    @Mock
     private User user;
 
     @Mock
@@ -63,18 +68,19 @@ class MatchServiceTest {
     @BeforeEach
     void setUp() {
         Field field = mock(Field.class);
-        User organizer = mock(User.class);
-        openMatch = new Match(field, organizer, MatchStatus.SCHEDULED, MatchType.OPEN,
+        organizer = new User("organizer", "Org", "User", "M", "Zone", 30, "pass", Role.USER);
+        openMatch = new Match(field, organizer, MatchStatus.PENDING, MatchType.OPEN,
                 1,
-                10,
+                2,
                 LocalDate.now().plusDays(1),
                 LocalDateTime.now().plusHours(2),
                 LocalDateTime.now().plusHours(3)
         );
-        openMatch.setMaxPlayers(2);
-        openMatch.setMinPlayers(1);
         user = new User("testuser", "Test", "User", "M", "Zone1", 25, "pass123", Role.USER);
-        user.setAvatar(avatarImage);
+
+        AvatarImage avatar = mock(AvatarImage.class);
+        user.setAvatar(avatar);
+        openMatch.getOrganizer().setAvatar(avatar);
     }
  
     @Test
@@ -198,7 +204,6 @@ class MatchServiceTest {
 
         when(userDetails.username()).thenReturn("testuser");
         when(userService.loadUserByUsername("testuser")).thenReturn(user);
-        when(avatarImage.getId()).thenReturn(123L);
 
         MatchCreateDTO dto = new MatchCreateDTO(
                 MatchType.OPEN,
@@ -231,9 +236,10 @@ class MatchServiceTest {
                     null,
                     5,
                     10,
-                    LocalDate.now().minusDays(1),
+                    LocalDate.now().minusDays(3),
                     LocalDateTime.now().plusHours(1),
                     LocalDateTime.now().plusHours(2)
+                   
             );
         });
 
@@ -322,4 +328,117 @@ class MatchServiceTest {
 
         assertEquals("Failed to find match with id '123'", ex.getMessage());
     } 
+
+    @Test
+    void testLeaveOpenMatch_asPlayer_successful() throws Exception {
+        openMatch.addPlayer(user);
+        when(userDetails.username()).thenReturn("testuser");
+        when(matchRepository.findById(1L)).thenReturn(Optional.of(openMatch));
+        when(userService.loadUserByUsername("testuser")).thenReturn(user);
+
+        matchService.leaveOpenMatch(1L, userDetails);
+
+        assertFalse(openMatch.getPlayers().contains(user));
+        verify(matchRepository).save(openMatch);
+        verify(emailSenderService).sendUnsubscribeMail(eq("testuser"), any(), any(), any());
+    }
+
+    @Test
+    void testLeaveOpenMatch_notPlayer_throwsException() throws Exception {
+        when(userDetails.username()).thenReturn("testuser");
+        when(matchRepository.findById(1L)).thenReturn(Optional.of(openMatch));
+        when(userService.loadUserByUsername("testuser")).thenReturn(user);
+
+        Exception ex = assertThrows(IllegalArgumentException.class, () ->
+                matchService.leaveOpenMatch(1L, userDetails));
+
+        assertEquals("You are not registered in this match.", ex.getMessage());
+    }
+
+    @Test
+    void testLeaveOpenMatch_unmodifiableState_throwsException() throws Exception {
+        for (MatchStatus status : List.of(MatchStatus.SCHEDULED, MatchStatus.IN_PROGRESS, MatchStatus.FINISHED, MatchStatus.CANCELLED)) {
+            openMatch.setStatus(status);
+            when(userDetails.username()).thenReturn("testuser");
+            when(matchRepository.findById(1L)).thenReturn(Optional.of(openMatch));
+            when(userService.loadUserByUsername("testuser")).thenReturn(user);
+
+            Exception ex = assertThrows(IllegalArgumentException.class, () ->
+                    matchService.leaveOpenMatch(1L, userDetails));
+
+            assertEquals("Cannot leave a match that is already " + status + ".", ex.getMessage());
+        }
+    }
+
+    @Test
+    void testLeaveOpenMatch_asOrganizer_cancelsMatch() throws Exception {
+        openMatch.addPlayer(user);
+        when(userDetails.username()).thenReturn("organizer");
+        when(matchRepository.findById(1L)).thenReturn(Optional.of(openMatch));
+        when(userService.loadUserByUsername("organizer")).thenReturn(openMatch.getOrganizer());
+
+        matchService.leaveOpenMatch(1L, userDetails);
+
+        assertEquals(MatchStatus.CANCELLED, openMatch.getStatus());
+        verify(emailSenderService).sendMatchCancelledMail(eq("testuser"), any(), any(), any());
+        verify(emailSenderService).sendMatchCancelledMail(eq("organizer"), any(), any(), any());
+        verify(matchRepository).save(openMatch);
+    }
+
+    @Test
+    void testLeaveOpenMatch_matchNotFound() {
+        when(matchRepository.findById(99L)).thenReturn(Optional.empty());
+        assertThrows(ItemNotFoundException.class, () ->
+                matchService.leaveOpenMatch(99L, userDetails));
+    }
+
+    @Test
+    void testLeaveOpenMatch_userNotFound() throws Exception {
+        when(matchRepository.findById(1L)).thenReturn(Optional.of(openMatch));
+        when(userDetails.username()).thenReturn("testuser");
+        when(userService.loadUserByUsername("testuser")).thenThrow(new UserNotFoundException("user", "testuser"));
+
+        assertThrows(UserNotFoundException.class, () ->
+                matchService.leaveOpenMatch(1L, userDetails));
+    }
+
+    @Test
+    void testGetAvailableOpenMatches_filtersCorrectly() {
+        openMatch.setStatus(MatchStatus.SCHEDULED);
+        openMatch.setStartTime(LocalDateTime.now().plusHours(1));
+        openMatch.setPlayers(Set.of());
+        when(matchRepository.findByTypeAndStatusInAndStartTimeAfterAndPlayers_SizeLessThan(anyList(), any()))
+                .thenReturn(List.of(openMatch));
+
+        List<MatchDTO> result = matchService.getAvailableOpenMatches();
+        assertEquals(1, result.size());
+    } 
+
+    @Test
+    void testGetMatchById_notFound_shouldThrowException(){
+        Long matchId = 1l;
+        when(matchRepository.findById(matchId)).thenReturn(Optional.empty());
+
+        assertThrows(ItemNotFoundException.class, ()-> matchService.getMatchById(matchId));
+        verify(matchRepository).findById(matchId);
+    }
+
+    @Test
+    void startMatch_ShouldThrowException_WhenMatchNotFound() {
+        Long matchId = 1L;
+        when(matchRepository.findById(matchId)).thenReturn(Optional.empty());
+
+        assertThrows(ItemNotFoundException.class, () -> matchService.startMatch(matchId, userDetails));
+        verify(matchRepository).findById(matchId);
+    }
+
+    @Test
+    void finishMatch_ShouldThrowException_WhenMatchNotFound() {
+        Long matchId = 1L;
+        when(matchRepository.findById(matchId)).thenReturn(Optional.empty());
+
+        assertThrows(ItemNotFoundException.class, () -> matchService.finishMatch(matchId, userDetails));
+        verify(matchRepository).findById(matchId);
+    }
+        
 }
