@@ -57,6 +57,12 @@ public class ScheduleService {
         return schedulePage.map(ScheduleDTO::new);
     }
 
+    public Page<ScheduleDTO> getAvailableSchedulesByFieldId(Long fieldId, Pageable pageable) throws ItemNotFoundException {
+        Field field = fieldService.loadFieldById(fieldId);
+        Page<Schedule> schedulePage = scheduleRepository.findByFieldAndStatus(field, ScheduleStatus.AVAILABLE, pageable);
+        return schedulePage.map(ScheduleDTO::new);
+    }
+
     public List<ScheduleSlotDTO> getScheduleSlotsByFieldAndDate(Long fieldId, LocalDate date) throws ItemNotFoundException {
         Field field = fieldService.loadFieldById(fieldId);
         List<Schedule> schedules = scheduleRepository.findByFieldAndDate(field, date);

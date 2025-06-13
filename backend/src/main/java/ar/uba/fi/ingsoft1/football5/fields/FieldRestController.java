@@ -211,6 +211,16 @@ class FieldRestController {
         LocalDate date = LocalDate.parse(dateStr);
         return scheduleService.getScheduleSlotsByFieldAndDate(fieldId, date);
     }
+
+    @GetMapping(path = "/{id}/schedules/available", produces = "application/json")
+    @Operation(summary = "Get available schedules for a field by ID")
+    @ResponseStatus(HttpStatus.OK)
+    Page<ScheduleDTO> getAvailableSchedulesByFieldId(
+            @Valid @ParameterObject Pageable pageable,
+            @PathVariable("id") @Parameter(description = "ID of the field") Long fieldId
+    ) throws ItemNotFoundException {
+        return scheduleService.getAvailableSchedulesByFieldId(fieldId, pageable);
+    }
 }
 
 

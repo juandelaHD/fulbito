@@ -11,4 +11,5 @@ import java.util.List;
 public interface ScheduleRepository extends JpaRepository<Schedule, Long> {
     Page<Schedule> findByField(Field field, Pageable pageable);
     List<Schedule> findByFieldAndDate(Field field, LocalDate date);
+    Page<Schedule> findByFieldAndStatus(Field field, ScheduleStatus status, Pageable pageable);
 }
