@@ -10,13 +10,11 @@ export const TournamentFormatEnum = z.enum([
 ])
 export type TournamentFormat = z.infer<typeof TournamentFormatEnum>
 
-// ✅ 1. Petición de filtros
 export type GetTournamentsRequest = {
   name?: string
   status?: TournamentStatus
 }
 
-// ✅ 2. Un torneo individual
 export const TournamentSchema = z.object({
   id: z.number(),
   name: z.string(),
@@ -27,7 +25,6 @@ export const TournamentSchema = z.object({
 
 export type Tournament = z.infer<typeof TournamentSchema>
 
-// ✅ 3. Respuesta paginada del backend
 export const GetTournamentsResponseSchema = z.object({
   content: z.array(TournamentSchema),
   totalElements: z.number(),
