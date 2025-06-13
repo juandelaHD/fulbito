@@ -7,6 +7,43 @@ import {
   GetTournamentsResponse,
   GetTournamentsResponseSchema,
 } from "@/models/GetTournaments"
+import { useMutation } from "@tanstack/react-query"
+import { handleErrorResponse } from "@/services/ApiUtils"
+import { CreateTournamentRequest, CreateTournamentResponseSchema } from "@/models/CreateTournament"
+
+export function useCreateTournament() {
+  const [tokenState] = useToken()
+  const token = tokenState.state === "LOGGED_IN" ? tokenState.accessToken : ""
+
+  return useMutation({
+    mutationFn: async (req: CreateTournamentRequest) => {
+      return await createTournamentService(req, token)
+    },
+  })
+}
+
+export async function createTournamentService(req: CreateTournamentRequest, token: string) {
+  const response = await fetch(`${BASE_API_URL}/tournaments`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+      Accept: "application/json",
+    },
+    body: JSON.stringify(req),
+  })
+
+  const json = await response.json()
+
+  if (!response.ok) {
+    await handleErrorResponse(response, "creating tournament")
+  }
+
+  const parsed = CreateTournamentResponseSchema.parse(json)
+
+  toast.success("Tournament created successfully!", { duration: 5000 })
+  return parsed
+}
 
 export function useGetTournaments(filters: GetTournamentsRequest) {
   const [tokenState] = useToken()
