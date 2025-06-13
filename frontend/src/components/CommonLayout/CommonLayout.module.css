@@ -8,20 +8,24 @@
 
 .navbar {
   width: 100%;
-  padding: 1rem 2rem;
+  min-width: 100vw;
+  left: 0;
+  right: 0;
+  top: 0;
+  position: relative; /* O usa fixed si quieres que siempre esté arriba */
   background-color: #1c2b1a;
-  display: flex;
-  justify-content: flex-end;
   box-shadow: 0 4px 6px rgba(0, 255, 136, 0.1);
+  z-index: 10;
+  margin: 0;
+  padding: 0.5rem 2rem;
+  box-sizing: border-box;
 }
 
 .navLinks {
   display: flex;
-  gap: 1.5rem;
+  justify-content: space-between;
   align-items: center;
-}
-
-.navLink {
+  width: 100%;
   color: #00ff88;
   text-decoration: none;
   font-weight: 500;
@@ -31,6 +35,13 @@
   border: none;
   cursor: pointer;
   font-family: inherit;
+}
+
+.navLinksLeft,
+.navLinksRight {
+  display: flex;
+  gap: 1.5rem;
+  align-items: center;
 }
 
 .navLink:hover {

@@ -22,7 +22,7 @@ export const FormContainer = ({
 
     return (
         <form
-            className={`flex flex-col ${className}`}
+            className={`flex flex-col ${styles.form} ${className}`}
             onSubmit={(e) => {
                 e.preventDefault();
                 e.stopPropagation();

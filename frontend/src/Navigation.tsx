@@ -18,7 +18,6 @@ import { TeamsScreen } from "@/screens/TeamsScreen.tsx";
 import { MatchHomeScreen } from "@/screens/MatchHomeScreen.tsx";
 import { CreateClosedMatchScreen } from "@/screens/CreateClosedMatchScreen.tsx";
 import { CreateOpenMatchScreen } from "@/screens/CreateOpenMatchScreen.tsx";
-import { CommonLayout } from "@/components/CommonLayout/CommonLayout"; 
 import UserProfileScreen from "@/screens/UserProfileScreen";
 import SearchUsersScreen from "@/screens/SearchUsersScreen";
 
@@ -68,14 +67,10 @@ export const Navigation = () => {
             <TeamsScreen />
           </Route>
           <Route path="/profile">
-            <CommonLayout>
-              <UserProfileScreen />
-            </CommonLayout>
+            <UserProfileScreen />
           </Route>
           <Route path="/search">
-            <CommonLayout>
-              <SearchUsersScreen />
-            </CommonLayout>
+            <SearchUsersScreen />
           </Route>
           <Route>
             <Redirect href="/" />

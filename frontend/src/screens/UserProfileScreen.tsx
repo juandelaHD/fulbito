@@ -1,47 +1,72 @@
 
 import { useGetMyProfile, useGetMyTeams } from "@/services/UserServices";
+import { useImageById } from "@/services/ImageServices.ts";
+import { CommonLayout } from "@/components/CommonLayout/CommonLayout.tsx";
 
 export default function UserProfileScreen() {
   const { data: user, isLoading: loadingUser } = useGetMyProfile();
   const { data: teams, isLoading: loadingTeams } = useGetMyTeams();
+  const userAvatarURL= useImageById(user?.avatarUrl);
 
-  if (loadingUser || loadingTeams) return <p style={{ padding: "2rem", color: "white" }}>Cargando...</p>;
-  if (!user) return <p style={{ padding: "2rem", color: "white" }}>Error al cargar el perfil.</p>;
+  if (loadingUser || loadingTeams) return <p style={{ padding: "2rem", color: "white" }}>Loading...</p>;
+  if (!user) return <p style={{ padding: "2rem", color: "white" }}>Error while loading profile</p>;
 
   return (
+    <CommonLayout>
     <div style={{ padding: "2rem", color: "white" }}>
       {/* Header de perfil */}
       <div style={{ display: "flex", gap: "2rem", alignItems: "center" }}>
-        <img
-        src={user.avatarUrl}
-        alt="Avatar"
-        style={{
-            width: "150px",
-            height: "150px",
-            borderRadius: "9999px",
-            objectFit: "cover",
-            border: "3px solid #0f0"
-        }}
-        />
+        {!userAvatarURL ? (
+          <div
+            style={{
+              width: "150px",
+              height: "150px",
+              borderRadius: "9999px",
+              background: "#222",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              border: "3px solid #0f0"
+            }}
+          >
+            <span className="dot-typing">
+              <span></span>
+              <span></span>
+              <span></span>
+            </span>
+          </div>
+        ) : (
+          <img
+            src={userAvatarURL}
+            alt="Avatar"
+            style={{
+              width: "150px",
+              height: "150px",
+              borderRadius: "9999px",
+              objectFit: "cover",
+              border: "3px solid #0f0"
+            }}
+          />
+        )}
         <div>
           <h1 style={{ fontSize: "2.5rem", fontWeight: "bold", color: "#00ff84", marginBottom: "0.5rem" }}>
             {user.firstName} {user.lastName}
           </h1>
           <p style={{ marginBottom: "0.2rem" }}>@{user.username}</p>
-          <p style={{ marginBottom: "0.2rem" }}>Edad: {user.age} | Género: {user.gender}</p>
-          <p style={{ marginBottom: "0.2rem" }}>Zona: {user.zone}</p>
+          <p style={{ marginBottom: "0.2rem" }}>Age: {user.age} | Gender: {user.gender}</p>
+          <p style={{ marginBottom: "0.2rem" }}>Zone: {user.zone}</p>
         </div>
       </div>
 
       {/* Sección de equipos */}
       <section style={{ marginTop: "3rem" }}>
         <h2 style={{ fontSize: "2rem", fontWeight: "bold", color: "#00ff84", marginBottom: "1rem" }}>
-          Mis Equipos
+          My teams
         </h2>
 
         {teams.length === 0 ? (
           <p style={{ fontStyle: "italic", color: "#ccc" }}>
-            No pertenecés a ningún equipo.
+            You don't have any teams yet. Create one!
           </p>
         ) : (
           <div style={{ display: "grid", gap: "1rem", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))" }}>
@@ -65,5 +90,6 @@ export default function UserProfileScreen() {
         )}
       </section>
     </div>
+    </CommonLayout>
   );
 }

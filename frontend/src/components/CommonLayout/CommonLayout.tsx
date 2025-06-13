@@ -4,24 +4,50 @@ import { useToken } from "@/services/TokenContext";
 import styles from "./CommonLayout.module.css";
 
 export const CommonLayout = ({ children }: React.PropsWithChildren) => {
-    const [tokenState] = useToken();
-    const [location] = useLocation();
+  const [tokenState, setTokenState] = useToken();
+  const [location] = useLocation();
 
-    const hideNav = location === "/login" || location === "/signup";
+  const hideNav = location === "/login" || location === "/signup";
 
-    return (
-        <div className={styles.mainLayout}>
-            {!hideNav && (
-                <nav className={styles.navbar}>
-                    <div className={styles.navLinks}>
-                        {tokenState.state === "LOGGED_OUT" ? <LoggedOutLinks /> : <LoggedInLinks />}
-                    </div>
-                </nav>
+  const logOut = () => {
+    setTokenState({ state: "LOGGED_OUT" });
+  };
+
+  return (
+    <div className={styles.mainLayout}>
+      {!hideNav && (
+        <nav className={styles.navbar}>
+          <div className={styles.navLinks}>
+            {tokenState.state === "LOGGED_OUT" ? (
+              <div className={styles.navLinksRight}>
+                <LoggedOutLinks />
+              </div>
+            ) : (
+              <>
+                <div className={styles.navLinksLeft}>
+                  <Link className={styles.navLink} href="/">Main Page</Link>
+                  <Link className={styles.navLink} href="/fields/new">Create Field</Link>
+                  <Link className={styles.navLink} href="/fields/management">Manage Field</Link>
+                  <Link className={styles.navLink} href="/fields">View Fields</Link>
+                  <Link className={styles.navLink} href="/match">Matches</Link>
+                  <Link className={styles.navLink} href="/teams">Teams</Link>
+                  <Link className={styles.navLink} href="/search">Search Users</Link>
+                </div>
+                <div className={styles.navLinksRight}>
+                  <Link className={styles.navLink} href="/profile">My Profile</Link>
+                  <button onClick={logOut} className={styles.navLink}>
+                    Log out
+                  </button>
+                </div>
+              </>
             )}
-            <div className={styles.body}>{children}</div>
-        </div>
-    );
-};
+          </div>
+        </nav>
+      )}
+      <div className={styles.body}>{children}</div>
+    </div>
+  );
+}
 
 const LoggedOutLinks = () => (
     <>
@@ -33,43 +59,3 @@ const LoggedOutLinks = () => (
         </Link>
     </>
 );
-
-const LoggedInLinks = () => {
-    const [, setTokenState] = useToken();
-
-    const logOut = () => {
-        setTokenState({ state: "LOGGED_OUT" });
-    };
-
-    return (
-        <>
-            <Link className={styles.navLink} href="/">
-                Main Page
-            </Link>
-            <Link className={styles.navLink} href="/fields/new">
-                Create Field
-            </Link>
-            <Link className={styles.navLink} href="/fields/management">
-                Manage Field
-            </Link>
-            <Link className={styles.navLink} href="/fields">
-                View Fields
-            </Link>
-            <Link className={styles.navLink} href="/match">
-                Matches
-            </Link>
-            <Link className={styles.navLink} href="/teams">
-                Teams
-            </Link>
-            <Link className={styles.navLink} href="/profile">
-                Mi Perfil
-            </Link>
-            <Link className={styles.navLink} href="/search">
-                Buscar Jugador
-            </Link>
-            <button onClick={logOut} className={styles.navLink}>
-                Log out
-            </button>
-        </>
-    );
-};
