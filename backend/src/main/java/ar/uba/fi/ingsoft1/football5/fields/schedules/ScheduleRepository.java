@@ -6,9 +6,12 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.List;
 
 public interface ScheduleRepository extends JpaRepository<Schedule, Long> {
     Page<Schedule> findByField(Field field, Pageable pageable);
     List<Schedule> findByFieldAndDate(Field field, LocalDate date);
+    Page<Schedule> findByFieldAndStatus(Field field, ScheduleStatus status, Pageable pageable);
+    List<Schedule> findByFieldAndDateAndStartTimeAndEndTime(Field field, LocalDate date, LocalTime startTime, LocalTime endTime);
 }

@@ -108,6 +108,7 @@ export const FieldsScreen = () => {
         isOpen={!!openReviewsFor}
         onClose={() => setOpenReviewsFor(null)}
         fieldName={openReviewsFor?.name}
+        fieldId={openReviewsFor?.id ?? 0}
       />
     </CommonLayout>
     

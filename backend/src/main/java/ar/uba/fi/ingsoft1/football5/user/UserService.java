@@ -75,6 +75,12 @@ public class UserService implements UserDetailsService {
                 .orElseThrow(() -> new UserNotFoundException(USER_NOT_FOUND, username));
     }
 
+    public User loadUserById(Long id) {
+        return userRepository
+                .findById(id)
+                .orElseThrow(() -> new UserNotFoundException(USER_NOT_FOUND, id.toString()));
+    }
+
     public Optional<UserDTO> getUserByUsername(String username) throws UserNotFoundException {
         User user = loadUserByUsername(username);
         return Optional.of(new UserDTO(user));
@@ -100,7 +106,7 @@ public class UserService implements UserDetailsService {
                 if (match.getPlayers().size() >= match.getMaxPlayers()) {
                     throw new IllegalArgumentException("The match is already full");
                 }
-                if (match.getStatus() != MatchStatus.SCHEDULED) {
+                if (match.getStatus() != MatchStatus.PENDING && match.getStatus() != MatchStatus.ACCEPTED) {
                     throw new IllegalArgumentException("The match is not open for joining");
                 }
                 user.setInvitationToken(data.invitationToken());
@@ -151,22 +157,28 @@ public class UserService implements UserDetailsService {
         return teams;
     }
 
-    public List<MatchHistoryDTO> getPlayedMatches(JwtUserDetails userDetails) throws UserNotFoundException{
+    public List<MatchHistoryDTO> getPlayedMatchesByUser(JwtUserDetails userDetails) throws UserNotFoundException{
         User user = loadUserByUsername(userDetails.username());
-        List<MatchHistoryDTO> playedMatches = new ArrayList<>();
-        for (Match match : user.getJoinedMatches()) {
-            playedMatches.add(new MatchHistoryDTO(match));
-        }
-        return playedMatches;
+        return user.getJoinedMatches().stream()
+                .filter(match -> match.getStatus() == MatchStatus.FINISHED)
+                .map(MatchHistoryDTO::new)
+                .toList();
     }
 
     public List<MatchHistoryDTO> getReservationsByUser(JwtUserDetails userDetails) throws UserNotFoundException {
         User user = loadUserByUsername(userDetails.username());
-        List<MatchHistoryDTO> reservations = new ArrayList<>();
-        for (Match match : user.getOrganizedMatches()) {
-            reservations.add(new MatchHistoryDTO(match));
-        }
-        return reservations;
+        return user.getOrganizedMatches().stream()
+                .filter(match -> match.isConfirmationSent() )
+                .map(MatchHistoryDTO::new)
+                .toList();
+    }
+
+    public List<MatchHistoryDTO> getJoinedMatchesByUser(JwtUserDetails userDetails) throws UserNotFoundException {
+        User user = loadUserByUsername(userDetails.username());
+        return user.getJoinedMatches().stream()
+                .filter(match -> match.getStatus() != MatchStatus.FINISHED                )
+                .map(MatchHistoryDTO::new)
+                .toList();
     }
 
     Optional<TokenDTO> refresh(RefreshDTO data) {
@@ -199,6 +211,11 @@ public class UserService implements UserDetailsService {
                     throw new IllegalArgumentException("Cannot join match that has already started.");
                 }
                 match.addPlayer(user);
+
+                // Actualizar estado del partido si corresponde
+                if (match.getPlayers().size() >= match.getMaxPlayers()) {
+                    matchInvitationService.invalidateMatchInvitation(match);
+                }
             } catch (IllegalArgumentException e) {
                 // Optional?: log.warn("No se pudo unir al partido con invitación: " + e.getMessage());
             }

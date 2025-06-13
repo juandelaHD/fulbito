@@ -15,20 +15,98 @@ export type RawMatchDTO = {
       zone: string;
       address: string;
     };
+    enabled: boolean;
     imagesUrls: string[];
+    matchesWithMissingPlayers: Record<string, number>;
   };
   organizer: {
     id: number;
     firstName: string;
     lastName: string;
     username: string;
+    avatarUrl: string;
+    zone: string;
+    age: number;
+    gender: string;
+    role: string;
+    emailConfirmed: boolean;
   };
   players: Array<{
     id: number;
     firstName: string;
     lastName: string;
     username: string;
+    avatarUrl: string;
+    zone: string;
+    age: number;
+    gender: string;
+    role: string;
+    emailConfirmed: boolean;
   }>;
+  homeTeam?: {
+    id: number;
+    name: string;
+    imageUrl: string;
+    mainColor: string;
+    secondaryColor: string;
+    ranking: number;
+    captain: {
+      id: number;
+      firstName: string;
+      lastName: string;
+      username: string;
+      avatarUrl: string;
+      zone: string;
+      age: number;
+      gender: string;
+      role: string;
+      emailConfirmed: boolean;
+    };
+    members: Array<{
+      id: number;
+      firstName: string;
+      lastName: string;
+      username: string;
+      avatarUrl: string;
+      zone: string;
+      age: number;
+      gender: string;
+      role: string;
+      emailConfirmed: boolean;
+    }>;
+  };
+  awayTeam?: {
+    id: number;
+    name: string;
+    imageUrl: string;
+    mainColor: string;
+    secondaryColor: string;
+    ranking: number;
+    captain: {
+      id: number;
+      firstName: string;
+      lastName: string;
+      username: string;
+      avatarUrl: string;
+      zone: string;
+      age: number;
+      gender: string;
+      role: string;
+      emailConfirmed: boolean;
+    };
+    members: Array<{
+      id: number;
+      firstName: string;
+      lastName: string;
+      username: string;
+      avatarUrl: string;
+      zone: string;
+      age: number;
+      gender: string;
+      role: string;
+      emailConfirmed: boolean;
+    }>;
+  };
   status: string;
   matchType: string;
   minPlayers: number;
@@ -36,6 +114,12 @@ export type RawMatchDTO = {
   date: string;
   startTime: string;
   endTime: string;
+  confirmationSent: boolean;
+  invitation?: {
+    token: string;
+    matchId: number;
+    valid: boolean;
+  };
 };
 
 export async function getOpenMatchesService(token: string): Promise<RawMatchDTO[]> {
@@ -153,5 +237,77 @@ export function useCreateMatch() {
       toast.success("Match created successfully!", { duration: 5000 });
       return res.json();
     },
+  });
+}
+
+
+
+export type TeamFormationRequestDTO = {
+  strategy: string;
+  teamAPlayerIds?: number[];
+  teamBPlayerIds?: number[];
+};
+
+export async function formTeamsService(
+  matchId: number,
+  payload: TeamFormationRequestDTO,
+  token: string
+) {
+  const response = await fetch(`${BASE_API_URL}/matches/${matchId}/form-teams`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(payload),
+  });
+
+  if (!response.ok) {
+    await handleErrorResponse(response, "forming teams");
+  }
+  return await response.json();
+}
+
+export function useFormTeams() {
+  const [tokenState] = useToken();
+  const token = tokenState.state === "LOGGED_IN" ? tokenState.accessToken : "";
+
+  return useMutation({
+    mutationFn: ({ matchId, payload }: { matchId: number; payload: TeamFormationRequestDTO }) =>
+      formTeamsService(matchId, payload, token),
+    onSuccess: () => {
+      toast.success("Teams formed successfully!", { duration: 5000 });
+    },
+    onError: (err: unknown) => {
+      console.error("Error while forming teams:", err);
+      toast.error("Error forming teams. Please try again.", { duration: 5000 });
+    },
+  });
+}
+
+
+export async function getMatchByIdService(matchId: number, token: string): Promise<RawMatchDTO> {
+  const response = await fetch(`${BASE_API_URL}/matches/${matchId}`, {
+    method: "GET",
+    headers: {
+      Authorization: `Bearer ${token}`,
+      Accept: "application/json",
+    },
+  });
+
+  if (!response.ok) {
+    await handleErrorResponse(response, "fetching match by id");
+  }
+  return await response.json();
+}
+
+export function useGetMatchById(matchId?: number) {
+  const [tokenState] = useToken();
+  const token = tokenState.state === "LOGGED_IN" ? tokenState.accessToken : "";
+
+  return useQuery<RawMatchDTO, Error>({
+    queryKey: ["match", matchId],
+    queryFn: () => getMatchByIdService(matchId!, token),
+    enabled: !!token && !!matchId,
   });
 }

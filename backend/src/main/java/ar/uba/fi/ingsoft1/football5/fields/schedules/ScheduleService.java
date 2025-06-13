@@ -11,6 +11,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.List;
 
 @Service
@@ -57,17 +59,92 @@ public class ScheduleService {
         return schedulePage.map(ScheduleDTO::new);
     }
 
-    public List<ScheduleSlotDTO> getScheduleSlotsByFieldAndDate(Long fieldId, LocalDate date) throws ItemNotFoundException {
+    public Page<ScheduleDTO> getAvailableSchedulesByFieldId(Long fieldId, Pageable pageable) throws ItemNotFoundException {
+        Field field = fieldService.loadFieldById(fieldId);
+        Page<Schedule> schedulePage = scheduleRepository.findByFieldAndStatus(field, ScheduleStatus.AVAILABLE, pageable);
+        return schedulePage.map(ScheduleDTO::new);
+    }
+
+    public List<ScheduleDTO> getScheduleSlotsByFieldAndDate(Long fieldId, LocalDate date) throws ItemNotFoundException {
         Field field = fieldService.loadFieldById(fieldId);
         List<Schedule> schedules = scheduleRepository.findByFieldAndDate(field, date);
         return schedules.stream()
                 .filter(s -> s.getStatus() == ScheduleStatus.AVAILABLE)
-                .map(s -> new ScheduleSlotDTO(
+                .map(s -> new ScheduleDTO(
                         s.getId(),
-                        s.getStartTime().toString(),
-                        s.getEndTime().toString(),
-                        true
+                        s.getDate(),
+                        s.getStartTime(),
+                        s.getEndTime(),
+                        s.getStatus()
                 ))
                 .toList();
+    }
+
+    public ScheduleDTO markAsReserved(Field Field, LocalDate date, LocalTime startTime, LocalTime endTime) throws ItemNotFoundException {
+        Schedule schedule = scheduleRepository.findByFieldAndDateAndStartTimeAndEndTime(Field, date, startTime, endTime)
+                .stream()
+                .findFirst()
+                .orElseThrow(() -> new ItemNotFoundException("Schedule", Field.getId()));
+
+        if (schedule.getStatus() != ScheduleStatus.AVAILABLE) {
+            throw new IllegalArgumentException("Schedule is not available for booking.");
+        }
+
+        schedule.setStatus(ScheduleStatus.RESERVED);
+        scheduleRepository.save(schedule);
+
+        return new ScheduleDTO(
+                schedule.getId(),
+                schedule.getDate(),
+                schedule.getStartTime(),
+                schedule.getEndTime(),
+                schedule.getStatus()
+
+        );
+    }
+
+    public ScheduleDTO markAsAvailable(Field Field, LocalDate date, LocalTime startTime, LocalTime endTime) throws ItemNotFoundException {
+        Schedule schedule = scheduleRepository.findByFieldAndDateAndStartTimeAndEndTime(Field, date, startTime, endTime)
+                .stream()
+                .findFirst()
+                .orElseThrow(() -> new ItemNotFoundException("Schedule", Field.getId()));
+
+        // Check if the schedule is reserved before marking it as available
+        if (schedule.getStatus() != ScheduleStatus.RESERVED) {
+            throw new IllegalArgumentException("Schedule is not reserved and cannot be marked as available.");
+        }
+
+        schedule.setStatus(ScheduleStatus.AVAILABLE);
+        scheduleRepository.save(schedule);
+
+        return new ScheduleDTO(
+                schedule.getId(),
+                schedule.getDate(),
+                schedule.getStartTime(),
+                schedule.getEndTime(),
+                schedule.getStatus()
+        );
+    }
+
+    public ScheduleDTO markAsBlocked(Field Field, LocalDate date, LocalTime startTime, LocalTime endTime) throws ItemNotFoundException {
+        Schedule schedule = scheduleRepository.findByFieldAndDateAndStartTimeAndEndTime(Field, date, startTime, endTime)
+                .stream()
+                .findFirst()
+                .orElseThrow(() -> new ItemNotFoundException("Schedule", Field.getId()));
+
+        if (schedule.getStatus() != ScheduleStatus.AVAILABLE) {
+            throw new IllegalArgumentException("Schedule is not available and cannot be marked as blocked.");
+        }
+
+        schedule.setStatus(ScheduleStatus.BLOCKED);
+        scheduleRepository.save(schedule);
+
+        return new ScheduleDTO(
+                schedule.getId(),
+                schedule.getDate(),
+                schedule.getStartTime(),
+                schedule.getEndTime(),
+                schedule.getStatus()
+        );
     }
 }

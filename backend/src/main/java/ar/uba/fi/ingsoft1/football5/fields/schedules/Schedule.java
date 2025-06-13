@@ -62,4 +62,8 @@ public class Schedule {
     public ScheduleStatus getStatus() {
         return status;
     }
+
+    public void setStatus(ScheduleStatus status) {
+        this.status = status;
+    }
 }
