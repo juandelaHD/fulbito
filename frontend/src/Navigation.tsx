@@ -19,6 +19,7 @@ import { MatchHomeScreen } from "@/screens/MatchHomeScreen.tsx";
 import { CreateClosedMatchScreen } from "@/screens/CreateClosedMatchScreen.tsx";
 import { CreateOpenMatchScreen } from "@/screens/CreateOpenMatchScreen.tsx";
 import { FormTeamsScreen } from "@/screens/FormTeamsScreen.tsx";
+import { TournamentsScreen } from "@/screens/TournamentsScreen.tsx";
 
 export const Navigation = () => {
   const [tokenState] = useToken();
@@ -67,6 +68,9 @@ export const Navigation = () => {
           </Route>
           <Route path="/teams">
             <TeamsScreen />
+          </Route>
+          <Route path="/tournaments">
+            <TournamentsScreen />
           </Route>
           <Route>
             <Redirect href="/" />

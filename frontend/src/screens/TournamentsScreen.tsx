@@ -55,7 +55,7 @@ export const TournamentsScreen = () => {
 
         <TournamentFiltersContainer
         filters={{
-            name: filters.name ?? "", // 👈 asegura que sea string
+            name: filters.name ?? "",
             status: filters.status,
         }}
         setFilters={setFilters}
