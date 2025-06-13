@@ -5,6 +5,7 @@ import ar.uba.fi.ingsoft1.football5.common.exception.UserNotFoundException;
 import ar.uba.fi.ingsoft1.football5.config.security.JwtUserDetails;
 import ar.uba.fi.ingsoft1.football5.fields.Field;
 import ar.uba.fi.ingsoft1.football5.fields.FieldService;
+import ar.uba.fi.ingsoft1.football5.fields.schedules.ScheduleDTO;
 import ar.uba.fi.ingsoft1.football5.matches.invitation.MatchInvitationService;
 import ar.uba.fi.ingsoft1.football5.teams.formation.TeamFormationRequestDTO;
 import ar.uba.fi.ingsoft1.football5.teams.formation.TeamFormationResult;
@@ -110,11 +111,12 @@ public class MatchService {
     private void notifyFieldAdmin(MatchCreateDTO match, Field field) {
         User admin = field.getOwner();
         if (admin != null) {
-            emailSenderService.sendReservationMail(
+            emailSenderService.sendMatchNewReservationMail(
                     admin.getUsername(),
                     match.date(),
                     match.startTime(),
-                    match.endTime()
+                    match.endTime(),
+                    field.getName()
             );
         }
     }
@@ -170,14 +172,23 @@ public class MatchService {
             joinClosedMatch(match, newMatch);
         }
 
-        notifyReservation(match, organizerUser);
-        notifyFieldAdmin(match, field);
+        // TODO: REFACTOR - Change "times" to "slots" in the DTO and method names?
+        ScheduleDTO slot = fieldService.markAsOccupied(
+                field.getId(),
+                match.date(),
+                match.startTime(),
+                match.endTime()
+        );
 
         Match savedMatch = matchRepository.save(newMatch);
 
         if (match.matchType() == MatchType.OPEN) {
             matchInvitationService.createInvitation(savedMatch.getId());
         }
+
+        notifyReservation(match, organizerUser);
+        notifyFieldAdmin(match, field);
+
         return new MatchDTO(savedMatch);
     }
 
@@ -455,7 +466,6 @@ public class MatchService {
 
         matchRepository.save(match);
 
-
         return new MatchDTO(match);
     }
 
@@ -486,6 +496,7 @@ public class MatchService {
             throw new IllegalArgumentException("Only the field admin can finish a match.");
 
         match.setStatus(MatchStatus.FINISHED);
+
         matchRepository.save(match);
 
         // Notificar al organizador
@@ -510,6 +521,26 @@ public class MatchService {
             throw new IllegalArgumentException("Only the field admin can cancel an open match.");
 
         match.setStatus(MatchStatus.CANCELLED);
+
+        if (match.getInvitation() != null) {
+            matchInvitationService.invalidateMatchInvitation(match);
+        }
+
+        if (match.getType() == MatchType.CLOSED) {
+            match.clearTeams();
+        }
+
+        if (match.getType() == MatchType.OPEN) {
+            match.clearPlayers();
+        }
+
+        fieldService.markAsAvailable(
+                field.getId(),
+                match.getDate(),
+                match.getStartTime(),
+                match.getEndTime()
+        );
+
         matchRepository.save(match);
 
         // Notificar al organizador

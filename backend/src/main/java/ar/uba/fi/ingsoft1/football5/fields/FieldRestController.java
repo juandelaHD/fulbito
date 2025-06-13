@@ -9,7 +9,6 @@ import ar.uba.fi.ingsoft1.football5.fields.reviews.ReviewService;
 import ar.uba.fi.ingsoft1.football5.fields.schedules.ScheduleCreateDTO;
 import ar.uba.fi.ingsoft1.football5.fields.schedules.ScheduleDTO;
 import ar.uba.fi.ingsoft1.football5.fields.schedules.ScheduleService;
-import ar.uba.fi.ingsoft1.football5.fields.schedules.ScheduleSlotDTO;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -204,7 +203,7 @@ class FieldRestController {
     @GetMapping(path = "/{id}/schedules/slots", produces = "application/json")
     @Operation(summary = "Get schedule slots for a field on a specific date")
     @ResponseStatus(HttpStatus.OK)
-    List<ScheduleSlotDTO> getScheduleSlotsByFieldAndDate(
+    List<ScheduleDTO> getScheduleSlotsByFieldAndDate(
             @PathVariable("id") Long fieldId,
             @RequestParam("date") @Parameter(description = "Date in yyyy-MM-dd") String dateStr
     ) throws ItemNotFoundException {

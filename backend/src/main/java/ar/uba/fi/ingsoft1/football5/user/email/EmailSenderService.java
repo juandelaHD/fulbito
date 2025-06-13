@@ -44,6 +44,10 @@ public class EmailSenderService {
         this.sendMail(recipientEmail, new MatchReservationMailWriter(date, start, end));
     }
 
+    public void sendMatchNewReservationMail(String recipientEmail, LocalDate date, LocalDateTime start, LocalDateTime end, String fieldName) {
+        this.sendMail(recipientEmail, new MatchNewReservationMailWriter(date, start, end, fieldName));
+    }
+
     public void sendTeamCaptainMail(String recipientEmail, LocalDate date, LocalDateTime start, LocalDateTime end, String OrganizerUsername) {
         this.sendMail(recipientEmail, new TeamCaptainMatchMailWriter(date, start, end, OrganizerUsername));
     }

@@ -63,17 +63,79 @@ public class ScheduleService {
         return schedulePage.map(ScheduleDTO::new);
     }
 
-    public List<ScheduleSlotDTO> getScheduleSlotsByFieldAndDate(Long fieldId, LocalDate date) throws ItemNotFoundException {
+    public List<ScheduleDTO> getScheduleSlotsByFieldAndDate(Long fieldId, LocalDate date) throws ItemNotFoundException {
         Field field = fieldService.loadFieldById(fieldId);
         List<Schedule> schedules = scheduleRepository.findByFieldAndDate(field, date);
         return schedules.stream()
                 .filter(s -> s.getStatus() == ScheduleStatus.AVAILABLE)
-                .map(s -> new ScheduleSlotDTO(
+                .map(s -> new ScheduleDTO(
                         s.getId(),
-                        s.getStartTime().toString(),
-                        s.getEndTime().toString(),
-                        true
+                        s.getDate(),
+                        s.getStartTime(),
+                        s.getEndTime(),
+                        s.getStatus()
                 ))
                 .toList();
+    }
+
+    public ScheduleDTO markAsReserved(Long scheduleId) throws ItemNotFoundException {
+        Schedule schedule = scheduleRepository.findById(scheduleId)
+                .orElseThrow(() -> new ItemNotFoundException("Schedule not found with id: ", scheduleId));
+
+        if (schedule.getStatus() != ScheduleStatus.AVAILABLE) {
+            throw new IllegalArgumentException("Schedule is not available for booking.");
+        }
+
+        schedule.setStatus(ScheduleStatus.RESERVED);
+        scheduleRepository.save(schedule);
+
+        return new ScheduleDTO(
+                schedule.getId(),
+                schedule.getDate(),
+                schedule.getStartTime(),
+                schedule.getEndTime(),
+                schedule.getStatus()
+
+        );
+    }
+
+    public ScheduleDTO markAsAvailable(Long scheduleId) throws ItemNotFoundException {
+        Schedule schedule = scheduleRepository.findById(scheduleId)
+                .orElseThrow(() -> new ItemNotFoundException("Schedule not found with id: ", scheduleId));
+
+        if (schedule.getStatus() != ScheduleStatus.RESERVED) {
+            throw new IllegalArgumentException("Schedule is not reserved and cannot be marked as available.");
+        }
+
+        schedule.setStatus(ScheduleStatus.AVAILABLE);
+        scheduleRepository.save(schedule);
+
+        return new ScheduleDTO(
+                schedule.getId(),
+                schedule.getDate(),
+                schedule.getStartTime(),
+                schedule.getEndTime(),
+                schedule.getStatus()
+        );
+    }
+
+    public ScheduleDTO markAsBlocked(Long scheduleId) throws ItemNotFoundException {
+        Schedule schedule = scheduleRepository.findById(scheduleId)
+                .orElseThrow(() -> new ItemNotFoundException("Schedule not found with id: ", scheduleId));
+
+        if (schedule.getStatus() != ScheduleStatus.AVAILABLE) {
+            throw new IllegalArgumentException("Schedule is not available and cannot be marked as blocked.");
+        }
+
+        schedule.setStatus(ScheduleStatus.BLOCKED);
+        scheduleRepository.save(schedule);
+
+        return new ScheduleDTO(
+                schedule.getId(),
+                schedule.getDate(),
+                schedule.getStartTime(),
+                schedule.getEndTime(),
+                schedule.getStatus()
+        );
     }
 }
