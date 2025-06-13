@@ -203,3 +203,26 @@ export function useDeleteField() {
         },
     });
 }
+
+export function useUpdateField() {
+    const [tokenState] = useToken();
+    const token = tokenState.state === "LOGGED_IN" ? tokenState.accessToken : "";
+
+    return useMutation({
+        mutationFn: async ({ id, data }: { id: number; data: FormData }) => {
+            const response = await fetch(`${BASE_API_URL}/fields/${id}`, {
+                method: "PUT",
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+                body: data,
+            });
+
+            if (!response.ok) {
+                await handleErrorResponse(response, "updating field");
+            } else {
+                toast.success("Field updated successfully");
+            }
+        },
+    });
+}
