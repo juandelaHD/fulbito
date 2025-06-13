@@ -30,7 +30,6 @@ export const CommonLayout = ({ children }: React.PropsWithChildren) => {
                   <Link className={styles.navLink} href="/fields/management">Manage Field</Link>
                   <Link className={styles.navLink} href="/fields">View Fields</Link>
                   <Link className={styles.navLink} href="/match">Matches</Link>
-                  <Link className={styles.navLink} href="/teams">Teams</Link>
                   <Link className={styles.navLink} href="/search">Search Users</Link>
                 </div>
                 <div className={styles.navLinksRight}>

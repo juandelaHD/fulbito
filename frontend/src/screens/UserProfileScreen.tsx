@@ -2,12 +2,13 @@
 import { useGetMyProfile } from "@/services/UserServices";
 import { useImageById } from "@/services/ImageServices.ts";
 import { CommonLayout } from "@/components/CommonLayout/CommonLayout.tsx";
+import { TeamsScreen } from "@/screens/TeamsScreen.tsx";
 
 export default function UserProfileScreen() {
   const { data: user, isLoading: loadingUser } = useGetMyProfile();
   const userAvatarURL= useImageById(user?.avatarUrl);
 
-  if (loadingUser ) return <p style={{ padding: "2rem", color: "white" }}>Loading...</p>;
+  if (loadingUser) return <p style={{ padding: "2rem", color: "white" }}>Loading...</p>;
   if (!user) return <p style={{ padding: "2rem", color: "white" }}>Error while loading profile</p>;
 
   return (
@@ -56,6 +57,12 @@ export default function UserProfileScreen() {
           <p style={{ marginBottom: "0.2rem" }}>Zone: {user.zone}</p>
         </div>
       </div>
+
+      {/* Sección de equipos */}
+      <section style={{ marginTop: "3rem" }}>
+        {/* Equipos */}
+        {user.role === "USER" && <TeamsScreen />}
+      </section>
     </div>
     </CommonLayout>
   );

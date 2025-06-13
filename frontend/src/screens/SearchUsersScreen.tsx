@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useSearchUserByUsername } from "@/services/UserServices";
+import { CommonLayout } from "@/components/CommonLayout/CommonLayout.tsx";
 
 export default function SearchUsersScreen() {
   const [username, setUsername] = useState("");
@@ -14,6 +15,7 @@ export default function SearchUsersScreen() {
   };
 
   return (
+    <CommonLayout>
     <div style={{ padding: "2rem", color: "white" }}>
       <h1 style={{ fontSize: "2rem", fontWeight: "bold", color: "#00ff84", marginBottom: "1rem" }}>
         Buscar Jugador
@@ -56,5 +58,6 @@ export default function SearchUsersScreen() {
         </div>
       )}
     </div>
+    </CommonLayout>
   );
 }

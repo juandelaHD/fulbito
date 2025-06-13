@@ -126,7 +126,7 @@ export const useGetMyProfile = () => {
     enabled: tokenState.state === "LOGGED_IN", // no hace la query si no estás logueado
     queryFn: async () => {
       if (tokenState.state !== "LOGGED_IN") {
-        throw new Error("No estás logueado");
+        throw new Error("You are not logged in");
       }
 
       const response = await fetch(`${BASE_API_URL}/users/me`, {
@@ -134,7 +134,7 @@ export const useGetMyProfile = () => {
       });
 
       if (!response.ok) {
-        await handleErrorResponse(response, "al obtener el perfil");
+        await handleErrorResponse(response, " while fetching profile");
       }
 
       return await response.json();
