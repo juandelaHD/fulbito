@@ -68,13 +68,15 @@ export const AddTournamentModal = ({ isOpen, onClose, onSubmit }: Props) => {
         zIndex: 1000,
         },
         content: {
-        inset: 0, // ocupa todo el viewport
+        top: "5vh",
+        bottom: "auto",
+        left: "50%",
+        right: "auto",
+        transform: "translateX(-50%)", // 👈 truco para centrar horizontal
+        padding: 0,
         border: "none",
         background: "none",
-        padding: 0,
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
+        overflow: "visible",
         },
     }}
     >
