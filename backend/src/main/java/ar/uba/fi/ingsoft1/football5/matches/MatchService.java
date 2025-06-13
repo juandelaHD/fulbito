@@ -68,13 +68,20 @@ public class MatchService {
         if (match.homeTeamId().equals(match.awayTeamId())) {
             throw new IllegalArgumentException("Home and away teams must be different");
         }
+        int homeTeamSize = homeTeam.getMembers().size();
+        int awayTeamSize = awayTeam.getMembers().size();
 
-        if (homeTeam.getMembers().size() + awayTeam.getMembers().size() < match.minPlayers()) {
+        if (homeTeamSize + awayTeamSize < match.minPlayers()) {
             throw new IllegalArgumentException("Total players in both teams must be at least " + match.minPlayers() + ". Change the teams or the match limits.");
         }
 
-        if (homeTeam.getMembers().size() + awayTeam.getMembers().size() > match.maxPlayers()) {
+        if (homeTeamSize + awayTeamSize > match.maxPlayers()) {
             throw new IllegalArgumentException("Total players in both teams must not exceed " + match.maxPlayers() + ". Change the teams or the match limits.");
+        }
+
+        if(homeTeamSize != awayTeamSize){
+                throw new IllegalArgumentException("Team sizes mismatch: home team has " + homeTeamSize +
+                        " players, but away team has " + awayTeamSize + ". Both teams must have the same number of players.");
         }
 
         List<String> membersA = homeTeam.getMembers().stream()
@@ -371,25 +378,46 @@ public class MatchService {
         if (match.getType() != MatchType.OPEN) {
             throw new IllegalArgumentException("Only open matches can be left.");
         }
-        if (match.getStatus() == MatchStatus.SCHEDULED ||
-                match.getStatus() == MatchStatus.IN_PROGRESS ||
-                match.getStatus() == MatchStatus.FINISHED ||
-                match.getStatus() == MatchStatus.CANCELLED) {
-            throw new IllegalArgumentException("Cannot leave a match that is already " + match.getStatus() + ".");
-        }
-        if (!match.getPlayers().contains(user)) {
-            throw new IllegalArgumentException("You are not registered in this match.");
+        MatchStatus status = match.getStatus();
+        if (status == MatchStatus.SCHEDULED ||
+            status == MatchStatus.IN_PROGRESS ||
+            status == MatchStatus.FINISHED ||
+            status == MatchStatus.CANCELLED) {
+            throw new IllegalArgumentException("Cannot leave a match that is already " + status + ".");
         }
 
-        match.removePlayer(user);
-        matchRepository.save(match);
+        if (match.getOrganizer().getUsername().equals(user.getUsername())) {
 
-        emailSenderService.sendUnsubscribeMail(
-                user.getUsername(),
-                match.getDate(),
-                match.getStartTime(),
-                match.getEndTime()
-        );
+            for (User player : match.getPlayers()) {
+                emailSenderService.sendMatchCancelledMail(
+                    player.getUsername(),
+                    match.getDate(),
+                    match.getStartTime(),
+                    match.getEndTime()
+                );
+           }
+
+           if (match.getInvitation() != null) {
+                matchInvitationService.invalidateMatchInvitation(match);
+            }
+            match.setStatus(MatchStatus.CANCELLED);
+            matchRepository.save(match);
+
+        } else {
+            if (!match.getPlayers().contains(user)) {
+                throw new IllegalArgumentException("You are not registered in this match.");
+            }
+
+            match.removePlayer(user);
+            matchRepository.save(match);
+
+            emailSenderService.sendUnsubscribeMail(
+                    user.getUsername(),
+                    match.getDate(),
+                    match.getStartTime(),
+                    match.getEndTime()
+            );
+        } 
     }
 
     public MatchDTO confirmMatch(Long matchId, JwtUserDetails userDetails)
