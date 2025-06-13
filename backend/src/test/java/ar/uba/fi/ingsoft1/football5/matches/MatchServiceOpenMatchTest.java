@@ -54,6 +54,9 @@ class MatchServiceOpenMatchTest {
     private Match openMatch;
 
     @Mock
+    private User organizer;
+
+    @Mock
     private User user;
 
     @Mock
@@ -65,7 +68,7 @@ class MatchServiceOpenMatchTest {
     @BeforeEach
     void setUp() {
         Field field = mock(Field.class);
-        User organizer = new User("organizer", "Org", "User", "M", "Zone", 30, "pass", Role.USER);
+        organizer = new User("organizer", "Org", "User", "M", "Zone", 30, "pass", Role.USER);
         openMatch = new Match(field, organizer, MatchStatus.PENDING, MatchType.OPEN,
                 1,
                 2,
@@ -74,7 +77,6 @@ class MatchServiceOpenMatchTest {
                 LocalDateTime.now().plusHours(3)
         );
         user = new User("testuser", "Test", "User", "M", "Zone1", 25, "pass123", Role.USER);
-        user.setAvatar(avatarImage);
         AvatarImage avatar = mock(AvatarImage.class);
         user.setAvatar(avatar);
         openMatch.getOrganizer().setAvatar(avatar);
