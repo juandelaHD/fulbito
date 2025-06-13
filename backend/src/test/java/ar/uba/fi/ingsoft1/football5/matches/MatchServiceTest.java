@@ -11,6 +11,7 @@ import ar.uba.fi.ingsoft1.football5.user.Role;
 import ar.uba.fi.ingsoft1.football5.user.User;
 import ar.uba.fi.ingsoft1.football5.user.UserService;
 import ar.uba.fi.ingsoft1.football5.user.email.EmailSenderService;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -409,4 +410,32 @@ class MatchServiceTest {
         List<MatchDTO> result = matchService.getAvailableOpenMatches();
         assertEquals(1, result.size());
     } 
+
+    @Test
+    void testGetMatchById_notFound_shouldThrowException(){
+        Long matchId = 1l;
+        when(matchRepository.findById(matchId)).thenReturn(Optional.empty());
+
+        assertThrows(ItemNotFoundException.class, ()-> matchService.getMatchById(matchId));
+        verify(matchRepository).findById(matchId);
+    }
+
+    @Test
+    void startMatch_ShouldThrowException_WhenMatchNotFound() {
+        Long matchId = 1L;
+        when(matchRepository.findById(matchId)).thenReturn(Optional.empty());
+
+        assertThrows(ItemNotFoundException.class, () -> matchService.startMatch(matchId, userDetails));
+        verify(matchRepository).findById(matchId);
+    }
+
+    @Test
+    void finishMatch_ShouldThrowException_WhenMatchNotFound() {
+        Long matchId = 1L;
+        when(matchRepository.findById(matchId)).thenReturn(Optional.empty());
+
+        assertThrows(ItemNotFoundException.class, () -> matchService.finishMatch(matchId, userDetails));
+        verify(matchRepository).findById(matchId);
+    }
+        
 }
