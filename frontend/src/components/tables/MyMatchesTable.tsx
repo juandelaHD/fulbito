@@ -5,11 +5,11 @@ import { Table } from "@/components/tables/Table"
 export interface RawBasicMatchDTO {
   matchId: number;
   matchType: string;
+  matchStatus: string;
   date: string;
   startTime: string;
   endTime: string;
   fieldName: string;
-  fieldLocation: number; ????
   result: string;
   players: RawPlayerDTO[];
 }
@@ -17,6 +17,7 @@ export interface RawBasicMatchDTO {
 export type MyMatch = {
   matchId: number
   matchType: string
+  matchStatus: string
   fieldName: string
   date: string
   startTime: string

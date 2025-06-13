@@ -3,7 +3,7 @@ import { useGetMyProfile } from "@/services/UserServices";
 import { useImageById } from "@/services/ImageServices.ts";
 import { CommonLayout } from "@/components/CommonLayout/CommonLayout.tsx";
 import { TeamsScreen } from "@/screens/TeamsScreen.tsx";
-import { MyMatchesHistoryScreen } from "@/screens/MyMatchesScreen.tsx";
+import { MyMatchesHistoryScreen } from "@/screens/MyMatchesHistoryScreen.tsx";
 
 
 export default function UserProfileScreen() {

@@ -24,6 +24,7 @@ export interface RawPlayerDTO {
 export interface RawBasicMatchDTO {
   matchId: number;
   matchType: string;
+  matchStatus: string;
   date: string;
   startTime: string;
   endTime: string;
@@ -166,7 +167,7 @@ export const useGetMyProfile = () => {
   });
 };
 
-export async function getMyMatchesService(token: string): Promise<RawBasicMatchDTO[]> {
+export async function getMyMatchesHistoryService(token: string): Promise<RawBasicMatchDTO[]> {
   const response = await fetch(`${BASE_API_URL}/users/me/played-matches`, {
     method: "GET",
     headers: {
@@ -187,7 +188,34 @@ export function useGetMyMatchesPlayed() {
 
   return useQuery<RawBasicMatchDTO[], Error>({
     queryKey: ["openMatches"],
-    queryFn: () => getMyMatchesService(token),
+    queryFn: () => getMyMatchesHistoryService(token),
+    enabled: token !== "",
+  });
+}
+
+
+export async function getMyMatchesJoinedService(token: string): Promise<RawBasicMatchDTO[]> {
+  const response = await fetch(`${BASE_API_URL}/users/me/joined-matches`, {
+    method: "GET",
+    headers: {
+      Authorization: `Bearer ${token}`,
+      Accept: "application/json",
+    },
+  });
+
+  if (!response.ok) {
+    await handleErrorResponse(response, "fetching open matches");
+  }
+  return (await response.json()) as RawBasicMatchDTO[];
+}
+
+export function useGetMyJoinedMatches() {
+  const [tokenState] = useToken();
+  const token = tokenState.state === "LOGGED_IN" ? tokenState.accessToken : "";
+
+  return useQuery<RawBasicMatchDTO[], Error>({
+    queryKey: ["openMatches"],
+    queryFn: () => getMyMatchesJoinedService(token),
     enabled: token !== "",
   });
 }
