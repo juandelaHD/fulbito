@@ -72,16 +72,25 @@ export const AddTournamentModal = ({ isOpen, onClose, onSubmit }: Props) => {
         bottom: "auto",
         left: "50%",
         right: "auto",
-        transform: "translateX(-50%)", // 👈 truco para centrar horizontal
+        transform: "translateX(-50%)",
         padding: 0,
         border: "none",
         background: "none",
         overflow: "visible",
+        maxHeight: "90vh", // 👈 esto permite que el modal no se pase del viewport
         },
     }}
     >
 
         <form onSubmit={handleSubmit} className={styles.modalContainer}>
+              <button
+                type="button"
+                className={styles.closeButton}
+                onClick={onClose}
+                aria-label="Close"
+            >
+                ✖
+            </button>
             <h2 className={styles.modalTitle}>
                 Hungry for glory? Create a New Tournament! 🏆
             </h2>
