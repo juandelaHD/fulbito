@@ -35,32 +35,51 @@ const LoggedOutLinks = () => (
 );
 
 const LoggedInLinks = () => {
-    const [, setTokenState] = useToken();
+    const [tokenState, setTokenState] = useToken();
+
 
     const logOut = () => {
         setTokenState({ state: "LOGGED_OUT" });
     };
+
+    if (tokenState.state !== "LOGGED_IN") return null;
+    const { role } = tokenState;
 
     return (
         <>
             <Link className={styles.navLink} href="/">
                 Main Page
             </Link>
-            <Link className={styles.navLink} href="/fields/new">
-                Create Field
-            </Link>
-            <Link className={styles.navLink} href="/fields/management">
-                Manage Field
-            </Link>
-            <Link className={styles.navLink} href="/fields">
-                View Fields
-            </Link>
-            <Link className={styles.navLink} href="/match">
-                Matches
-            </Link>
-            <Link className={styles.navLink} href="/teams">
-                Teams
-            </Link>
+
+            { role === "ADMIN" && (
+                <>
+                    <Link className={styles.navLink} href="/fields/create">
+                        Create Field
+                    </Link>
+                    <Link className={styles.navLink} href="/fields/management">
+                        Manage Fields
+                    </Link>
+                </>
+
+            )}
+
+            { role === "USER" && (
+                <>
+                    <Link className={styles.navLink} href="/fields">
+                        Fields
+                    </Link>
+                    <Link className={styles.navLink} href="/matches">
+                        Matches
+                    </Link>
+                    <Link className={styles.navLink} href="/teams">
+                        Teams
+                    </Link>
+                    <Link className={styles.navLink} href="/tournaments">
+                        Tournaments
+                    </Link>
+                </>
+            )}
+
             <button onClick={logOut} className={styles.navLink}>
                 Log out
             </button>

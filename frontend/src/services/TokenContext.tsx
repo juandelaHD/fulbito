@@ -8,6 +8,7 @@ type TokenContextData =
       state: "LOGGED_IN";
       accessToken: string;
       refreshToken: string | null;
+      role: "USER" | "ADMIN"
     };
 
 const TokenContext = React.createContext<[TokenContextData, Dispatch<TokenContextData>] | null>(null);

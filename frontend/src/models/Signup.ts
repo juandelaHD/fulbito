@@ -22,6 +22,7 @@ export type SignupRequest = z.infer<typeof SignupRequestSchema>;
 export const SignupResponseSchema = z.object({
   accessToken: z.string().min(1),
   refreshToken: z.string().nullable(),
+  role: z.enum(["USER", "ADMIN"]),
 });
 
 export type SignupResponse = z.infer<typeof SignupResponseSchema>;

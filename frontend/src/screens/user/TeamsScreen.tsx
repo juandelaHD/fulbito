@@ -1,7 +1,7 @@
 import { useRef, useState } from "react";
-import { CommonLayout } from "@/components/CommonLayout/CommonLayout";
-import { useGetMyTeams } from "@/services/TeamServices";
-import { TeamsTable } from "@/components/tables/TeamsTable";
+import { CommonLayout } from "@/components/CommonLayout/CommonLayout.tsx";
+import { useGetMyTeams } from "@/services/TeamServices.ts";
+import { TeamsTable } from "@/components/tables/TeamsTable.tsx";
 import { useLocation } from "wouter";
 
 export const TeamsScreen = () => {

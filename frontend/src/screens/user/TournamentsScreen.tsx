@@ -1,16 +1,16 @@
 import { useState } from "react";
 import { toast } from "react-hot-toast";
-import { CommonLayout } from "@/components/CommonLayout/CommonLayout";
-import { AddTournamentModal } from "@/components/modals/AddTournamentModal";
-import { useGetTournaments } from "@/services/TournamentServices";
-import type { GetTournamentsRequest, Tournament } from "@/models/GetTournaments";
+import { CommonLayout } from "@/components/CommonLayout/CommonLayout.tsx";
+import { AddTournamentModal } from "@/components/modals/AddTournamentModal.tsx";
+import { useGetTournaments } from "@/services/TournamentServices.ts";
+import type { GetTournamentsRequest, Tournament } from "@/models/GetTournaments.ts";
 import {
   TournamentFiltersContainer,
-} from "@/components/filters/TournamentFilters";
+} from "@/components/filters/TournamentFilters.tsx";
 import {
   TournamentTable,
   TournamentForTable,
-} from "@/components/tables/TournamentsTable";
+} from "@/components/tables/TournamentsTable.tsx";
 
 export const TournamentsScreen = () => {
   const [filters, setFilters] = useState<GetTournamentsRequest>({
