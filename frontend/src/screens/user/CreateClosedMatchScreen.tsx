@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useLocation } from "wouter";
-import { useGetTeams } from "@/services/TeamServices";
-import { CommonLayout } from "@/components/CommonLayout/CommonLayout";
+import { useGetTeams } from "@/services/TeamServices.ts";
+import { CommonLayout } from "@/components/CommonLayout/CommonLayout.tsx";
 
 type Team = { id: string; name: string };
 

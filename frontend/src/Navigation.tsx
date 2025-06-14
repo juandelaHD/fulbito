@@ -1,25 +1,24 @@
 import { Redirect, Route, Switch } from "wouter";
 
 import { LoginScreen } from "@/screens/LoginScreen";
-import { MainScreen } from "@/screens/MainScreen";
 import { SignupScreen } from "@/screens/SignupScreen";
-import { CreateFieldScreen } from "@/screens/CreateFieldScreen"; 
+import { CreateFieldScreen } from "@/screens/admin/CreateFieldScreen.tsx";
 import { useToken } from "@/services/TokenContext";
-import { FieldsScreen } from "@/screens/FieldsScreen";
-import { CreateMatchScreen } from "./screens/CreateMatchScreen.tsx";
-import { AdminHomePage } from "./screens/AdminHomePage";
-import { PlayerHomePage } from "./screens/PlayerHomePage";
+import { FieldsScreen } from "@/screens/user/FieldsScreen.tsx";
+import { CreateMatchScreen } from "./screens/user/CreateMatchScreen.tsx";
+import { AdminHomePage } from "./screens/admin/AdminHomePage.tsx";
+import { PlayerHomePage } from "./screens/user/PlayerHomePage.tsx";
 import { ForgotPasswordScreen } from "@/screens/ForgotPasswordScreen.tsx";
 import { ResetPasswordScreen } from "@/screens/ResetPasswordScreen.tsx";
-import {FieldsManagementScreen} from "@/screens/FieldManagementScreen.tsx";
+import {FieldsManagementScreen} from "@/screens/admin/FieldManagementScreen.tsx";
 import { SignupInvitationScreen } from "@/screens/SignupWithInvitation.tsx";
-import { TeamCreateScreen } from "@/screens/TeamCreateScreen.tsx";
-import { TeamsScreen } from "@/screens/TeamsScreen.tsx";
-import { MatchHomeScreen } from "@/screens/MatchHomeScreen.tsx";
-import { CreateClosedMatchScreen } from "@/screens/CreateClosedMatchScreen.tsx";
-import { CreateOpenMatchScreen } from "@/screens/CreateOpenMatchScreen.tsx";
-import { FormTeamsScreen } from "@/screens/FormTeamsScreen.tsx";
-import { TournamentsScreen } from "@/screens/TournamentsScreen.tsx";
+import { TeamCreateScreen } from "@/screens/user/TeamCreateScreen.tsx";
+import { TeamsScreen } from "@/screens/user/TeamsScreen.tsx";
+import { MatchHomeScreen } from "@/screens/user/MatchHomeScreen.tsx";
+import { CreateClosedMatchScreen } from "@/screens/user/CreateClosedMatchScreen.tsx";
+import { CreateOpenMatchScreen } from "@/screens/user/CreateOpenMatchScreen.tsx";
+import { FormTeamsScreen } from "@/screens/user/FormTeamsScreen.tsx";
+import {TournamentsScreen} from "@/screens/user/TournamentsScreen.tsx";
 
 export const Navigation = () => {
   const [tokenState] = useToken();
@@ -28,7 +27,7 @@ export const Navigation = () => {
       return (
         <Switch>
           <Route path="/">
-            <MainScreen />
+              {tokenState.role === "ADMIN" ? <Redirect href="/admin" /> : <Redirect href="/player" />}
           </Route>
           <Route path="/login">
             <LoginScreen />
@@ -36,16 +35,16 @@ export const Navigation = () => {
           <Route path="/fields/management">
               <FieldsManagementScreen />
           </Route>
-          <Route path="/fields/new">
+          <Route path="/fields/create">
             <CreateFieldScreen />
           </Route>
           <Route path="/fields">
             <FieldsScreen />
           </Route>
-          <Route path="/match">
+          <Route path="/matches">
             <MatchHomeScreen />
           </Route>
-          <Route path="/match/create">
+          <Route path="/matches/create">
             <CreateMatchScreen />
           </Route>
           <Route path="/matches/create/closed">
@@ -82,9 +81,6 @@ export const Navigation = () => {
         <Switch>
           <Route path="/login">
             <LoginScreen />
-          </Route>
-          <Route path="/tournaments">
-            <TournamentsScreen />
           </Route>
           <Route path="/signup">
             <SignupScreen />
