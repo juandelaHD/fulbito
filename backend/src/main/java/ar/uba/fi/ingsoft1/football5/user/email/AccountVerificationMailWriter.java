@@ -15,8 +15,7 @@ public class AccountVerificationMailWriter extends EmailWriter {
         message.setText("Hi there,\n\n"
                 + "Welcome to our football community! ⚽\n\n"
                 + "Thanks for signing up. To complete your registration, please confirm your email by clicking the link below:\n\n"
-                // TODO: Change this URL to the actual production URL (FRONTEND_URL)
-                + "http://localhost:30002/sessions/verify-email?token=" + token + "\n\n"
+                + "http://localhost:30003/verify-email?token=" + token + "\n\n"
                 + "Once confirmed, you’ll be able to explore players, share your opinions, and be part of the passion of football in Argentina.\n\n"
                 + "See you on the pitch!\n"
                 + "— PartidosYa");
