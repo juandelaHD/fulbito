@@ -80,7 +80,7 @@ export const FormTeamsScreen = () => {
         teamBPlayerIds: teamBIds.length > 0 ? teamBIds : undefined,
       };
       await mutateAsync({ matchId: match?.id || 0, payload });
-      navigate("/match");
+      navigate("/matches");
     },
   });
 

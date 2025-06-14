@@ -53,11 +53,11 @@ const LoggedInLinks = () => {
 
             { role === "ADMIN" && (
                 <>
-                    <Link className={styles.navLink} href="/fields/new">
+                    <Link className={styles.navLink} href="/fields/create">
                         Create Field
                     </Link>
                     <Link className={styles.navLink} href="/fields/management">
-                        Manage Field
+                        Manage Fields
                     </Link>
                 </>
 
@@ -66,13 +66,16 @@ const LoggedInLinks = () => {
             { role === "USER" && (
                 <>
                     <Link className={styles.navLink} href="/fields">
-                        View Fields
+                        Fields
                     </Link>
-                    <Link className={styles.navLink} href="/match">
+                    <Link className={styles.navLink} href="/matches">
                         Matches
                     </Link>
                     <Link className={styles.navLink} href="/teams">
                         Teams
+                    </Link>
+                    <Link className={styles.navLink} href="/tournaments">
+                        Tournaments
                     </Link>
                 </>
             )}

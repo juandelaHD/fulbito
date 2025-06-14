@@ -18,6 +18,7 @@ import { MatchHomeScreen } from "@/screens/user/MatchHomeScreen.tsx";
 import { CreateClosedMatchScreen } from "@/screens/user/CreateClosedMatchScreen.tsx";
 import { CreateOpenMatchScreen } from "@/screens/user/CreateOpenMatchScreen.tsx";
 import { FormTeamsScreen } from "@/screens/user/FormTeamsScreen.tsx";
+import {TournamentsScreen} from "@/screens/user/TournamentsScreen.tsx";
 
 export const Navigation = () => {
   const [tokenState] = useToken();
@@ -34,16 +35,16 @@ export const Navigation = () => {
           <Route path="/fields/management">
               <FieldsManagementScreen />
           </Route>
-          <Route path="/fields/new">
+          <Route path="/fields/create">
             <CreateFieldScreen />
           </Route>
           <Route path="/fields">
             <FieldsScreen />
           </Route>
-          <Route path="/match">
+          <Route path="/matches">
             <MatchHomeScreen />
           </Route>
-          <Route path="/match/create">
+          <Route path="/matches/create">
             <CreateMatchScreen />
           </Route>
           <Route path="/matches/create/closed">
@@ -67,6 +68,9 @@ export const Navigation = () => {
           <Route path="/teams">
             <TeamsScreen />
           </Route>
+          <Route path="/tournaments">
+            <TournamentsScreen />
+          </Route>
           <Route>
             <Redirect href="/" />
           </Route>
@@ -77,9 +81,6 @@ export const Navigation = () => {
         <Switch>
           <Route path="/login">
             <LoginScreen />
-          </Route>
-          <Route path="/fields">
-            <FieldsScreen />
           </Route>
           <Route path="/signup">
             <SignupScreen />
