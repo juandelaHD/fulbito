@@ -19,6 +19,7 @@ import { CreateClosedMatchScreen } from "@/screens/user/CreateClosedMatchScreen.
 import { CreateOpenMatchScreen } from "@/screens/user/CreateOpenMatchScreen.tsx";
 import { FormTeamsScreen } from "@/screens/user/FormTeamsScreen.tsx";
 import {TournamentsScreen} from "@/screens/user/TournamentsScreen.tsx";
+import {VerifyEmailScreen} from "@/screens/VerifyEmailScreen.tsx";
 
 export const Navigation = () => {
   const [tokenState] = useToken();
@@ -85,7 +86,10 @@ export const Navigation = () => {
           <Route path="/signup">
             <SignupScreen />
           </Route>
-          <Route path="/forgot-password">
+            <Route path="/verify-email">
+                <VerifyEmailScreen />
+            </Route>
+            <Route path="/forgot-password">
             <ForgotPasswordScreen />
           </Route>
           <Route path="/reset-password">
