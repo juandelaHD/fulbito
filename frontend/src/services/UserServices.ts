@@ -24,7 +24,7 @@ export interface RawPlayerDTO {
 export interface RawBasicMatchDTO {
   matchId: number;
   matchType: string;
-  matchStatus: string;
+  status: string;
   date: string;
   startTime: string;
   endTime: string;
@@ -187,7 +187,7 @@ export function useGetMyMatchesPlayed() {
   const token = tokenState.state === "LOGGED_IN" ? tokenState.accessToken : "";
 
   return useQuery<RawBasicMatchDTO[], Error>({
-    queryKey: ["openMatches"],
+    queryKey: ["historyMatches"],
     queryFn: () => getMyMatchesHistoryService(token),
     enabled: token !== "",
   });
@@ -206,6 +206,7 @@ export async function getMyMatchesJoinedService(token: string): Promise<RawBasic
   if (!response.ok) {
     await handleErrorResponse(response, "fetching open matches");
   }
+  console.log("Response from getMyMatchesJoinedService:", response);
   return (await response.json()) as RawBasicMatchDTO[];
 }
 
@@ -214,7 +215,7 @@ export function useGetMyJoinedMatches() {
   const token = tokenState.state === "LOGGED_IN" ? tokenState.accessToken : "";
 
   return useQuery<RawBasicMatchDTO[], Error>({
-    queryKey: ["openMatches"],
+    queryKey: ["joinedMatches"],
     queryFn: () => getMyMatchesJoinedService(token),
     enabled: token !== "",
   });

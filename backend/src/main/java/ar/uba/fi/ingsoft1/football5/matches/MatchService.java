@@ -366,7 +366,7 @@ public class MatchService {
 
     public List<MatchDTO> getAvailableOpenMatches() {
         List<Match> matches = matchRepository.findByTypeAndStatusInAndStartTimeAfterAndPlayers_SizeLessThan(
-                List.of(MatchStatus.SCHEDULED),
+                List.of(MatchStatus.ACCEPTED),
                 LocalDateTime.now()
         );
         return matches.stream().map(MatchDTO::new).toList();
@@ -389,7 +389,7 @@ public class MatchService {
         Match match = loadMatchById(matchId);
         User user = userService.loadUserByUsername(userDetails.username());
 
-        // Solo partidos OPEN y en estado PENDING o CONFIRMED (no SCHEDULED ni posteriores)
+        // Solo partidos OPEN y en estado PENDING o ACCEPTED (no SCHEDULED ni posteriores)
         if (match.getType() != MatchType.OPEN) {
             throw new IllegalArgumentException("Only open matches can be left.");
         }
@@ -402,14 +402,13 @@ public class MatchService {
         }
 
         if (match.getOrganizer().getUsername().equals(user.getUsername())) {
-
             emailSenderService.sendMatchCancelledMail(
                 match.getOrganizer().getUsername(),
                 match.getDate(),
                 match.getStartTime(),
                 match.getEndTime()
             );
-
+            match.removePlayer(user);
             for (User player : match.getPlayers()) {
                 emailSenderService.sendMatchCancelledMail(
                     player.getUsername(),
@@ -417,22 +416,24 @@ public class MatchService {
                     match.getStartTime(),
                     match.getEndTime()
                 );
-           }
-
-           if (match.getInvitation() != null) {
+            }
+            match.clearPlayers();
+            if (match.getInvitation() != null) {
                 matchInvitationService.invalidateMatchInvitation(match);
             }
-            match.setStatus(MatchStatus.CANCELLED);
-            matchRepository.save(match);
-
+            scheduleService.markAsAvailable(
+                match.getField(),
+                match.getDate(),
+                match.getStartTime().toLocalTime(),
+                match.getEndTime().toLocalTime()
+            );
+            matchRepository.delete(match);
         } else {
             if (!match.getPlayers().contains(user)) {
                 throw new IllegalArgumentException("You are not registered in this match.");
             }
-
             match.removePlayer(user);
             matchRepository.save(match);
-
             emailSenderService.sendUnsubscribeMail(
                     user.getUsername(),
                     match.getDate(),

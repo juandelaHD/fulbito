@@ -4,6 +4,7 @@ import ar.uba.fi.ingsoft1.football5.common.exception.UserNotFoundException;
 import ar.uba.fi.ingsoft1.football5.config.security.JwtService;
 import ar.uba.fi.ingsoft1.football5.config.security.JwtUserDetails;
 import ar.uba.fi.ingsoft1.football5.images.ImageService;
+import ar.uba.fi.ingsoft1.football5.matches.MatchRepository;
 import ar.uba.fi.ingsoft1.football5.matches.MatchStatus;
 import ar.uba.fi.ingsoft1.football5.matches.invitation.MatchInvitation;
 import ar.uba.fi.ingsoft1.football5.matches.invitation.MatchInvitationService;
@@ -45,6 +46,7 @@ public class UserService implements UserDetailsService {
     private final EmailSenderService emailService;
     private final PasswordResetService passwordResetService;
     private final MatchInvitationService matchInvitationService;
+    private final MatchRepository matchRepository;
 
     @Autowired
     UserService(
@@ -55,8 +57,8 @@ public class UserService implements UserDetailsService {
             ImageService imageService,
             EmailSenderService emailService,
             PasswordResetService passwordResetService,
-            MatchInvitationService matchInvitationService
-    )
+            MatchInvitationService matchInvitationService,
+            MatchRepository matchRepository)
     {
         this.jwtService = jwtService;
         this.passwordEncoder = passwordEncoder;
@@ -66,6 +68,7 @@ public class UserService implements UserDetailsService {
         this.emailService = emailService;
         this.passwordResetService = passwordResetService;
         this.matchInvitationService = matchInvitationService;
+        this.matchRepository = matchRepository;
     }
 
     @Override
@@ -201,7 +204,7 @@ public class UserService implements UserDetailsService {
                 MatchInvitation invitation = matchInvitationService.validateToken(user.getInvitationToken())
                         .orElseThrow(() -> new IllegalArgumentException("Invalid invitation token"));
                 Match match = invitation.getMatch();
-                if (match.getStatus() != MatchStatus.SCHEDULED) {
+                if (match.getStatus() != MatchStatus.ACCEPTED) {
                     throw new IllegalArgumentException("Cannot join match with status: " + match.getStatus());
                 }
                 if (match.getPlayers().size() >= match.getMaxPlayers()) {
@@ -216,12 +219,14 @@ public class UserService implements UserDetailsService {
                 if (match.getPlayers().size() >= match.getMaxPlayers()) {
                     matchInvitationService.invalidateMatchInvitation(match);
                 }
+                matchRepository.save(match);
             } catch (IllegalArgumentException e) {
                 // Optional?: log.warn("No se pudo unir al partido con invitación: " + e.getMessage());
             }
             user.setInvitationToken(null);
         }
         userRepository.save(user);
+
         return Optional.of(user);
     }
 

@@ -25,12 +25,12 @@ public class TeamService {
         this.imageService = imageService;
     }
 
-    public Optional<TeamDTO> createTeam(TeamCreateDTO dto, String username, MultipartFile image) throws IllegalArgumentException{
-        if (teamRepository.existsByName(dto.name())) {
+    public Optional<TeamDTO> createTeam(TeamCreateDTO dto, String username, MultipartFile image) throws IllegalArgumentException {
+        if (teamRepository.existsByName(dto.name().toLowerCase())) {
             throw new IllegalArgumentException("The name of the team already exists");
         }
         User captain = userService.loadUserByUsername(username);
-        Team team = new Team(dto.name(), captain);
+        Team team = new Team(dto.name().toLowerCase(), captain);
         // Set default colors if not provided
         team.setMainColor(dto.mainColor() != null ? dto.mainColor() : "#FFFFFF");
         team.setSecondaryColor(dto.secondaryColor() != null ? dto.secondaryColor() : "#000000");

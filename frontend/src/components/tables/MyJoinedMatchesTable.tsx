@@ -1,23 +1,10 @@
 import { ColumnDef } from "@tanstack/react-table"
 import { Table } from "@/components/tables/Table"
 
-/*
-export interface RawBasicMatchDTO {
-  matchId: number;
-  matchType: string;
-  matchStatus: string;
-  date: string;
-  startTime: string;
-  endTime: string;
-  fieldName: string;
-  result: string;
-  players: RawPlayerDTO[];
-}
-*/
 export type MyJoinedMatch = {
   matchId: number
   matchType: string
-  matchStatus: string
+  status: string
   fieldName: string
   date: string
   startTime: string
@@ -80,7 +67,7 @@ export function MyJoinedMatchesTable({ data, onGetInviteLink, onLeave, leaveId }
       header: "Leave Match",
       cell: ({ row }) => {
         const match = row.original;
-        const canShowButton = match.matchStatus === "ACCEPTED";
+        const canShowButton = match.status === "ACCEPTED";
         if (!canShowButton) {
           return <span className="text-red-400 text-sm">Not Allowed</span>;
         }

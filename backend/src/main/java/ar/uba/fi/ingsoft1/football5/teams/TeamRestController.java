@@ -25,6 +25,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 @RestController
@@ -79,7 +80,7 @@ public class TeamRestController {
                     )
             }
     )
-    public ResponseEntity<TeamDTO> createTeam(
+    public Optional<TeamDTO> createTeam(
             @RequestParam("team")
             @Parameter(
                     description = "TeamCreateDTO JSON payload",
@@ -87,7 +88,7 @@ public class TeamRestController {
             ) String teamJson,
             @RequestParam(value = "image", required = false) MultipartFile image,
             @AuthenticationPrincipal JwtUserDetails userDetails
-    ) throws IOException, ItemNotFoundException, IllegalArgumentException {
+    ) throws IllegalArgumentException, IOException {
         ObjectMapper objectMapper = new ObjectMapper();
         TeamCreateDTO dto = objectMapper.readValue(teamJson, TeamCreateDTO.class);
 
@@ -97,16 +98,10 @@ public class TeamRestController {
             for (ConstraintViolation<TeamCreateDTO> violation : violations) {
                 errorMessage.append(violation.getPropertyPath()).append(" ").append(violation.getMessage()).append("; ");
             }
-            throw new org.springframework.web.server.ResponseStatusException(
-                    HttpStatus.BAD_REQUEST, errorMessage.toString()
-            );
+            throw new IllegalArgumentException("The provided team data is invalid: " + errorMessage.toString());
         }
 
-        return teamService.createTeam(dto, userDetails.username(), image)
-                .map(team -> ResponseEntity.status(HttpStatus.CREATED).body(team))
-                .orElseThrow(() -> new org.springframework.web.server.ResponseStatusException(
-                        HttpStatus.BAD_REQUEST, "Team creation failed. The name may already exist."
-                ));
+        return teamService.createTeam(dto, userDetails.username(), image);
     }
 
     @GetMapping(value = "/my", produces = MediaType.APPLICATION_JSON_VALUE)

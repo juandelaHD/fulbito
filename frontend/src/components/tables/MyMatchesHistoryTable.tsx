@@ -1,19 +1,6 @@
 import { ColumnDef } from "@tanstack/react-table"
 import { Table } from "@/components/tables/Table"
 
-/*
-export interface RawBasicMatchDTO {
-  matchId: number;
-  matchType: string;
-  matchStatus: string;
-  date: string;
-  startTime: string;
-  endTime: string;
-  fieldName: string;
-  result: string;
-  players: RawPlayerDTO[];
-}
-*/
 export type MyMatch = {
   matchId: number
   matchType: string

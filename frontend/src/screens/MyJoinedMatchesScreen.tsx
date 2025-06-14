@@ -20,7 +20,7 @@ export const MyJoinedMatchesScreen = () => {
         return {
           matchId: m.matchId,
           fieldName: m.fieldName,
-          matchStatus: m.matchStatus,
+          status: m.status,
           date: m.date,
           startTime: start.toLocaleTimeString("es-AR", { hour: "2-digit", minute: "2-digit" }),
           endTime: end.toLocaleTimeString("es-AR",   { hour: "2-digit", minute: "2-digit" }),
