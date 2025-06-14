@@ -10,6 +10,7 @@ export const CreateFieldSchema = z.object({
   }).transform((val) => val === "Yes"),
   zone: z.string().min(2, "Zone is required"),
   address: z.string().min(2, "Address is required"),
+  enabled: z.boolean().default(true),
   photos: z.any().optional(), // Esto se puede validar como File[] si querés
 });
 
@@ -27,6 +28,7 @@ export const CreateFieldResponseSchema = z.object({
     errorMap: () => ({ message: "Select grass type" }),
   }),
   illuminated: z.boolean(),
+  enabled: z.boolean(),
   location: LocationSchema,
   imagesUrls: z.array(z.string()).optional(),
 });

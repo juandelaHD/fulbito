@@ -7,6 +7,7 @@ export const GetFieldsRequestSchema = z.object({
   grassType: z.enum(["NATURAL_GRASS", "SYNTHETIC_TURF", "HYBRID_TURF"]).optional(),
   isIlluminated: z.boolean().optional(),
   hasOpenScheduledMatch: z.boolean().optional(),
+  enabled: z.boolean().optional(),
   page: z.number().int().min(0).optional(),
   size: z.number().int().min(1).max(100).optional()
 });
@@ -24,6 +25,7 @@ export const FieldItemSchema = z.object({
         zone: z.string().min(2, "Zone is required"),
         address: z.string().min(2, "Address is required"),
     }),
+    enabled: z.boolean(),
     imagesUrls: z.array(z.string()),
     matchesWithMissingPlayers: z.record(z.string(), z.number()).nullable().optional(),
 });

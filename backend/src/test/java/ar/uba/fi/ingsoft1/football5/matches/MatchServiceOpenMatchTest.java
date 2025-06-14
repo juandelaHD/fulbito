@@ -5,6 +5,7 @@ import ar.uba.fi.ingsoft1.football5.common.exception.UserNotFoundException;
 import ar.uba.fi.ingsoft1.football5.config.security.JwtUserDetails;
 import ar.uba.fi.ingsoft1.football5.fields.Field;
 import ar.uba.fi.ingsoft1.football5.fields.FieldService;
+import ar.uba.fi.ingsoft1.football5.fields.schedules.ScheduleService;
 import ar.uba.fi.ingsoft1.football5.images.AvatarImage;
 import ar.uba.fi.ingsoft1.football5.matches.invitation.MatchInvitationService;
 import ar.uba.fi.ingsoft1.football5.user.Role;
@@ -61,6 +62,9 @@ class MatchServiceOpenMatchTest {
 
     @Mock
     private AvatarImage avatarImage;
+
+    @Mock
+    private ScheduleService scheduleService;
 
     @InjectMocks
     private MatchService matchService;
@@ -239,7 +243,7 @@ class MatchServiceOpenMatchTest {
                     LocalDate.now().minusDays(3),
                     LocalDateTime.now().plusHours(1),
                     LocalDateTime.now().plusHours(2)
-                   
+
             );
         });
 
@@ -344,7 +348,7 @@ class MatchServiceOpenMatchTest {
     }
 
     @Test
-    void testLeaveOpenMatch_notPlayer_throwsException() throws Exception {
+    void testLeaveOpenMatch_notPlayer_throwsException() {
         when(userDetails.username()).thenReturn("testuser");
         when(matchRepository.findById(1L)).thenReturn(Optional.of(openMatch));
         when(userService.loadUserByUsername("testuser")).thenReturn(user);
@@ -356,7 +360,7 @@ class MatchServiceOpenMatchTest {
     }
 
     @Test
-    void testLeaveOpenMatch_unmodifiableState_throwsException() throws Exception {
+    void testLeaveOpenMatch_unmodifiableState_throwsException() {
         for (MatchStatus status : List.of(MatchStatus.SCHEDULED, MatchStatus.IN_PROGRESS, MatchStatus.FINISHED, MatchStatus.CANCELLED)) {
             openMatch.setStatus(status);
             when(userDetails.username()).thenReturn("testuser");
@@ -393,7 +397,7 @@ class MatchServiceOpenMatchTest {
     }
 
     @Test
-    void testLeaveOpenMatch_userNotFound() throws Exception {
+    void testLeaveOpenMatch_userNotFound() {
         when(matchRepository.findById(1L)).thenReturn(Optional.of(openMatch));
         when(userDetails.username()).thenReturn("testuser");
         when(userService.loadUserByUsername("testuser")).thenThrow(new UserNotFoundException("user", "testuser"));
@@ -412,7 +416,7 @@ class MatchServiceOpenMatchTest {
 
         List<MatchDTO> result = matchService.getAvailableOpenMatches();
         assertEquals(1, result.size());
-    } 
+    }
 
     @Test
     void testGetMatchById_notFound_shouldThrowException(){
@@ -440,5 +444,5 @@ class MatchServiceOpenMatchTest {
         assertThrows(ItemNotFoundException.class, () -> matchService.finishMatch(matchId, userDetails));
         verify(matchRepository).findById(matchId);
     }
-        
+
 }

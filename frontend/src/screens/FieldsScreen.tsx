@@ -9,6 +9,7 @@ import { ReviewsModal } from "@/components/modals/ReviewsModal"
 import type { Field as FieldForTable } from "@/components/tables/FieldsTable";
 
 export const FieldsScreen = () => {
+  const [hasSearched, setHasSearched] = useState(false);
   const [filters, setFilters] = useState<FieldsFilters>({
     name: "",
     zone: "",
@@ -16,15 +17,16 @@ export const FieldsScreen = () => {
     grassType: "",
     isIlluminated: false,
     hasOpenScheduledMatch: false,
-    isEnabled: false
+    isEnabled: true
   });
 
   const [openReviewsFor, setOpenReviewsFor] = useState<FieldForTable | null>(null);
-  
+
   const {
     data: fetchedFields,
     refetch,
     isFetching,
+    isError,
   } = useGetFields({
     name: filters.name || undefined,
     zone: filters.zone || undefined,
@@ -63,6 +65,7 @@ export const FieldsScreen = () => {
       size: 50,
     };
 
+    setHasSearched(true);
     console.log("Payload for field search:", payload);
     await refetch();
   };
@@ -87,30 +90,47 @@ export const FieldsScreen = () => {
   }) || [];
 
   return (
-    <CommonLayout>
-      <div className="w-[1040px] mx-auto px-4">
-        <h1 className="text-2xl font-bold">Search through our Available Fields</h1>
-        <FieldsFiltersContainer filters={filters} setFilters={setFilters} onSearch={handleSearch} />
-        {isFetching && <p className="text-sm text-gray-500">Loading...</p>}
+      <CommonLayout>
+        <div className="w-[1040px] mx-auto px-4">
+          <h1 className="text-2xl font-bold mb-4">Search through our Available Fields</h1>
 
-        {/* Si la respuesta trae contenido, paso el array mapeado a la tabla */}
-        {!isFetching && rowsForTable.length > 0 && (
-        <FieldsTable
-          data={rowsForTable}
-          onReserve={(f) =>
-            toast.error(`⚠️ Reservations are not yet implemented for: ${f}`)
-          }
-          onViewReviews={(field) => setOpenReviewsFor(field)}
+          <FieldsFiltersContainer
+              filters={filters}
+              setFilters={setFilters}
+              onSearch={handleSearch}
+          />
+
+          {hasSearched && isError && (
+              <p className="text-sm text-red-500 mt-4">❌ Error loading fields. Please try again.</p>
+          )}
+
+          {hasSearched && isFetching && (
+              <p className="text-sm text-gray-500 mt-4">Loading...</p>
+          )}
+
+          {hasSearched && !isFetching && !isError && rowsForTable.length > 0 && (
+              <FieldsTable
+                  data={rowsForTable}
+                  onReserve={(f) =>
+                      toast.error(`⚠️ Reservations are not yet implemented for: ${f}`)
+                  }
+                  onViewReviews={(field) => setOpenReviewsFor(field)}
+              />
+          )}
+
+          {hasSearched && !isFetching && !isError && rowsForTable.length === 0 && (
+              <p className="text-sm text-gray-500 mt-4">
+                No fields found matching your criteria.
+              </p>
+          )}
+        </div>
+
+        <ReviewsModal
+            isOpen={!!openReviewsFor}
+            onClose={() => setOpenReviewsFor(null)}
+            fieldName={openReviewsFor?.name}
+            fieldId={openReviewsFor?.id ?? 0}
         />
-        )}
-      </div>
-      <ReviewsModal
-        isOpen={!!openReviewsFor}
-        onClose={() => setOpenReviewsFor(null)}
-        fieldName={openReviewsFor?.name}
-        fieldId={openReviewsFor?.id ?? 0}
-      />
-    </CommonLayout>
-    
+      </CommonLayout>
   );
 };
