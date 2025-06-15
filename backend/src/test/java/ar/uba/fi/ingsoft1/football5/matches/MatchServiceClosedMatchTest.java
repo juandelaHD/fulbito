@@ -87,7 +87,7 @@ public class MatchServiceClosedMatchTest {
     private static final long HOME_TEAM_ID = 1l;
     private static final long AWAY_TEAM_ID = 2l;
     private static final int MIN_PLAYERS = 2;
-    private static final int MAX_PLAYERS = 4;
+    private static final int MAX_PLAYERS = 10;
 
     @BeforeEach
     void setUp() throws ItemNotFoundException {
@@ -157,7 +157,8 @@ public class MatchServiceClosedMatchTest {
                 () -> assertEquals(awayTeam.getId(), closedMatch.awayTeam().id()),
                 () -> assertNotEquals(closedMatch.homeTeam().members(), closedMatch.awayTeam().members()),
                 () -> assertNotEquals(closedMatch.homeTeam().id(), closedMatch.awayTeam().id()),
-                () -> assertNotEquals(homeTeam.getCaptain(), awayTeam.getCaptain())
+                () -> assertNotEquals(homeTeam.getCaptain(), awayTeam.getCaptain()),
+                () -> assertEquals(closedMatch.status(), MatchStatus.PENDING)
         );
 
         verify(emailSenderService).sendReservationMail(eq(organizer.getUsername()), any(), any(), any());
@@ -353,11 +354,149 @@ public class MatchServiceClosedMatchTest {
                 LocalDateTime.now().plusHours(2)
         );
 
-
         Exception ex = assertThrows(ItemNotFoundException.class, () -> {
             matchService.createMatch(dto, userDetails);
         });
 
         assertEquals("Failed to find field with id '5'", ex.getMessage());
+    }
+
+    @Test
+    void tryToCreateClosedMatch_withTheSameTeams() throws Exception {
+        Field field = mock(Field.class);
+        when(field.getId()).thenReturn(FIELD_ID);
+        when(field.isEnabled()).thenReturn(true);
+
+        when(fieldService.loadFieldById(FIELD_ID)).thenReturn(field);
+        when(fieldService.validateFieldAvailability(anyLong(), any(), any(), any())).thenReturn(true);
+
+        when(teamRepository.findById(HOME_TEAM_ID)).thenReturn(Optional.of(homeTeam));
+        when(userDetails.username()).thenReturn(organizer.getUsername());
+        when(userService.loadUserByUsername(organizer.getUsername())).thenReturn(organizer);
+
+        MatchCreateDTO dto = new MatchCreateDTO(
+                MatchType.CLOSED,
+                FIELD_ID,
+                HOME_TEAM_ID,
+                HOME_TEAM_ID,
+                MIN_PLAYERS,
+                MAX_PLAYERS,
+                LocalDate.now().plusDays(1),
+                LocalDateTime.now().plusHours(1),
+                LocalDateTime.now().plusHours(2)
+        );
+
+        Exception ex = assertThrows(IllegalArgumentException.class, () -> {
+            matchService.createMatch(dto, userDetails);
+        });
+
+        assertEquals("Home and away teams must be different", ex.getMessage());
+    }
+
+    @Test
+    void tryToCreateClosedMatch_withHomeTeamWithOneMemberMoreThanAwayTeam() throws Exception {
+        homeTeam.addMember(playerC);
+        Field field = mock(Field.class);
+        when(field.getId()).thenReturn(FIELD_ID);
+        when(field.isEnabled()).thenReturn(true);
+
+        when(fieldService.loadFieldById(FIELD_ID)).thenReturn(field);
+        when(fieldService.validateFieldAvailability(anyLong(), any(), any(), any())).thenReturn(true);
+
+        when(teamRepository.findById(HOME_TEAM_ID)).thenReturn(Optional.of(homeTeam));
+        when(teamRepository.findById(AWAY_TEAM_ID)).thenReturn(Optional.of(awayTeam));
+        when(userDetails.username()).thenReturn(organizer.getUsername());
+        when(userService.loadUserByUsername(organizer.getUsername())).thenReturn(organizer);
+
+        MatchCreateDTO dto = new MatchCreateDTO(
+                MatchType.CLOSED,
+                FIELD_ID,
+                HOME_TEAM_ID,
+                AWAY_TEAM_ID,
+                MIN_PLAYERS,
+                MAX_PLAYERS,
+                LocalDate.now().plusDays(1),
+                LocalDateTime.now().plusHours(1),
+                LocalDateTime.now().plusHours(2)
+        );
+
+        Exception ex = assertThrows(IllegalArgumentException.class, () -> {
+            matchService.createMatch(dto, userDetails);
+        });
+
+        assertEquals("Team sizes mismatch: home team has 3 players, but away team has 2. Both teams must have the same number of players.", 
+        ex.getMessage()
+        );
+    }
+
+    @Test
+    void tryToCreateClosedMatch_withHomeTeamWithOneMemberLessThanAwayTeam() throws Exception {
+        awayTeam.addMember(playerA);
+        Field field = mock(Field.class);
+        when(field.getId()).thenReturn(FIELD_ID);
+        when(field.isEnabled()).thenReturn(true);
+
+        when(fieldService.loadFieldById(FIELD_ID)).thenReturn(field);
+        when(fieldService.validateFieldAvailability(anyLong(), any(), any(), any())).thenReturn(true);
+
+        when(teamRepository.findById(HOME_TEAM_ID)).thenReturn(Optional.of(homeTeam));
+        when(teamRepository.findById(AWAY_TEAM_ID)).thenReturn(Optional.of(awayTeam));
+        when(userDetails.username()).thenReturn(organizer.getUsername());
+        when(userService.loadUserByUsername(organizer.getUsername())).thenReturn(organizer);
+
+        MatchCreateDTO dto = new MatchCreateDTO(
+                MatchType.CLOSED,
+                FIELD_ID,
+                HOME_TEAM_ID,
+                AWAY_TEAM_ID,
+                MIN_PLAYERS,
+                MAX_PLAYERS,
+                LocalDate.now().plusDays(1),
+                LocalDateTime.now().plusHours(1),
+                LocalDateTime.now().plusHours(2)
+        );
+
+        Exception ex = assertThrows(IllegalArgumentException.class, () -> {
+            matchService.createMatch(dto, userDetails);
+        });
+
+        assertEquals("Team sizes mismatch: home team has 2 players, but away team has 3. Both teams must have the same number of players.", 
+        ex.getMessage()
+        );
+    }
+
+    @Test
+    void tryToCreateClosedMatch_withPlayersInBothTeams() throws Exception {
+        homeTeam.addMember(playerC);
+        awayTeam.addMember(organizer);
+        Field field = mock(Field.class);
+        when(field.getId()).thenReturn(FIELD_ID);
+        when(field.isEnabled()).thenReturn(true);
+
+        when(fieldService.loadFieldById(FIELD_ID)).thenReturn(field);
+        when(fieldService.validateFieldAvailability(anyLong(), any(), any(), any())).thenReturn(true);
+
+        when(teamRepository.findById(HOME_TEAM_ID)).thenReturn(Optional.of(homeTeam));
+        when(teamRepository.findById(AWAY_TEAM_ID)).thenReturn(Optional.of(awayTeam));
+        when(userDetails.username()).thenReturn(organizer.getUsername());
+        when(userService.loadUserByUsername(organizer.getUsername())).thenReturn(organizer);
+
+        MatchCreateDTO dto = new MatchCreateDTO(
+                MatchType.CLOSED,
+                FIELD_ID,
+                HOME_TEAM_ID,
+                AWAY_TEAM_ID,
+                MIN_PLAYERS,
+                MAX_PLAYERS,
+                LocalDate.now().plusDays(1),
+                LocalDateTime.now().plusHours(1),
+                LocalDateTime.now().plusHours(2)
+        );
+
+        Exception ex = assertThrows(IllegalArgumentException.class, () -> {
+            matchService.createMatch(dto, userDetails);
+        });
+
+        assertEquals("Teams cannot have players in common: organizer", ex.getMessage());
     }
 }
