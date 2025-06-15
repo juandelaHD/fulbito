@@ -52,15 +52,6 @@ class MatchServiceOpenMatchTest {
     private MatchInvitationService matchInvitationService;
 
     @Mock
-    private Match openMatch;
-
-    @Mock
-    private User organizer;
-
-    @Mock
-    private User user;
-
-    @Mock
     private AvatarImage avatarImage;
 
     @Mock
@@ -68,6 +59,10 @@ class MatchServiceOpenMatchTest {
 
     @InjectMocks
     private MatchService matchService;
+
+    private Match openMatch;
+    private User organizer;
+    private User user;
 
     @BeforeEach
     void setUp() {
