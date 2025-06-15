@@ -83,8 +83,15 @@ public class MatchServiceClosedMatchTest {
     private Team awayTeam;
     private MatchDTO closedMatch;
 
+    private static final long FIELD_ID = 1l;
+    private static final long HOME_TEAM_ID = 1l;
+    private static final long AWAY_TEAM_ID = 2l;
+    private static final int MIN_PLAYERS = 2;
+    private static final int MAX_PLAYERS = 4;
+    private static final int PRICE = 10;
+
     @BeforeEach
-    void setUp() {
+    void setUp() throws ItemNotFoundException {
         // Users
         organizer = new User("organizer", "Org", "anizer", "M", "Zone", 30, "pass", Role.USER);
         playerA = new User("playerA", "jorge", "A", "M", "ZoneA", 33, "pass", Role.USER);
@@ -99,61 +106,58 @@ public class MatchServiceClosedMatchTest {
 
         // Teams
         homeTeam = new Team("homeTeam", organizer);
-        homeTeam.setId(1L);
+        homeTeam.setId(HOME_TEAM_ID);
         homeTeam.addMember(organizer);
         homeTeam.addMember(playerA);
 
         awayTeam = new Team("awayTeam", playerB);
-        awayTeam.setId(2L);
+        awayTeam.setId(AWAY_TEAM_ID);
         awayTeam.addMember(playerB);
         awayTeam.addMember(playerC);
 
-        when(teamRepository.findById(1L)).thenReturn(Optional.of(homeTeam));
-        when(teamRepository.findById(2L)).thenReturn(Optional.of(awayTeam));
+        when(teamRepository.findById(HOME_TEAM_ID)).thenReturn(Optional.of(homeTeam));
+        when(teamRepository.findById(AWAY_TEAM_ID)).thenReturn(Optional.of(awayTeam));
 
-        try{
-            when(scheduleService.markAsReserved(any(Field.class), any(LocalDate.class), any(LocalTime.class), any(LocalTime.class)))
-                    .thenReturn(new ScheduleDTO(
-                        1l,
-                        LocalDate.now(),
-                        LocalTime.of(9, 0),
-                        LocalTime.of(10, 0),
-                        ScheduleStatus.RESERVED 
-                    ));
+        // SCHEDULE
+        when(scheduleService.markAsReserved(any(Field.class), any(), any(), any()))
+                .thenReturn(new ScheduleDTO(1L, LocalDate.now(), LocalTime.of(9, 0), LocalTime.of(10, 0), ScheduleStatus.RESERVED));
 
-            Field field = mock(Field.class);
-            when(field.getId()).thenReturn(1L);
-            when(field.isEnabled()).thenReturn(true);
-            when(fieldService.loadFieldById(1L)).thenReturn(field);
-            when(fieldService.validateFieldAvailability(anyLong(), any(), any(), any())).thenReturn(true);
-            
-            when(userDetails.username()).thenReturn(organizer.getUsername());
-            when(userService.loadUserByUsername(organizer.getUsername())).thenReturn(organizer);
+        //  Field
+        Field field = mock(Field.class);
+        when(field.getId()).thenReturn(FIELD_ID);
+        when(field.isEnabled()).thenReturn(true);
+        when(fieldService.loadFieldById(FIELD_ID)).thenReturn(field);
+        when(fieldService.validateFieldAvailability(anyLong(), any(), any(), any())).thenReturn(true);
 
-            MatchCreateDTO matchDTO = new MatchCreateDTO(
-                    MatchType.CLOSED,
-                    field.getId(),
-                    homeTeam.getId(),
-                    awayTeam.getId(),
-                    2,
-                    10,
-                    LocalDate.now().plusDays(1),
-                    LocalDateTime.now().plusHours(1),
-                    LocalDateTime.now().plusHours(2)
-            );
-            when(matchRepository.save(any(Match.class))).thenAnswer(invocation -> invocation.getArgument(0));
-            closedMatch = matchService.createMatch(matchDTO, userDetails);
-        } catch (ItemNotFoundException e){
-                throw new RuntimeException(e);
-            }
-        
+        // Auth
+        when(userDetails.username()).thenReturn(organizer.getUsername());
+        when(userService.loadUserByUsername(organizer.getUsername())).thenReturn(organizer);
     }
 
     @Test
-    void testCreateClosedMatch_successful() throws Exception {
-        assertEquals(organizer.getUsername(), closedMatch.organizer().username());
-        assertEquals(4, closedMatch.players().size());
-        verify(emailSenderService).sendReservationMail(eq(organizer.getUsername()), any(), any(), any());
-    }
+    void createClosedMatch_givenValidTeams_reservesScheduleAndSendsMail() throws Exception {
+        MatchCreateDTO dto = new MatchCreateDTO(
+                MatchType.CLOSED,
+                FIELD_ID,
+                HOME_TEAM_ID,
+                AWAY_TEAM_ID,
+                MIN_PLAYERS,
+                MAX_PLAYERS,
+                LocalDate.now().plusDays(1),
+                LocalDateTime.now().plusHours(1),
+                LocalDateTime.now().plusHours(2)
+        );
 
+        when(matchRepository.save(any(Match.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        MatchDTO result = matchService.createMatch(dto, userDetails);
+
+        assertAll(
+                () -> assertEquals(organizer.getUsername(), result.organizer().username()),
+                () -> assertEquals(4, result.players().size())
+        );
+
+        verify(emailSenderService).sendReservationMail(eq(organizer.getUsername()), any(), any(), any());
+        verify(scheduleService).markAsReserved(any(Field.class), any(), any(), any());
+    }
 }
