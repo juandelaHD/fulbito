@@ -5,6 +5,9 @@ import ar.uba.fi.ingsoft1.football5.common.exception.UserNotFoundException;
 import ar.uba.fi.ingsoft1.football5.config.security.JwtUserDetails;
 import ar.uba.fi.ingsoft1.football5.fields.Field;
 import ar.uba.fi.ingsoft1.football5.fields.FieldService;
+import ar.uba.fi.ingsoft1.football5.fields.schedules.ScheduleDTO;
+import ar.uba.fi.ingsoft1.football5.fields.schedules.ScheduleService;
+import ar.uba.fi.ingsoft1.football5.fields.schedules.ScheduleStatus;
 import ar.uba.fi.ingsoft1.football5.images.AvatarImage;
 import ar.uba.fi.ingsoft1.football5.matches.invitation.MatchInvitationService;
 import ar.uba.fi.ingsoft1.football5.teams.Team;
@@ -27,6 +30,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -63,105 +67,93 @@ public class MatchServiceClosedMatchTest {
     private MatchInvitationService matchInvitationService;
 
     @Mock
-    private UserRepository userRepository;
-
-    @Mock
-    private Match closedMatch;
-
-    @Mock
-    private User organizer;
-
-    @Mock
-    private User playerA;
-
-    @Mock
-    private User playerB;
-
-    @Mock
-    private User playerC;
-
-    @Mock
-    private Team homeTeam;
-    
-    @Mock
-    private Team awayTeam;
-
-    @Mock
-    private AvatarImage avatarImage;
+    private ScheduleService scheduleService;
 
     @InjectMocks
     private MatchService matchService;
 
+    @Mock
+    private AvatarImage avatarImage;
+
+    private User organizer;
+    private User playerA;
+    private User playerB;
+    private User playerC;
+    private Team homeTeam;
+    private Team awayTeam;
+    private MatchDTO closedMatch;
+
     @BeforeEach
     void setUp() {
-        Field field = mock(Field.class);
-        //Se crean los usuarios para conformar los equipos y configuracion para los testeos
-        
+        // Users
         organizer = new User("organizer", "Org", "anizer", "M", "Zone", 30, "pass", Role.USER);
         playerA = new User("playerA", "jorge", "A", "M", "ZoneA", 33, "pass", Role.USER);
         playerB = new User("playerB", "juan", "B", "M", "ZoneB", 28, "pass", Role.USER);
         playerC = new User("playerC", "agustin", "C", "Other", "ZoneC", 42, "pass", Role.USER);
 
-        //Setean los team con 2 player para los test
+        AvatarImage avatar = mock(AvatarImage.class);
+        organizer.setAvatar(avatar);
+        playerA.setAvatar(avatar);
+        playerB.setAvatar(avatar);
+        playerC.setAvatar(avatar);
+
+        // Teams
         homeTeam = new Team("homeTeam", organizer);
-        homeTeam.setId(1l);
-        homeTeam.setMainColor("red");
-        homeTeam.setSecondaryColor("blue");
-        homeTeam.setRanking(3);
+        homeTeam.setId(1L);
         homeTeam.addMember(organizer);
         homeTeam.addMember(playerA);
 
         awayTeam = new Team("awayTeam", playerB);
-        awayTeam.setId(2l);
-        awayTeam.setMainColor("black");
-        awayTeam.setSecondaryColor("orange");
-        awayTeam.setRanking(5);
+        awayTeam.setId(2L);
         awayTeam.addMember(playerB);
         awayTeam.addMember(playerC);
 
         when(teamRepository.findById(1L)).thenReturn(Optional.of(homeTeam));
         when(teamRepository.findById(2L)).thenReturn(Optional.of(awayTeam));
+
+        try{
+            when(scheduleService.markAsReserved(any(Field.class), any(LocalDate.class), any(LocalTime.class), any(LocalTime.class)))
+                    .thenReturn(new ScheduleDTO(
+                        1l,
+                        LocalDate.now(),
+                        LocalTime.of(9, 0),
+                        LocalTime.of(10, 0),
+                        ScheduleStatus.RESERVED 
+                    ));
+
+            Field field = mock(Field.class);
+            when(field.getId()).thenReturn(1L);
+            when(field.isEnabled()).thenReturn(true);
+            when(fieldService.loadFieldById(1L)).thenReturn(field);
+            when(fieldService.validateFieldAvailability(anyLong(), any(), any(), any())).thenReturn(true);
+            
+            when(userDetails.username()).thenReturn(organizer.getUsername());
+            when(userService.loadUserByUsername(organizer.getUsername())).thenReturn(organizer);
+
+            MatchCreateDTO matchDTO = new MatchCreateDTO(
+                    MatchType.CLOSED,
+                    field.getId(),
+                    homeTeam.getId(),
+                    awayTeam.getId(),
+                    2,
+                    10,
+                    LocalDate.now().plusDays(1),
+                    LocalDateTime.now().plusHours(1),
+                    LocalDateTime.now().plusHours(2)
+            );
+            when(matchRepository.save(any(Match.class))).thenAnswer(invocation -> invocation.getArgument(0));
+            closedMatch = matchService.createMatch(matchDTO, userDetails);
+        } catch (ItemNotFoundException e){
+                throw new RuntimeException(e);
+            }
         
-        //Se crea el partido para no tener que irlo generando en cada test
-        closedMatch = new Match(field, organizer, MatchStatus.PENDING, MatchType.CLOSED,
-                1,
-                2,
-                LocalDate.now().plusDays(1),
-                LocalDateTime.now().plusHours(2),
-                LocalDateTime.now().plusHours(3)
-        );
-        closedMatch.addHomeTeam(homeTeam);
-        closedMatch.addAwayTeam(awayTeam);
     }
-/* 
+
     @Test
     void testCreateClosedMatch_successful() throws Exception {
-        Field field = mock(Field.class);
-        when(field.getId()).thenReturn(1L);
-        when(field.isEnabled()).thenReturn(true);
-
-        when(fieldService.loadFieldById(1L)).thenReturn(field);
-        when(fieldService.validateFieldAvailability(anyLong(), any(), any(), any())).thenReturn(true);
-
-        MatchCreateDTO dto = new MatchCreateDTO(
-                MatchType.CLOSED,
-                1L,
-                homeTeam.getId(),
-                awayTeam.getId(),
-                2,
-                10,
-                LocalDate.now().plusDays(1),
-                LocalDateTime.now().plusHours(1),
-                LocalDateTime.now().plusHours(2)
-        );
-
-        when(matchRepository.save(any(Match.class))).thenAnswer(invocation -> invocation.getArgument(0));
-
-        MatchDTO result = matchService.createMatch(dto, userDetails);
-
-        assertEquals(0, result.players().size());
-        assertEquals("testuser", result.organizer().username());
-        verify(emailSenderService).sendReservationMail(eq("testuser"), any(), any(), any());
+        assertEquals(organizer.getUsername(), closedMatch.organizer().username());
+        assertEquals(4, closedMatch.players().size());
+        verify(emailSenderService).sendReservationMail(eq(organizer.getUsername()), any(), any(), any());
     }
-    */
+
 }
