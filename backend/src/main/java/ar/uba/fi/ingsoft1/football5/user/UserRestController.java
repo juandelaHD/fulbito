@@ -101,13 +101,13 @@ class UserRestController {
             }
     )
     @ResponseStatus(HttpStatus.OK)
-    public List<MatchHistoryDTO> getUpcomingMatches(@AuthenticationPrincipal JwtUserDetails userDetails) throws UserNotFoundException {
+    public List<MatchDTO> getUpcomingMatches(@AuthenticationPrincipal JwtUserDetails userDetails) throws UserNotFoundException {
         User user = userService.loadUserByUsername(userDetails.username());
         LocalDateTime now = LocalDateTime.now();
         return user.getJoinedMatches().stream()
                 .filter(match -> match.getEndTime().isAfter(now)
-                        && (match.getStatus() == MatchStatus.SCHEDULED || match.getStatus() == MatchStatus.ACCEPTED))
-                .map(MatchHistoryDTO::new)
+                        && (match.getStatus() == MatchStatus.SCHEDULED))
+                .map(MatchDTO::new)
                 .toList();
     }
 

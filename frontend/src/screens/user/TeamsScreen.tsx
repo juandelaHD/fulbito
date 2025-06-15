@@ -9,6 +9,7 @@ export const TeamsScreen = () => {
   const [, navigate] = useLocation();
   const prevCount = useRef<number>(0);
   const [newTeams, setNewTeams] = useState<number>(0);
+
   // Cargar equipos la primera vez manualmente
   const handleInitialLoad = async () => {
     const result = await refetch();

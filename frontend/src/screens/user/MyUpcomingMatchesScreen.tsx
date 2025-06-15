@@ -1,35 +1,28 @@
 import { useEffect, useState } from "react";
-import { MyUpcomingMatch } from "@/components/tables/MyUpcomingMatchesTable.tsx";
 import { MyUpcomingMatchesTable } from "@/components/tables/MyUpcomingMatchesTable.tsx";
-import { useGetMyUpcomingMatches } from "@/services/UserServices.ts";
+import { RawMatchDTO, useGetMyUpcomingMatches } from "@/services/UserServices.ts";
 
 export const MyUpcomingMatchesScreen = ({ refreshKey }: { refreshKey: number }) => {
-  const { data: RawBasicMatchDTO, isLoading, error, refetch } = useGetMyUpcomingMatches();
-  const [matches, setMatches] = useState<MyUpcomingMatch[]>([]);
+  const { data: RawMatchDTO, isLoading, error, refetch } = useGetMyUpcomingMatches();
+  const [matches, setMatches] = useState<RawMatchDTO[]>([]);
 
   useEffect(() => {
     if (refreshKey !== 0) {
       refetch();
     }
-    if (Array.isArray(RawBasicMatchDTO)) {
-      const mapped: MyUpcomingMatch[] = RawBasicMatchDTO.map((m) => {
+    if (Array.isArray(RawMatchDTO)) {
+      const mapped: RawMatchDTO[] = RawMatchDTO.map((m) => {
         const start = new Date(m.startTime);
         const end = new Date(m.endTime);
         return {
-          matchId: m.matchId,
-          fieldName: m.fieldName,
-          fieldLocation: m.fieldLocation,
-          status: m.status,
-          date: m.date,
+          ...m,
           startTime: start.toLocaleTimeString("es-AR", { hour: "2-digit", minute: "2-digit" }),
           endTime: end.toLocaleTimeString("es-AR",   { hour: "2-digit", minute: "2-digit" }),
-          matchType: m.matchType,
-          result: m.result || "Pending",
         };
       });
       setMatches(mapped);
     }
-  }, [RawBasicMatchDTO, refreshKey]
+  }, [RawMatchDTO, refreshKey]
   );
 
   return (

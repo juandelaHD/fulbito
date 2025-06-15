@@ -305,7 +305,7 @@ export function useGetMyJoinedMatches() {
 }
 
 
-export async function getMyUpcomingMatchesService(token: string): Promise<RawBasicMatchDTO[]> {
+export async function getMyUpcomingMatchesService(token: string): Promise<RawMatchDTO[]> {
   const response = await fetch(`${BASE_API_URL}/users/me/upcoming-matches`, {
     method: "GET",
     headers: {
@@ -317,14 +317,14 @@ export async function getMyUpcomingMatchesService(token: string): Promise<RawBas
   if (!response.ok) {
     await handleErrorResponse(response, "fetching upcoming matches");
   }
-  return (await response.json()) as RawBasicMatchDTO[];
+  return (await response.json()) as RawMatchDTO[];
 }
 
 export function useGetMyUpcomingMatches() {
   const [tokenState] = useToken();
   const token = tokenState.state === "LOGGED_IN" ? tokenState.accessToken : "";
 
-  return useQuery<RawBasicMatchDTO[], Error>({
+  return useQuery<RawMatchDTO[], Error>({
     queryKey: ["upcomingMatches"],
     queryFn: () => getMyUpcomingMatchesService(token),
     enabled: token !== "",

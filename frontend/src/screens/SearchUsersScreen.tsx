@@ -1,5 +1,5 @@
 import { useState } from "react";
-import {useGetMyProfile, useSearchUserByUsername} from "@/services/UserServices";
+import {useSearchUserByUsername} from "@/services/UserServices";
 import { CommonLayout } from "@/components/CommonLayout/CommonLayout.tsx";
 import {useImageById} from "@/services/ImageServices.ts";
 
@@ -28,7 +28,7 @@ export default function SearchUsersScreen() {
       <div style={{ marginBottom: "1rem", display: "flex", gap: "0.5rem" }}>
         <input
           type="text"
-          placeholder="Nombre de usuario"
+          placeholder="Username"
           value={username}
           onChange={(e) => setUsername(e.target.value)}
           style={{ padding: "0.5rem", flex: 1, borderRadius: "0.25rem", border: "1px solid #ccc" }}
