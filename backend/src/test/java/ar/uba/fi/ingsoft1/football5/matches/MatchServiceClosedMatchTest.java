@@ -81,14 +81,12 @@ public class MatchServiceClosedMatchTest {
     private User playerC;
     private Team homeTeam;
     private Team awayTeam;
-    private MatchDTO closedMatch;
 
     private static final long FIELD_ID = 1l;
     private static final long HOME_TEAM_ID = 1l;
     private static final long AWAY_TEAM_ID = 2l;
     private static final int MIN_PLAYERS = 2;
     private static final int MAX_PLAYERS = 4;
-    private static final int PRICE = 10;
 
     @BeforeEach
     void setUp() throws ItemNotFoundException {
@@ -114,14 +112,6 @@ public class MatchServiceClosedMatchTest {
         awayTeam.setId(AWAY_TEAM_ID);
         awayTeam.addMember(playerB);
         awayTeam.addMember(playerC);
-
-        when(teamRepository.findById(HOME_TEAM_ID)).thenReturn(Optional.of(homeTeam));
-        when(teamRepository.findById(AWAY_TEAM_ID)).thenReturn(Optional.of(awayTeam));
-
-        // SCHEDULE
-        when(scheduleService.markAsReserved(any(Field.class), any(), any(), any()))
-                .thenReturn(new ScheduleDTO(1L, LocalDate.now(), LocalTime.of(9, 0), LocalTime.of(10, 0), ScheduleStatus.RESERVED));
-
         //  Field
         Field field = mock(Field.class);
         when(field.getId()).thenReturn(FIELD_ID);
@@ -136,6 +126,12 @@ public class MatchServiceClosedMatchTest {
 
     @Test
     void createClosedMatch_givenValidTeams_reservesScheduleAndSendsMail() throws Exception {
+
+        when(teamRepository.findById(HOME_TEAM_ID)).thenReturn(Optional.of(homeTeam));
+        when(teamRepository.findById(AWAY_TEAM_ID)).thenReturn(Optional.of(awayTeam));
+        when(scheduleService.markAsReserved(any(Field.class), any(), any(), any()))
+                .thenReturn(new ScheduleDTO(1L, LocalDate.now(), LocalTime.of(9, 0), LocalTime.of(10, 0), ScheduleStatus.RESERVED));
+
         MatchCreateDTO dto = new MatchCreateDTO(
                 MatchType.CLOSED,
                 FIELD_ID,
@@ -150,14 +146,61 @@ public class MatchServiceClosedMatchTest {
 
         when(matchRepository.save(any(Match.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        MatchDTO result = matchService.createMatch(dto, userDetails);
+        MatchDTO closedMatch = matchService.createMatch(dto, userDetails);
 
         assertAll(
-                () -> assertEquals(organizer.getUsername(), result.organizer().username()),
-                () -> assertEquals(4, result.players().size())
+                () -> assertEquals(organizer.getUsername(), closedMatch.organizer().username()),
+                () -> assertEquals(homeTeam.getMembers().size() + awayTeam.getMembers().size() , closedMatch.players().size()),
+                () -> assertEquals(homeTeam.getMembers().size(), awayTeam.getMembers().size()),
+                () -> assertEquals(homeTeam.getId(), closedMatch.homeTeam().id()),
+                () -> assertEquals(awayTeam.getId(), closedMatch.awayTeam().id()),
+                () -> assertNotEquals(closedMatch.homeTeam().members(), closedMatch.awayTeam().members()),
+                () -> assertNotEquals(closedMatch.homeTeam().id(), closedMatch.awayTeam().id()),
+                () -> assertNotEquals(homeTeam.getCaptain(), awayTeam.getCaptain())
         );
 
         verify(emailSenderService).sendReservationMail(eq(organizer.getUsername()), any(), any(), any());
         verify(scheduleService).markAsReserved(any(Field.class), any(), any(), any());
+    }
+
+    @Test
+    void createClosedMatch_givenInvalidHomeTeam() throws Exception {
+        long FALSE_TEAM_ID = 5l;
+        when(teamRepository.findById(FALSE_TEAM_ID)).thenReturn(Optional.empty());
+        MatchCreateDTO dto = new MatchCreateDTO(
+                MatchType.CLOSED,
+                FIELD_ID,
+                FALSE_TEAM_ID,
+                AWAY_TEAM_ID,
+                MIN_PLAYERS,
+                MAX_PLAYERS,
+                LocalDate.now().plusDays(1),
+                LocalDateTime.now().plusHours(1),
+                LocalDateTime.now().plusHours(2)
+        );
+        assertThrows(IllegalArgumentException.class, () -> {
+            matchService.createMatch(dto, userDetails);
+        }, "expected exception due to invalid Home Team ID");
+    }
+
+    @Test
+    void createClosedMatch_givenInvalidAwayTeam() throws Exception {
+        long FALSE_TEAM_ID = 5l;
+        when(teamRepository.findById(HOME_TEAM_ID)).thenReturn(Optional.of(homeTeam));
+        when(teamRepository.findById(FALSE_TEAM_ID)).thenReturn(Optional.empty());
+        MatchCreateDTO dto = new MatchCreateDTO(
+                MatchType.CLOSED,
+                FIELD_ID,
+                HOME_TEAM_ID,
+                FALSE_TEAM_ID,
+                MIN_PLAYERS,
+                MAX_PLAYERS,
+                LocalDate.now().plusDays(1),
+                LocalDateTime.now().plusHours(1),
+                LocalDateTime.now().plusHours(2)
+        );
+        assertThrows(IllegalArgumentException.class, () -> {
+            matchService.createMatch(dto, userDetails);
+        }, "expected exception due to invalid Away Team ID");
     }
 }
