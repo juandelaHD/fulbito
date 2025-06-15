@@ -21,6 +21,7 @@ import ar.uba.fi.ingsoft1.football5.user.UserRepository;
 import ar.uba.fi.ingsoft1.football5.user.UserService;
 import ar.uba.fi.ingsoft1.football5.user.email.EmailSenderService;
 
+import org.awaitility.Awaitility;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -112,23 +113,23 @@ public class MatchServiceClosedMatchTest {
         awayTeam.setId(AWAY_TEAM_ID);
         awayTeam.addMember(playerB);
         awayTeam.addMember(playerC);
-        //  Field
-        Field field = mock(Field.class);
-        when(field.getId()).thenReturn(FIELD_ID);
-        when(field.isEnabled()).thenReturn(true);
-        when(fieldService.loadFieldById(FIELD_ID)).thenReturn(field);
-        when(fieldService.validateFieldAvailability(anyLong(), any(), any(), any())).thenReturn(true);
-
-        // Auth
-        when(userDetails.username()).thenReturn(organizer.getUsername());
-        when(userService.loadUserByUsername(organizer.getUsername())).thenReturn(organizer);
     }
 
     @Test
     void createClosedMatch_givenValidTeams_reservesScheduleAndSendsMail() throws Exception {
+        Field field = mock(Field.class);
+        when(field.getId()).thenReturn(FIELD_ID);
+        when(field.isEnabled()).thenReturn(true);
+
+        when(fieldService.loadFieldById(FIELD_ID)).thenReturn(field);
+        when(fieldService.validateFieldAvailability(anyLong(), any(), any(), any())).thenReturn(true);
 
         when(teamRepository.findById(HOME_TEAM_ID)).thenReturn(Optional.of(homeTeam));
         when(teamRepository.findById(AWAY_TEAM_ID)).thenReturn(Optional.of(awayTeam));
+
+        when(userDetails.username()).thenReturn(organizer.getUsername());
+        when(userService.loadUserByUsername(organizer.getUsername())).thenReturn(organizer);
+        
         when(scheduleService.markAsReserved(any(Field.class), any(), any(), any()))
                 .thenReturn(new ScheduleDTO(1L, LocalDate.now(), LocalTime.of(9, 0), LocalTime.of(10, 0), ScheduleStatus.RESERVED));
 
@@ -164,7 +165,13 @@ public class MatchServiceClosedMatchTest {
     }
 
     @Test
-    void createClosedMatch_givenInvalidHomeTeam() throws Exception {
+    void tryToCreateClosedMatch_givenInvalidHomeTeam() throws Exception {
+        Field field = mock(Field.class);
+        when(field.getId()).thenReturn(FIELD_ID);
+        when(field.isEnabled()).thenReturn(true);
+        when(fieldService.loadFieldById(FIELD_ID)).thenReturn(field);
+        when(fieldService.validateFieldAvailability(anyLong(), any(), any(), any())).thenReturn(true);
+
         long FALSE_TEAM_ID = 5l;
         when(teamRepository.findById(FALSE_TEAM_ID)).thenReturn(Optional.empty());
         MatchCreateDTO dto = new MatchCreateDTO(
@@ -184,7 +191,13 @@ public class MatchServiceClosedMatchTest {
     }
 
     @Test
-    void createClosedMatch_givenInvalidAwayTeam() throws Exception {
+    void tryToCreateClosedMatch_givenInvalidAwayTeam() throws Exception {
+        Field field = mock(Field.class);
+        when(field.getId()).thenReturn(FIELD_ID);
+        when(field.isEnabled()).thenReturn(true);
+        when(fieldService.loadFieldById(FIELD_ID)).thenReturn(field);
+        when(fieldService.validateFieldAvailability(anyLong(), any(), any(), any())).thenReturn(true);
+
         long FALSE_TEAM_ID = 5l;
         when(teamRepository.findById(HOME_TEAM_ID)).thenReturn(Optional.of(homeTeam));
         when(teamRepository.findById(FALSE_TEAM_ID)).thenReturn(Optional.empty());
@@ -202,5 +215,149 @@ public class MatchServiceClosedMatchTest {
         assertThrows(IllegalArgumentException.class, () -> {
             matchService.createMatch(dto, userDetails);
         }, "expected exception due to invalid Away Team ID");
+    }
+
+    @Test
+    void tryToCreateClosedMatch_givenInsufficientPlayers() throws Exception {
+        int AUX_MAX_PLAYERS = 2;
+
+        Field field = mock(Field.class);
+        when(field.getId()).thenReturn(FIELD_ID);
+        when(field.isEnabled()).thenReturn(true);
+
+        when(fieldService.loadFieldById(FIELD_ID)).thenReturn(field);
+        when(fieldService.validateFieldAvailability(anyLong(), any(), any(), any())).thenReturn(true);
+
+        when(teamRepository.findById(HOME_TEAM_ID)).thenReturn(Optional.of(homeTeam));
+        when(teamRepository.findById(AWAY_TEAM_ID)).thenReturn(Optional.of(awayTeam));
+
+        MatchCreateDTO dto = new MatchCreateDTO(
+                MatchType.CLOSED,
+                FIELD_ID,
+                HOME_TEAM_ID,
+                AWAY_TEAM_ID,
+                MIN_PLAYERS,
+                AUX_MAX_PLAYERS,
+                LocalDate.now().plusDays(1),
+                LocalDateTime.now().plusHours(1),
+                LocalDateTime.now().plusHours(2)
+        );
+        assertThrows(IllegalArgumentException.class, () -> {
+            matchService.createMatch(dto, userDetails);
+        }, "expected exception due to more players in the match than the min players required");
+    }
+
+    @Test
+    void tryToCreateClosedMatch_givenMoreThanNecesaryPlayers() throws Exception {
+        int AUX_MIN_PLAYERS = 6;
+        Field field = mock(Field.class);
+        when(field.getId()).thenReturn(FIELD_ID);
+        when(field.isEnabled()).thenReturn(true);
+
+        when(fieldService.loadFieldById(FIELD_ID)).thenReturn(field);
+        when(fieldService.validateFieldAvailability(anyLong(), any(), any(), any())).thenReturn(true);
+
+        MatchCreateDTO dto = new MatchCreateDTO(
+                MatchType.CLOSED,
+                FIELD_ID,
+                HOME_TEAM_ID,
+                AWAY_TEAM_ID,
+                AUX_MIN_PLAYERS,
+                MAX_PLAYERS,
+                LocalDate.now().plusDays(1),
+                LocalDateTime.now().plusHours(1),
+                LocalDateTime.now().plusHours(2)
+        );
+        assertThrows(IllegalArgumentException.class, () -> {
+            matchService.createMatch(dto, userDetails);
+        }, "expected exception due to less players in the match than the min players required");
+    }
+
+    @Test
+    void testCreateClosedMatch_fieldIsDisabled_throwsException() throws Exception{
+        Field field = mock(Field.class);
+        when(field.isEnabled()).thenReturn(false);
+
+        when(fieldService.loadFieldById(1L)).thenReturn(field);
+
+        MatchCreateDTO dto = new MatchCreateDTO(
+                MatchType.CLOSED,
+                FIELD_ID,
+                HOME_TEAM_ID,
+                AWAY_TEAM_ID,
+                MIN_PLAYERS,
+                MAX_PLAYERS,
+                LocalDate.now().plusDays(1),
+                LocalDateTime.now().plusHours(1),
+                LocalDateTime.now().plusHours(2)
+        );
+
+        Exception ex = assertThrows(IllegalArgumentException.class, () -> {
+            matchService.createMatch(dto, userDetails);
+        });
+
+        assertEquals("Field is not enabled for matches", ex.getMessage());
+    }
+
+    @Test
+    void testCreateClosedMatch_fieldUnavailableForDateAndTime_throwsException() throws Exception{
+        Field field = mock(Field.class);
+        when(field.isEnabled()).thenReturn(true);
+
+        when(fieldService.loadFieldById(1L)).thenReturn(field);
+        when(fieldService.validateFieldAvailability(any(), any(), any(), any())).thenReturn(false);
+
+        MatchCreateDTO dto = new MatchCreateDTO(
+                MatchType.CLOSED,
+                FIELD_ID,
+                HOME_TEAM_ID,
+                AWAY_TEAM_ID,
+                MAX_PLAYERS,
+                MIN_PLAYERS,
+                LocalDate.now().plusDays(1),
+                LocalDateTime.now().plusHours(1),
+                LocalDateTime.now().plusHours(2)
+        );
+
+        Exception ex = assertThrows(IllegalArgumentException.class, () -> {
+            matchService.createMatch(dto, userDetails);
+        });
+
+        assertEquals("Field is not available at the specified date and time", ex.getMessage());
+    } 
+
+    @Test
+    void testGetMatchById_notFound() {
+        when(matchRepository.findById(123L)).thenReturn(Optional.empty());
+
+        Exception ex = assertThrows(ItemNotFoundException.class, () -> {
+            matchService.getMatchById(123L);
+        });
+
+        assertEquals("Failed to find match with id '123'", ex.getMessage());
+    } 
+
+    @Test
+    void createClosedMatch_givenInvalidField() throws Exception {
+        long FALSE_FIELD_ID = 5l;
+        when(fieldService.loadFieldById(FALSE_FIELD_ID)).thenThrow(new ItemNotFoundException("field", FALSE_FIELD_ID));
+        MatchCreateDTO dto = new MatchCreateDTO(
+                MatchType.CLOSED,
+                FALSE_FIELD_ID,
+                HOME_TEAM_ID,
+                AWAY_TEAM_ID,
+                MIN_PLAYERS,
+                MAX_PLAYERS,
+                LocalDate.now().plusDays(1),
+                LocalDateTime.now().plusHours(1),
+                LocalDateTime.now().plusHours(2)
+        );
+
+
+        Exception ex = assertThrows(ItemNotFoundException.class, () -> {
+            matchService.createMatch(dto, userDetails);
+        });
+
+        assertEquals("Failed to find field with id '5'", ex.getMessage());
     }
 }
