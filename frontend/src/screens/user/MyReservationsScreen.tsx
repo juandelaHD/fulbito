@@ -1,7 +1,7 @@
 
-import { useGetMyProfile } from "@/services/UserServices";
+import { useGetMyProfile } from "@/services/UserServices.ts";
 import { CommonLayout } from "@/components/CommonLayout/CommonLayout.tsx";
-import { ReservationsScreen } from "@/screens/ReservationsScreen.tsx";
+import { ReservationsScreen } from "@/screens/user/ReservationsScreen.tsx";
 
 export default function MyReservationsScreen() {
   const { data: user } = useGetMyProfile();

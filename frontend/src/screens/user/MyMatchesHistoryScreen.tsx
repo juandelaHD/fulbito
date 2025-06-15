@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useGetMyMatchesPlayed } from "@/services/UserServices";
+import { useGetMyMatchesPlayed } from "@/services/UserServices.ts";
 import { MyMatch, MyMatchesHistoryTable } from "@/components/tables/MyMatchesHistoryTable.tsx";
 
 export const MyMatchesHistoryScreen = () => {

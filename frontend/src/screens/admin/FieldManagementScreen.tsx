@@ -1,5 +1,5 @@
-import { CommonLayout } from "@/components/CommonLayout/CommonLayout";
-import { ManageFieldsTable } from "@/components/tables/ManageFieldsTable";
+import { CommonLayout } from "@/components/CommonLayout/CommonLayout.tsx";
+import { ManageFieldsTable } from "@/components/tables/ManageFieldsTable.tsx";
 
 export const FieldsManagementScreen = () => {
     return (

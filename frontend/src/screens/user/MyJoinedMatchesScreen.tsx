@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useGetMyJoinedMatches } from "@/services/UserServices";
+import { useGetMyJoinedMatches } from "@/services/UserServices.ts";
 import { MyJoinedMatch } from "@/components/tables/MyJoinedMatchesTable.tsx";
 import { MyJoinedMatchesTable } from "@/components/tables/MyJoinedMatchesTable.tsx";
 import { useGetMatchInviteLink, useLeaveMatch } from "@/services/MatchesServices.ts";

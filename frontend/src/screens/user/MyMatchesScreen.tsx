@@ -1,9 +1,9 @@
 
-import { useGetMyProfile } from "@/services/UserServices";
+import { useGetMyProfile } from "@/services/UserServices.ts";
 import { CommonLayout } from "@/components/CommonLayout/CommonLayout.tsx";
-import { MyMatchesHistoryScreen } from "@/screens/MyMatchesHistoryScreen.tsx";
-import { MyJoinedMatchesScreen } from "@/screens/MyJoinedMatchesScreen.tsx";
-import { MyUpcomingMatchesScreen } from "@/screens/MyUpcomingMatchesScreen.tsx";
+import { MyMatchesHistoryScreen } from "@/screens/user/MyMatchesHistoryScreen.tsx";
+import { MyJoinedMatchesScreen } from "@/screens/user/MyJoinedMatchesScreen.tsx";
+import { MyUpcomingMatchesScreen } from "@/screens/user/MyUpcomingMatchesScreen.tsx";
 import { useState } from "react";
 
 export default function MyMatchesScreen() {

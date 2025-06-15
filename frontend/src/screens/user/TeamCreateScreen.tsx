@@ -1,9 +1,9 @@
-import { CommonLayout } from "@/components/CommonLayout/CommonLayout";
-import { useAppForm } from "@/config/use-app-form";
+import { CommonLayout } from "@/components/CommonLayout/CommonLayout.tsx";
+import { useAppForm } from "@/config/use-app-form.ts";
 import { toast } from "react-hot-toast";
-import { FileInput } from "@/components/form-components/FileInput/FileInput";
-import { TeamCreateSchema } from "@/models/CreateTeam"; // You must define this schema with zod or similar
-import { useCreateTeam } from "@/services/TeamServices"; // Hook to create team
+import { FileInput } from "@/components/form-components/FileInput/FileInput.tsx";
+import { TeamCreateSchema } from "@/models/CreateTeam.ts"; // You must define this schema with zod or similar
+import { useCreateTeam } from "@/services/TeamServices.ts"; // Hook to create team
 import { useLocation } from "wouter";
 
 const fieldLabels: Record<string, string> = {

@@ -10,5 +10,8 @@ public record TokenDTO(
         String accessToken,
 
         @Schema(description = "Optional JWT refresh token to obtain a new access token", example = "eyJhbGciOiJIUzI1NiIsInR...")
-        String refreshToken
+        String refreshToken,
+
+        @Schema(description = "User's role in the system", example = "USER")
+        Role role
 ) {}

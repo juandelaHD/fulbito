@@ -1,12 +1,16 @@
 import { useState } from "react";
-import { useSearchUserByUsername } from "@/services/UserServices";
+import {useGetMyProfile, useSearchUserByUsername} from "@/services/UserServices";
 import { CommonLayout } from "@/components/CommonLayout/CommonLayout.tsx";
+import {useImageById} from "@/services/ImageServices.ts";
 
 export default function SearchUsersScreen() {
   const [username, setUsername] = useState("");
   const [query, setQuery] = useState<string | null>(null);
 
+
   const { data: user, isFetching, isError } = useSearchUserByUsername(query);
+  const userAvatarURL= useImageById(user?.avatarUrl);
+
 
   const handleSearch = () => {
     if (username.trim() !== "") {
@@ -42,7 +46,7 @@ export default function SearchUsersScreen() {
         <div style={{ marginTop: "1rem", padding: "1rem", border: "1px solid #0f0", borderRadius: "0.5rem", backgroundColor: "#111" }}>
           <div style={{ display: "flex", gap: "1rem", alignItems: "center" }}>
             <img
-              src={user.avatarUrl || "/placeholder-avatar.png"}
+              src={userAvatarURL || "/img/default_avatar.png"}
               alt="Avatar"
               style={{ width: "96px", height: "96px", borderRadius: "50%", border: "2px solid #0f0", objectFit: "cover" }}
             />

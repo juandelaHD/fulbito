@@ -1,6 +1,6 @@
 import { useRef, useState } from "react";
-import { useGetMyTeams } from "@/services/TeamServices";
-import { TeamsTable } from "@/components/tables/TeamsTable";
+import { useGetMyTeams } from "@/services/TeamServices.ts";
+import { TeamsTable } from "@/components/tables/TeamsTable.tsx";
 import { useLocation } from "wouter";
 
 export const TeamsScreen = () => {

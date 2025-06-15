@@ -207,6 +207,24 @@ export async function resetPasswordService(req: ResetPasswordRequest) {
   }
 }
 
+export async function verifyEmailService(token: string) {
+
+    const response = await fetch(`${BASE_API_URL}/sessions/verify-email?token=${token}`, {
+        method: "GET",
+        headers: {
+        "Content-Type": "application/json",
+        },
+    });
+
+    if (!response.ok) {
+        await handleErrorResponse(response, "in verify email");
+    }
+
+    const json = await response.json();
+    toast.success("Email verified successfully!", { duration: 5000 });
+    return json;
+}
+
 
 export const useGetMyProfile = () => {
   const [tokenState] = useToken();

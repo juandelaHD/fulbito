@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useGetMyReservations, RawMatchDTO } from "@/services/UserServices";
+import { useGetMyReservations, RawMatchDTO } from "@/services/UserServices.ts";
 import { useGetMatchInviteLink, useCancelMatch } from "@/services/MatchesServices.ts";
 import { MyReservationsTable } from "@/components/tables/ReservationsTable.tsx";
 import { toast } from "react-hot-toast";

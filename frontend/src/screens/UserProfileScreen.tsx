@@ -2,7 +2,7 @@
 import { useGetMyProfile } from "@/services/UserServices";
 import { useImageById } from "@/services/ImageServices.ts";
 import { CommonLayout } from "@/components/CommonLayout/CommonLayout.tsx";
-import { TeamsScreen } from "@/screens/TeamsScreen.tsx";
+import { TeamsScreen } from "@/screens/user/TeamsScreen.tsx";
 
 export default function UserProfileScreen() {
   const { data: user, isLoading: loadingUser } = useGetMyProfile();

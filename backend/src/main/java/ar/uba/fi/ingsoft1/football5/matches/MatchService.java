@@ -68,7 +68,7 @@ public class MatchService {
     }
 
     public void validationsClosedMatch(MatchCreateDTO match, Team homeTeam, Team awayTeam)
-        throws IllegalArgumentException, UserNotFoundException {
+            throws IllegalArgumentException, UserNotFoundException {
 
         if (match.homeTeamId().equals(match.awayTeamId())) {
             throw new IllegalArgumentException("Home and away teams must be different");
@@ -85,8 +85,8 @@ public class MatchService {
         }
 
         if(homeTeamSize != awayTeamSize){
-                throw new IllegalArgumentException("Team sizes mismatch: home team has " + homeTeamSize +
-                        " players, but away team has " + awayTeamSize + ". Both teams must have the same number of players.");
+            throw new IllegalArgumentException("Team sizes mismatch: home team has " + homeTeamSize +
+                    " players, but away team has " + awayTeamSize + ". Both teams must have the same number of players.");
         }
 
         List<String> membersA = homeTeam.getMembers().stream()
@@ -246,7 +246,7 @@ public class MatchService {
         Team homeTeam = teamRepository.findById(match.homeTeamId())
                 .orElseThrow( () -> new IllegalArgumentException("Home team with ID " + match.homeTeamId() + " does not exist"));
         Team awayTeam = teamRepository.findById(match.awayTeamId())
-                .orElseThrow( () -> new IllegalArgumentException("Away team with ID " + match.homeTeamId() + " does not exist"));
+                .orElseThrow( () -> new IllegalArgumentException("Away team with ID " + match.awayTeamId() + " does not exist"));
         validationsClosedMatch(match, homeTeam, awayTeam);
         newMatch.addHomeTeam(homeTeam);
         newMatch.addAwayTeam(awayTeam);
@@ -395,26 +395,26 @@ public class MatchService {
         }
         MatchStatus status = match.getStatus();
         if (status == MatchStatus.SCHEDULED ||
-            status == MatchStatus.IN_PROGRESS ||
-            status == MatchStatus.FINISHED ||
-            status == MatchStatus.CANCELLED) {
+                status == MatchStatus.IN_PROGRESS ||
+                status == MatchStatus.FINISHED ||
+                status == MatchStatus.CANCELLED) {
             throw new IllegalArgumentException("Cannot leave a match that is already " + status + ".");
         }
 
         if (match.getOrganizer().getUsername().equals(user.getUsername())) {
+            match.setStatus(MatchStatus.CANCELLED);
             emailSenderService.sendMatchCancelledMail(
-                match.getOrganizer().getUsername(),
-                match.getDate(),
-                match.getStartTime(),
-                match.getEndTime()
-            );
-            match.removePlayer(user);
-            for (User player : match.getPlayers()) {
-                emailSenderService.sendMatchCancelledMail(
-                    player.getUsername(),
+                    match.getOrganizer().getUsername(),
                     match.getDate(),
                     match.getStartTime(),
                     match.getEndTime()
+            );
+            for (User player : match.getPlayers()) {
+                emailSenderService.sendMatchCancelledMail(
+                        player.getUsername(),
+                        match.getDate(),
+                        match.getStartTime(),
+                        match.getEndTime()
                 );
             }
             match.clearPlayers();
@@ -440,7 +440,7 @@ public class MatchService {
                     match.getStartTime(),
                     match.getEndTime()
             );
-        } 
+        }
     }
 
     public MatchDTO confirmMatch(Long matchId, JwtUserDetails userDetails)
