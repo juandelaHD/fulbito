@@ -246,7 +246,7 @@ public class MatchService {
         Team homeTeam = teamRepository.findById(match.homeTeamId())
                 .orElseThrow( () -> new IllegalArgumentException("Home team with ID " + match.homeTeamId() + " does not exist"));
         Team awayTeam = teamRepository.findById(match.awayTeamId())
-                .orElseThrow( () -> new IllegalArgumentException("Away team with ID " + match.homeTeamId() + " does not exist"));
+                .orElseThrow( () -> new IllegalArgumentException("Away team with ID " + match.awayTeamId() + " does not exist"));
         validationsClosedMatch(match, homeTeam, awayTeam);
         newMatch.addHomeTeam(homeTeam);
         newMatch.addAwayTeam(awayTeam);
