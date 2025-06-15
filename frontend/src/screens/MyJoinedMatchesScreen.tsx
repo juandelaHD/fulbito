@@ -5,8 +5,7 @@ import { MyJoinedMatchesTable } from "@/components/tables/MyJoinedMatchesTable.t
 import { useGetMatchInviteLink, useLeaveMatch } from "@/services/MatchesServices.ts";
 import { toast } from "react-hot-toast";
 
-
-export const MyJoinedMatchesScreen = () => {
+export const MyJoinedMatchesScreen = ({ onRefresh }: { onRefresh: () => void }) => {
   const { data: RawBasicMatchDTO, isLoading, error, refetch } = useGetMyJoinedMatches();
   const { mutateAsync: getInviteLink } = useGetMatchInviteLink();
   const { mutateAsync: leaveMatch } = useLeaveMatch();
@@ -21,6 +20,7 @@ export const MyJoinedMatchesScreen = () => {
           matchId: m.matchId,
           fieldName: m.fieldName,
           status: m.status,
+          fieldLocation: m.fieldLocation,
           date: m.date,
           startTime: start.toLocaleTimeString("es-AR", { hour: "2-digit", minute: "2-digit" }),
           endTime: end.toLocaleTimeString("es-AR",   { hour: "2-digit", minute: "2-digit" }),
@@ -47,8 +47,8 @@ export const MyJoinedMatchesScreen = () => {
   const handleLeaveMatch = async (matchId: number) => {
     try {
       await leaveMatch(matchId);
-      toast.success("You have left the match successfully.");
       refetch();
+      onRefresh();
     } catch (err) {
       console.error(err);
       toast.error("Error while leaving the match.");

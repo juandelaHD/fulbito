@@ -1,46 +1,33 @@
 import { ColumnDef } from "@tanstack/react-table"
 import { Table } from "@/components/tables/Table"
+import { RawMatchDTO } from "@/services/UserServices.ts";
 
-export type MyJoinedMatch = {
-  matchId: number
-  matchType: string
-  status: string
-  fieldName: string
-  fieldLocation?: {
-    zone: string
-    address: string
-  }
-  date: string
-  startTime: string
-  endTime: string
-  result: string
-}
-
-
-type MyMatchesTableProps = {
-  data: MyJoinedMatch[]
+type MyReservationTableProps = {
+  data: RawMatchDTO[]
   onGetInviteLink: (id: number) => void
-  onLeave: (matchId: number) => void
-  leaveId: number | null
+  onCancel: (matchId: number) => void
+  cancelId: number | null
 }
 
-export function MyJoinedMatchesTable({ data, onGetInviteLink, onLeave, leaveId }: MyMatchesTableProps) {
-  const columns: ColumnDef<MyJoinedMatch>[] = [
+export function MyReservationsTable({ data, onGetInviteLink, onCancel, cancelId }: MyReservationTableProps) {
+  const columns: ColumnDef<RawMatchDTO>[] = [
     {
-      accessorKey: "fieldName",
+      id: "fieldName",
       header: "Field",
+      cell: ({ row }) => row.original.field.name,
     },
     {
       id: "fieldLocation",
       header: "Field Location",
       cell: ({ row }) => {
-        const location = row.original.fieldLocation
+        const location = row.original.field.location
         return location ? `${location.zone} - ${location.address}` : "N/A"
       },
     },
     {
-      accessorKey: "date",
+      id: "date",
       header: "Date",
+      cell: ({ row }) => row.original.date,
     },
     {
       id: "hour",
@@ -55,6 +42,30 @@ export function MyJoinedMatchesTable({ data, onGetInviteLink, onLeave, leaveId }
       cell: ({ row }) => row.original.matchType,
     },
     {
+      id: "status",
+      header: "Status",
+      cell: ({ row }) => {
+        const status = row.original.status;
+        return (
+          <span className={`text-sm ${status === "ACCEPTED" ? "text-green-600" : status === "PENDING" ? "text-yellow-600" : "text-red-600"}`}>
+            {status}
+          </span>
+        );
+      },
+    },
+    {
+      id: "Max/Min Players",
+      header: "Min/Max Players",
+      cell: ({ row }) => {
+        const match = row.original;
+        return (
+          <span className="text-sm">
+            {match.minPlayers} - {match.maxPlayers}
+          </span>
+        );
+      },
+    },
+    {
       id: "inviteLink",
       header: "Invite Link",
       cell: ({ row }) => {
@@ -63,7 +74,7 @@ export function MyJoinedMatchesTable({ data, onGetInviteLink, onLeave, leaveId }
           <button
             onClick={(e) => {
               e.stopPropagation();
-              onGetInviteLink(match.matchId);
+              onGetInviteLink(match.id);
             }}
             className="text-sm text-white px-2 py-1 rounded bg-blue-600 hover:bg-blue-700 transition-all"
           >
@@ -75,11 +86,11 @@ export function MyJoinedMatchesTable({ data, onGetInviteLink, onLeave, leaveId }
       },
     },
     {
-      id: "Leave",
-      header: "Leave Match",
+      id: "Cancel",
+      header: "Cancel",
       cell: ({ row }) => {
         const match = row.original;
-        const canShowButton = match.status === "ACCEPTED";
+        const canShowButton = match.status === "ACCEPTED" || match.status === "PENDING" || match.status === "SCHEDULED";
         if (!canShowButton) {
           return <span className="text-red-400 text-sm">Not Allowed</span>;
         }
@@ -88,15 +99,15 @@ export function MyJoinedMatchesTable({ data, onGetInviteLink, onLeave, leaveId }
           <button
             onClick={(e) => {
               e.stopPropagation();
-              onLeave(match.matchId);
+              onCancel(match.id);
             }}
-            disabled={leaveId === match.matchId}
+            disabled={cancelId === match.id}
             className={`text-sm text-white px-2 py-1 rounded transition-all
-          bg-green-600 hover:bg-green-700
-          ${leaveId === match.matchId ? "opacity-60 cursor-wait" : ""}`
+          bg-red-600 hover:bg-red-700
+          ${cancelId === match.id ? "opacity-60 cursor-wait" : ""}`
             }
           >
-            {leaveId === match.matchId ? "Leaving…" : "Leave"}
+            {cancelId === match.id ? "Cancelling…" : "Cancel"}
           </button>
         );
       },

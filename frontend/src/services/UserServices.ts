@@ -21,6 +21,11 @@ export interface RawPlayerDTO {
   emailConfirmed: boolean;
 }
 
+export interface FieldLocation {
+  zone: string;
+  address: string;
+}
+
 export interface RawBasicMatchDTO {
   matchId: number;
   matchType: string;
@@ -29,9 +34,69 @@ export interface RawBasicMatchDTO {
   startTime: string;
   endTime: string;
   fieldName: string;
-  fieldLocation: number;
+  fieldLocation: FieldLocation;
   result: string;
-  players: RawPlayerDTO[];
+  players?: RawPlayerDTO[];
+  teams?: RawTeamDTO[];
+}
+
+export interface RawUserDTO {
+  id: number;
+  firstName: string;
+  lastName: string;
+  username: string;
+  avatarUrl: string;
+  zone: string;
+  age: number;
+  gender: string;
+  role: string;
+  emailConfirmed: boolean;
+}
+
+export interface RawFieldDTO {
+  id: number;
+  name: string;
+  grassType: string;
+  illuminated: boolean;
+  location: FieldLocation;
+  enabled: boolean;
+  imagesUrls: string[];
+  matchesWithMissingPlayers: number | null;
+}
+
+export interface RawTeamDTO {
+  id: number;
+  name: string;
+  imageUrl: string;
+  mainColor: string;
+  secondaryColor: string;
+  ranking: number;
+  captain: RawUserDTO;
+  members: RawUserDTO[];
+}
+
+export interface RawInvitationDTO {
+  token: string;
+  matchId: number;
+  valid: boolean;
+}
+
+export interface RawMatchDTO {
+  id: number;
+  field: RawFieldDTO;
+  organizer?: RawUserDTO;
+  players?: RawUserDTO[];
+  homeTeam?: RawTeamDTO;
+  awayTeam?: RawTeamDTO;
+  status: "PENDING" | "ACCEPTED" | "SCHEDULED" | "IN_PROGRESS" | "FINISHED" | "CANCELLED";
+  matchType: "OPEN" | "CLOSED";
+  minPlayers: number;
+  maxPlayers: number;
+  date: string; // "YYYY-MM-DD"
+  startTime: string; // "HH:mm" o ISO string
+  endTime: string;   // "HH:mm"
+  confirmationSent: boolean;
+  invitation: RawInvitationDTO;
 }
 
 export function useLogin() {
@@ -204,7 +269,7 @@ export async function getMyMatchesJoinedService(token: string): Promise<RawBasic
   });
 
   if (!response.ok) {
-    await handleErrorResponse(response, "fetching open matches");
+    await handleErrorResponse(response, "fetching joined matches");
   }
   console.log("Response from getMyMatchesJoinedService:", response);
   return (await response.json()) as RawBasicMatchDTO[];
@@ -221,6 +286,59 @@ export function useGetMyJoinedMatches() {
   });
 }
 
+
+export async function getMyUpcomingMatchesService(token: string): Promise<RawBasicMatchDTO[]> {
+  const response = await fetch(`${BASE_API_URL}/users/me/upcoming-matches`, {
+    method: "GET",
+    headers: {
+      Authorization: `Bearer ${token}`,
+      Accept: "application/json",
+    },
+  });
+
+  if (!response.ok) {
+    await handleErrorResponse(response, "fetching upcoming matches");
+  }
+  return (await response.json()) as RawBasicMatchDTO[];
+}
+
+export function useGetMyUpcomingMatches() {
+  const [tokenState] = useToken();
+  const token = tokenState.state === "LOGGED_IN" ? tokenState.accessToken : "";
+
+  return useQuery<RawBasicMatchDTO[], Error>({
+    queryKey: ["upcomingMatches"],
+    queryFn: () => getMyUpcomingMatchesService(token),
+    enabled: token !== "",
+  });
+}
+
+
+export async function getMyReservationsService(token: string): Promise<RawMatchDTO[]> {
+  const response = await fetch(`${BASE_API_URL}/users/me/reservations`, {
+    method: "GET",
+    headers: {
+      Authorization: `Bearer ${token}`,
+      Accept: "application/json",
+    },
+  });
+  console.log( "Fetching reservations");
+  if (!response.ok) {
+    await handleErrorResponse(response, "fetching reservations");
+  }
+  return (await response.json()) as RawMatchDTO[];
+}
+
+export function useGetMyReservations() {
+  const [tokenState] = useToken();
+  const token = tokenState.state === "LOGGED_IN" ? tokenState.accessToken : "";
+
+  return useQuery<RawMatchDTO[], Error>({
+    queryKey: ["reservations"],
+    queryFn: () => getMyReservationsService(token),
+    enabled: token !== "",
+  });
+}
 
 // --------------------------------SEARCH USERS---------------------------------------------
 export const useSearchUserByUsername = (username: string | null) => {

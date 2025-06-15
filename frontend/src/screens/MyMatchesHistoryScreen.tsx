@@ -14,6 +14,7 @@ export const MyMatchesHistoryScreen = () => {
         return {
           matchId: m.matchId,
           fieldName: m.fieldName,
+          fieldLocation: m.fieldLocation,
           matchStatus: m.status,
           date: m.date,
           startTime: start.toLocaleTimeString("es-AR", { hour: "2-digit", minute: "2-digit" }),

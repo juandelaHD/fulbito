@@ -34,6 +34,8 @@ export const CommonLayout = ({ children }: React.PropsWithChildren) => {
                   <Link className={styles.navLink} href="/search">Search Users</Link>
                 </div>
                 <div className={styles.navLinksRight}>
+                  <Link className={styles.navLink} href="/my-reservations">My Reservations</Link>
+                  <Link className={styles.navLink} href="/my-matches">My Matches</Link>
                   <Link className={styles.navLink} href="/profile">My Profile</Link>
                   <button onClick={logOut} className={styles.navLink}>
                     Log out

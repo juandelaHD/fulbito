@@ -1,10 +1,10 @@
 import { ColumnDef } from "@tanstack/react-table"
 import { Table } from "@/components/tables/Table"
 
-export type MyMatch = {
+export type MyUpcomingMatch = {
   matchId: number
   matchType: string
-  matchStatus: string
+  status: string
   fieldName: string
   fieldLocation?: {
     zone: string
@@ -16,12 +16,13 @@ export type MyMatch = {
   result: string
 }
 
+
 type MyMatchesTableProps = {
-  data: MyMatch[]
+  data: MyUpcomingMatch[]
 }
 
-export function MyMatchesHistoryTable({ data  }: MyMatchesTableProps) {
-  const columns: ColumnDef<MyMatch>[] = [
+export function MyUpcomingMatchesTable({ data }: MyMatchesTableProps) {
+  const columns: ColumnDef<MyUpcomingMatch>[] = [
     {
       accessorKey: "fieldName",
       header: "Field",
@@ -50,12 +51,6 @@ export function MyMatchesHistoryTable({ data  }: MyMatchesTableProps) {
       header: "Match Type",
       cell: ({ row }) => row.original.matchType,
     },
-    {
-      id: "result",
-      header: "Result",
-      cell: ({ row }) => row.original.result || "Pending",
-    },
   ]
-
   return <Table columns={columns} data={data} />
 }

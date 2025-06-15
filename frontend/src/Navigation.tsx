@@ -21,6 +21,8 @@ import { CreateOpenMatchScreen } from "@/screens/CreateOpenMatchScreen.tsx";
 import UserProfileScreen from "@/screens/UserProfileScreen";
 import SearchUsersScreen from "@/screens/SearchUsersScreen";
 import { FormTeamsScreen } from "@/screens/FormTeamsScreen.tsx";
+import MyMatchesScreen from "@/screens/MyMatchesScreen.tsx";
+import MyReservationsScreen from "@/screens/MyReservationsScreen.tsx";
 
 export const Navigation = () => {
   const [tokenState] = useToken();
@@ -75,6 +77,12 @@ export const Navigation = () => {
           </Route>
           <Route path="/search">
             <SearchUsersScreen />
+          </Route>
+          <Route path="/my-matches">
+            <MyMatchesScreen />
+          </Route>
+          <Route path="/my-reservations">
+            <MyReservationsScreen />
           </Route>
           <Route>
             <Redirect href="/" />

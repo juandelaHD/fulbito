@@ -342,4 +342,33 @@ export function useGetMatchById(matchId?: number) {
   });
 }
 
+export async function cancelMatchService(matchId: number, token: string): Promise<void> {
+  const response = await fetch(`${BASE_API_URL}/matches/${matchId}/cancel`, {
+    method: "PUT",
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+    },
+  });
+
+  if (!response.ok) {
+    await handleErrorResponse(response, "leaving match");
+  }
+}
+
+export function useCancelMatch() {
+  const [tokenState] = useToken();
+  const token = tokenState.state === "LOGGED_IN" ? tokenState.accessToken : "";
+
+  return useMutation({
+    mutationFn: (matchId: number) => cancelMatchService(matchId, token),
+    onSuccess: () => {
+      toast.success("Successfully cancelled match!", { duration: 5000 });
+    },
+    onError: (err: unknown) => {
+      console.log("Error while leaving match:", err);
+    },
+  });
+}
+
 
