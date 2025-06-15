@@ -1,7 +1,6 @@
 package ar.uba.fi.ingsoft1.football5.matches;
 
 import ar.uba.fi.ingsoft1.football5.common.exception.ItemNotFoundException;
-import ar.uba.fi.ingsoft1.football5.common.exception.UserNotFoundException;
 import ar.uba.fi.ingsoft1.football5.config.security.JwtUserDetails;
 import ar.uba.fi.ingsoft1.football5.fields.Field;
 import ar.uba.fi.ingsoft1.football5.fields.FieldService;
@@ -11,17 +10,13 @@ import ar.uba.fi.ingsoft1.football5.fields.schedules.ScheduleStatus;
 import ar.uba.fi.ingsoft1.football5.images.AvatarImage;
 import ar.uba.fi.ingsoft1.football5.matches.invitation.MatchInvitationService;
 import ar.uba.fi.ingsoft1.football5.teams.Team;
-import ar.uba.fi.ingsoft1.football5.teams.TeamCreateDTO;
 import ar.uba.fi.ingsoft1.football5.teams.TeamService;
-import ar.uba.fi.ingsoft1.football5.teams.TeamDTO;
 import ar.uba.fi.ingsoft1.football5.teams.TeamRepository;
 import ar.uba.fi.ingsoft1.football5.user.Role;
 import ar.uba.fi.ingsoft1.football5.user.User;
-import ar.uba.fi.ingsoft1.football5.user.UserRepository;
 import ar.uba.fi.ingsoft1.football5.user.UserService;
 import ar.uba.fi.ingsoft1.football5.user.email.EmailSenderService;
 
-import org.awaitility.Awaitility;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -32,9 +27,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
@@ -395,7 +388,8 @@ public class MatchServiceClosedMatchTest {
 
     @Test
     void tryToCreateClosedMatch_withHomeTeamWithOneMemberMoreThanAwayTeam() throws Exception {
-        homeTeam.addMember(playerC);
+        User auxUser = new User("auxUser", "auxUser", "auxUser", "Other", "ZoneC", 42, "pass", Role.USER);
+        homeTeam.addMember(auxUser);
         Field field = mock(Field.class);
         when(field.getId()).thenReturn(FIELD_ID);
         when(field.isEnabled()).thenReturn(true);
@@ -431,7 +425,8 @@ public class MatchServiceClosedMatchTest {
 
     @Test
     void tryToCreateClosedMatch_withHomeTeamWithOneMemberLessThanAwayTeam() throws Exception {
-        awayTeam.addMember(playerA);
+        User auxUser = new User("auxUser", "auxUser", "auxUser", "Other", "ZoneC", 42, "pass", Role.USER);
+        awayTeam.addMember(auxUser);
         Field field = mock(Field.class);
         when(field.getId()).thenReturn(FIELD_ID);
         when(field.isEnabled()).thenReturn(true);
@@ -467,8 +462,9 @@ public class MatchServiceClosedMatchTest {
 
     @Test
     void tryToCreateClosedMatch_withPlayersInBothTeams() throws Exception {
-        homeTeam.addMember(playerC);
-        awayTeam.addMember(organizer);
+        User auxUser = new User("auxUser", "auxUser", "auxUser", "Other", "ZoneC", 42, "pass", Role.USER);
+        homeTeam.addMember(auxUser);
+        awayTeam.addMember(auxUser);
         Field field = mock(Field.class);
         when(field.getId()).thenReturn(FIELD_ID);
         when(field.isEnabled()).thenReturn(true);
@@ -497,6 +493,6 @@ public class MatchServiceClosedMatchTest {
             matchService.createMatch(dto, userDetails);
         });
 
-        assertEquals("Teams cannot have players in common: organizer", ex.getMessage());
+        assertEquals("Teams cannot have players in common: auxuser", ex.getMessage());
     }
 }
