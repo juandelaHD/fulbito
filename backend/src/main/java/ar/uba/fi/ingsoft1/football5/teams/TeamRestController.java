@@ -270,4 +270,23 @@ public class TeamRestController {
         TeamDTO updated = teamService.addMember(teamId, username, userDetails.username());
         return ResponseEntity.ok(updated);
     }
+
+    @PostMapping("/{teamId}/members/{username}")
+    @Operation(
+            summary = "Remove a member from the team",
+            description = "Allows the captain to remove a user as a team member.",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "Member removed successfully"),
+                    @ApiResponse(responseCode = "400", description = "Not authorized or invalid data"),
+                    @ApiResponse(responseCode = "404", description = "Team or user not found")
+            }
+    )
+    public ResponseEntity<TeamDTO> removeMember(
+            @PathVariable Long teamId,
+            @RequestParam String username,
+            @AuthenticationPrincipal JwtUserDetails userDetails
+    ) throws ItemNotFoundException, IllegalArgumentException {
+        TeamDTO updated = teamService.removeMember(teamId, username, userDetails.username());
+        return ResponseEntity.ok(updated);
+    }
 }

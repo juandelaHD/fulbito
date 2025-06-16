@@ -66,6 +66,20 @@ public class TeamService {
         team.addMember(userToAdd);
         return new TeamDTO(teamRepository.save(team));
     }
+ 
+    public TeamDTO removeMember(Long teamId, String usernameToRemove, String captainUsername) throws UserNotFoundException, ItemNotFoundException, IllegalArgumentException {
+        Team team = teamRepository.findById(teamId)
+                .orElseThrow(() -> new ItemNotFoundException("team", teamId));
+        if (!team.getCaptain().getUsername().equalsIgnoreCase(captainUsername)) {
+            throw new IllegalArgumentException("Only the captain can remove members.");
+        }
+        User userToRemove = userService.loadUserByUsername(usernameToRemove);
+        if (!team.getMembers().contains(userToRemove)) {
+            throw new IllegalArgumentException("The user is not a member of the team.");
+        }
+        team.removeMember(userToRemove);
+        return new TeamDTO(teamRepository.save(team));
+    }
 
     public TeamDTO updateTeam(Long id, TeamCreateDTO dto, String username) throws ItemNotFoundException, IllegalArgumentException {
         Team team = teamRepository.findById(id)

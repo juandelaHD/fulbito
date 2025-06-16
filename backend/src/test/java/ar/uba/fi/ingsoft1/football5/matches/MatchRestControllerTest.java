@@ -3,9 +3,15 @@ package ar.uba.fi.ingsoft1.football5.matches;
 import ar.uba.fi.ingsoft1.football5.common.exception.ItemNotFoundException;
 import ar.uba.fi.ingsoft1.football5.config.security.JwtService;
 import ar.uba.fi.ingsoft1.football5.config.security.JwtUserDetails;
+import ar.uba.fi.ingsoft1.football5.fields.Field;
+import ar.uba.fi.ingsoft1.football5.fields.FieldDTO;
+import ar.uba.fi.ingsoft1.football5.images.AvatarImage;
 import ar.uba.fi.ingsoft1.football5.matches.invitation.MatchInvitationDTO;
 import ar.uba.fi.ingsoft1.football5.matches.invitation.MatchInvitationService;
+import ar.uba.fi.ingsoft1.football5.teams.Team;
+import ar.uba.fi.ingsoft1.football5.teams.TeamDTO;
 import ar.uba.fi.ingsoft1.football5.user.Role;
+import ar.uba.fi.ingsoft1.football5.user.User;
 import ar.uba.fi.ingsoft1.football5.user.UserDTO;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
@@ -24,7 +30,9 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.authentication;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
@@ -126,7 +134,7 @@ class MatchRestControllerTest {
                                 null,
                                 null,
                                 null,
-                                LocalDate.of(2025,6,15),
+                                LocalDate.now().plusDays(1),
                                 LocalDateTime.now().plusHours(1),
                                 LocalDateTime.now().plusHours(2)
         );
@@ -169,5 +177,119 @@ class MatchRestControllerTest {
             .andExpect(jsonPath("$.length()").value(2))
             .andExpect(jsonPath("$[0].id").value(1L))
             .andExpect(jsonPath("$[1].id").value(2L));
+    }
+
+    @Test
+    void testCreateOpenMatch_withValidData_shouldSucceed() throws Exception {
+        MatchCreateDTO createDto = new MatchCreateDTO(
+                MatchType.OPEN,
+                1L,
+                null,
+                null,
+                5,
+                10,
+                LocalDate.now().plusDays(1),
+                LocalDateTime.now().plusHours(2),
+                LocalDateTime.now().plusHours(3)
+        );
+
+        when(matchService.createMatch(argThat(dto ->
+                        dto.matchType() == MatchType.OPEN &&
+                        dto.fieldId() == 1L &&
+                        dto.minPlayers() == 5 &&
+                        dto.maxPlayers() == 10
+                ),
+                any(JwtUserDetails.class)
+        )).thenReturn(match);
+
+        mockMvc.perform(post("/matches/create")
+                        .with(authentication(new TestingAuthenticationToken(userDetails, null, "USER")))
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(createDto)))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.id").value(1L))
+                .andExpect(jsonPath("$.matchType").value("OPEN"))
+                .andExpect(jsonPath("$.organizer.username").value("testuser"));
+    }
+
+    @Test
+    void testCreateClosedMatch_withValidTeams_shouldSucceed() throws Exception {
+        // Users  
+        User playerA = new User("playerA", "jorge", "A", "M", "ZoneA", 33, "pass", Role.USER);
+        User playerB = new User("playerB", "juan", "B", "M", "ZoneB", 28, "pass", Role.USER);
+        User playerC = new User("playerC", "agustin", "C", "Other", "ZoneC", 42, "pass", Role.USER);
+        User playerD = new User("organizer", "Org", "anizer", "M", "Zone", 30, "pass", Role.USER);
+
+        UserDTO organizer = new UserDTO(5l,"org","anizer","organizer","asd","asd",5,"M",Role.USER,true);
+
+        AvatarImage avatar = mock(AvatarImage.class);
+        playerA.setAvatar(avatar);
+        playerB.setAvatar(avatar);
+        playerC.setAvatar(avatar);
+        playerD.setAvatar(avatar);
+
+        // Teams
+        Team homeTeam = new Team("homeTeam", playerA);
+        homeTeam.setId(1l);
+        homeTeam.addMember(playerA);
+        homeTeam.addMember(playerB);
+
+        Team awayTeam = new Team("awayTeam", playerC);
+        awayTeam.setId(2l);
+        awayTeam.addMember(playerC);
+        awayTeam.addMember(playerD);
+
+        MatchCreateDTO createDto = new MatchCreateDTO(
+                MatchType.CLOSED,
+                1L,
+                homeTeam.getId(),
+                awayTeam.getId(),
+                5,
+                10,
+                LocalDate.now().plusDays(1),
+                LocalDateTime.now().plusHours(2),
+                LocalDateTime.now().plusHours(3)
+        );
+
+        FieldDTO field = mock(FieldDTO.class);
+
+        MatchDTO closedMatch = new MatchDTO(
+                1L,
+                field,
+                organizer,
+                List.of(),
+                new TeamDTO(homeTeam),
+                new TeamDTO(awayTeam),
+                MatchStatus.SCHEDULED,
+                MatchType.CLOSED,
+                5,
+                10,
+                createDto.date(),
+                createDto.startTime(),
+                createDto.endTime(),
+                false,
+                new MatchInvitationDTO("tokenClosed", 1L, false)
+        );
+
+        when(matchService.createMatch(argThat(dto ->
+                        dto.matchType() == MatchType.CLOSED &&
+                        dto.homeTeamId()!= null &&
+                        dto.awayTeamId() != null &&
+                        dto.minPlayers() == 5 &&
+                        dto.maxPlayers() == 10
+                ),
+                any(JwtUserDetails.class)
+        )).thenReturn(closedMatch);
+
+        mockMvc.perform(post("/matches/create")
+                        .with(authentication(new TestingAuthenticationToken(userDetails, null, "USER")))
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(createDto)))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.id").value(1l))
+                .andExpect(jsonPath("$.matchType").value("CLOSED"))
+                .andExpect(jsonPath("$.organizer.username").value("organizer"));
     }
 }
