@@ -72,7 +72,7 @@ class FieldHasOpenMatchSpecTest {
         when(mockJoin.<MatchStatus>get("status")).thenReturn(mockStatusPath);
         when(mockJoin.<Timestamp>get("startTime")).thenReturn(mockStartTimePath);
         when(mockCb.equal(mockTypePath, MatchType.OPEN)).thenReturn(mockTypePredicate);
-        when(mockCb.equal(mockStatusPath, MatchStatus.PENDING)).thenReturn(mockStatusPredicate);
+        when(mockCb.equal(mockStatusPath, MatchStatus.ACCEPTED)).thenReturn(mockStatusPredicate);
         when(mockCb.greaterThan(mockStartTimePath, mockCb.currentTimestamp())).thenReturn(mockStartTimePredicate);
         when(mockCb.and(mockTypePredicate, mockStatusPredicate, mockStartTimePredicate)).thenReturn(mockAndPredicate);
 

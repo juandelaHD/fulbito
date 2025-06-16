@@ -143,7 +143,7 @@ class FieldServiceTest {
         when(owner.getUsername()).thenReturn("owner-user");
         when(userDetails.username()).thenReturn("owner-user");
         when(fieldRepository.findById(1L)).thenReturn(Optional.of(field));
-        when(matchRepository.findByFieldAndStatusAndStartTimeAfter(eq(field), eq(MatchStatus.SCHEDULED), any(LocalDateTime.class))).thenReturn(List.of(mock(Match.class)));
+        when(matchRepository.findByFieldAndStartTimeAfter(eq(field), any(LocalDateTime.class))).thenReturn(List.of(mock(Match.class)));
 
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () ->
                 fieldService.deleteField(1L, userDetails)
@@ -161,7 +161,7 @@ class FieldServiceTest {
         when(fieldRepository.findById(1L)).thenReturn(Optional.of(field));
         when(owner.getUsername()).thenReturn("owner-user");
         when(userDetails.username()).thenReturn("owner-user");
-        when(matchRepository.findByFieldAndStatusAndStartTimeAfter(eq(field), eq(MatchStatus.SCHEDULED), any(LocalDateTime.class))).thenReturn(List.of());
+        when(matchRepository.findByFieldAndStartTimeAfter(eq(field), any(LocalDateTime.class))).thenReturn(List.of());
 
         fieldService.deleteField(1L, userDetails);
         verify(fieldRepository).delete(field);

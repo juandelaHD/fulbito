@@ -163,11 +163,15 @@ public class FieldService {
     }
 
     private void validateNonActiveMatches(Field field) {
-        List<Match> activeMatches = matchRepository.findByFieldAndStatusAndStartTimeAfter(field, MatchStatus.SCHEDULED,
-                LocalDateTime.now());
-        if (!activeMatches.isEmpty()) {
+        List<Match> futureMatches = matchRepository.findByFieldAndStartTimeAfter(field, LocalDateTime.now());
+
+        boolean hasActiveMatch = futureMatches.stream()
+                .anyMatch(match -> match.getStatus() != MatchStatus.FINISHED && match.getStatus() != MatchStatus.CANCELLED);
+
+        if (hasActiveMatch) {
             throw new IllegalArgumentException(String.format(
-                    "Field with id '%s' cannot be deleted because it has active matches, but you can disable the field.", field.getId()));
+                    "Field with id '%s' cannot be deleted because it has active matches, " +
+                            "but you can disable the field.", field.getId()));
         }
     }
 
