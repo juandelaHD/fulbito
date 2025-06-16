@@ -7,7 +7,7 @@ type Props = {
     fieldName?: string;
 };
 
-export const DeleteModal = ({ isOpen, onConfirm, onCancel, fieldName }: Props) => {
+export const DeleteFieldConfirmationModal = ({ isOpen, onConfirm, onCancel, fieldName }: Props) => {
     return (
         <Modal
             isOpen={isOpen}

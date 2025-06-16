@@ -150,7 +150,7 @@ class ReviewServiceTest {
         Review review = new Review(reviewCreateDTO.rating(), reviewCreateDTO.comment(), field, user);
 
         when(match.getField()).thenReturn(field);
-        when(match.getStatus()).thenReturn(MatchStatus.SCHEDULED);
+        when(match.getStatus()).thenReturn(MatchStatus.FINISHED);
         when(match.getStartTime()).thenReturn(LocalDateTime.now().minusDays(1)); // Simulate a past match
         when(field.getId()).thenReturn(1L);
 

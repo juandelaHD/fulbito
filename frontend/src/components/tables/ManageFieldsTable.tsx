@@ -2,7 +2,7 @@ import { ColumnDef } from "@tanstack/react-table";
 import { Table } from "@/components/tables/Table";
 import { useDeleteField, useGetOwnedFields } from "@/services/FieldServices";
 import { useImageById } from "@/services/ImageServices.ts";
-import { DeleteModal } from "@/components/modals/DeleteModal";
+import { DeleteFieldConfirmationModal } from "@/components/modals/DeleteFieldConfirmationModal.tsx";
 import { useState } from "react";
 import { useMemo } from "react";
 import {EditFieldModal} from "@/components/modals/EditFieldModal.tsx";
@@ -103,7 +103,7 @@ export function ManageFieldsTable() {
         {isError && <div className="text-red-500">Error loading fields</div>}
         {!isLoading && data && <Table columns={columns} data={data.content.map(mapFieldDTOtoField)} />}
         {fieldToDelete && (
-            <DeleteModal
+            <DeleteFieldConfirmationModal
                 isOpen={!!fieldToDelete}
                 fieldName={fieldToDelete.name}
                 onCancel={() => setFieldToDelete(null)}

@@ -62,7 +62,7 @@ const LoggedInLinks = ({ role, logOut }: LoggedInLinksProps) => (
                         Create Field
                     </Link>
                     <Link className={styles.navLink} href="/fields/management">
-                        Manage Field
+                        Manage Fields
                     </Link>
                 </>
             )}

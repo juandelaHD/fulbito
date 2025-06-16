@@ -1,5 +1,6 @@
 package ar.uba.fi.ingsoft1.football5.fields;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 
@@ -11,7 +12,7 @@ public record FieldDTO(
         Location location,
         Boolean enabled,
         List<String> imagesUrls,
-        Map<String, Integer> matchesWithMissingPlayers
+        Map<LocalDateTime, Integer> matchesWithMissingPlayers
 ) {
     public FieldDTO(Field field) {
             this(
@@ -26,7 +27,7 @@ public record FieldDTO(
             );
     }
 
-    public FieldDTO(Field field, Map<String, Integer> openMatches) {
+    public FieldDTO(Field field, Map<LocalDateTime, Integer> openMatches) {
         this(
                 field.getId(),
                 field.getName(),

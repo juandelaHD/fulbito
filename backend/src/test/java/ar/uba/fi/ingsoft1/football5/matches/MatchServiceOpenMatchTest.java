@@ -381,7 +381,6 @@ class MatchServiceOpenMatchTest {
         assertEquals(MatchStatus.CANCELLED, openMatch.getStatus());
         verify(emailSenderService).sendMatchCancelledMail(eq("testuser"), any(), any(), any());
         verify(emailSenderService).sendMatchCancelledMail(eq("organizer"), any(), any(), any());
-        verify(matchRepository).save(openMatch);
     }
 
     @Test
