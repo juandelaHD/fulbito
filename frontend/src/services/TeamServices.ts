@@ -3,6 +3,7 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import { toast } from "react-hot-toast";
 import { BASE_API_URL } from "@/config/app-query-client";
 import { useToken } from "@/services/TokenContext.tsx";
+import { RawTeamDTO } from "@/services/UserServices.ts";
 
 export type TeamMember = {
   id: number;
@@ -77,7 +78,7 @@ export function useGetMyTeams(options?: { enabled?: boolean }) {
   const [tokenState] = useToken();
   const token = tokenState.state === "LOGGED_IN" ? tokenState.accessToken : "";
 
-  return useQuery<Team[]>({
+  return useQuery<RawTeamDTO[]>({
     queryKey: ["teams"],
     queryFn: async () => {
       const response = await fetch(`${BASE_API_URL}/teams/my`, {

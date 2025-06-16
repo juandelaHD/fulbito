@@ -55,10 +55,10 @@ public record MatchDTO(
         boolean confirmationSent,
 
         @Schema(description = "Match invitation details")
-        MatchInvitationDTO invitation
+        MatchInvitationDTO invitation,
 
-        // @Schema(description = "Match result", example = "0-0")
-        // Uncomment when result is implemented
+        @Schema(description = "Match result", example = "0-0")
+        String result
 
 ) {
     public MatchDTO(Match match) {
@@ -77,7 +77,8 @@ public record MatchDTO(
                 match.getStartTime(),
                 match.getEndTime(),
                 match.isConfirmationSent(),
-                match.getInvitation() != null ? new MatchInvitationDTO(match.getInvitation()) : null
+                match.getInvitation() != null ? new MatchInvitationDTO(match.getInvitation()) : null,
+                match.getResult() != null ? match.getResult() : "0-0"
         );
     }
 }

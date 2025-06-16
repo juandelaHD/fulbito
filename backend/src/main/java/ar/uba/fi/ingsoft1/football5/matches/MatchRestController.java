@@ -3,7 +3,6 @@ package ar.uba.fi.ingsoft1.football5.matches;
 import ar.uba.fi.ingsoft1.football5.common.exception.ItemNotFoundException;
 import ar.uba.fi.ingsoft1.football5.common.exception.UserNotFoundException;
 import ar.uba.fi.ingsoft1.football5.config.security.JwtUserDetails;
-import ar.uba.fi.ingsoft1.football5.matches.invitation.MatchInvitationService;
 import ar.uba.fi.ingsoft1.football5.teams.formation.TeamFormationRequestDTO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -24,8 +23,7 @@ public class MatchRestController {
     private final MatchService matchService;
 
     @Autowired
-    MatchRestController(MatchService matchService,
-                        MatchInvitationService matchInvitationService) {
+    MatchRestController(MatchService matchService) {
         this.matchService = matchService;
     }
 
@@ -115,7 +113,6 @@ public class MatchRestController {
             summary = "Cancel open match (field admin only)",
             description = "Allows the field admin to cancel an open match, changing its status to CANCELLED."
     )
-    @PreAuthorize("hasRole('ADMIN')")
     public MatchDTO cancelMatch(
             @PathVariable Long matchId,
             @AuthenticationPrincipal JwtUserDetails userDetails
