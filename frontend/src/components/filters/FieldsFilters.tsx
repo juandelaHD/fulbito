@@ -4,7 +4,7 @@ export type FieldsFilters = {
   address: string
   grassType: string
   isIlluminated: boolean
-  hasOpenScheduledMatch: boolean
+  hasOpenMatch: boolean
   isEnabled: boolean
 }
 
@@ -80,8 +80,8 @@ export const FieldsFiltersContainer = ({ filters, setFilters, onSearch }: Props)
         <label className="flex items-center gap-2 mr-[5px] mb-[10px] mt-[25px]">
           <input
             type="checkbox"
-            checked={filters.hasOpenScheduledMatch}
-            onChange={(e) => setFilters({ ...filters, hasOpenScheduledMatch: e.target.checked })}
+            checked={filters.hasOpenMatch}
+            onChange={(e) => setFilters({ ...filters, hasOpenMatch: e.target.checked })}
           />
           <span>Has Open Match</span>
         </label>

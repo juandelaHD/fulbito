@@ -3,7 +3,6 @@ package ar.uba.fi.ingsoft1.football5.matches;
 import ar.uba.fi.ingsoft1.football5.common.exception.ItemNotFoundException;
 import ar.uba.fi.ingsoft1.football5.config.security.JwtService;
 import ar.uba.fi.ingsoft1.football5.config.security.JwtUserDetails;
-import ar.uba.fi.ingsoft1.football5.fields.Field;
 import ar.uba.fi.ingsoft1.football5.fields.FieldDTO;
 import ar.uba.fi.ingsoft1.football5.images.AvatarImage;
 import ar.uba.fi.ingsoft1.football5.matches.invitation.MatchInvitationDTO;
@@ -93,7 +92,8 @@ class MatchRestControllerTest {
                 LocalDateTime.now().plusHours(2),
                 LocalDateTime.now().plusHours(3),
                 false,
-                new MatchInvitationDTO(token1, 1L, true)
+                new MatchInvitationDTO(token1, 1L, true),
+                "1-0"
         );        
     }
 
@@ -163,7 +163,8 @@ class MatchRestControllerTest {
                 LocalDateTime.now().plusHours(4),
                 LocalDateTime.now().plusHours(5),
                 false,
-                new MatchInvitationDTO(token2, 2L, true)
+                new MatchInvitationDTO(token2, 2L, true),
+                "0-1"
         );
 
         List<MatchDTO> matches = List.of(match, match2);
@@ -269,7 +270,8 @@ class MatchRestControllerTest {
                 createDto.startTime(),
                 createDto.endTime(),
                 false,
-                new MatchInvitationDTO("tokenClosed", 1L, false)
+                new MatchInvitationDTO("tokenClosed", 1L, false),
+                "1-1"
         );
 
         when(matchService.createMatch(argThat(dto ->

@@ -10,8 +10,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 public interface MatchRepository extends JpaRepository<Match, Long> {
-    List<Match> findByFieldAndStatusAndStartTimeAfter(Field field, MatchStatus status, LocalDateTime now);
-
+    List<Match> findByFieldAndStartTimeAfter(Field field, LocalDateTime now);
 
     @Query("""
     SELECT m FROM Match m
