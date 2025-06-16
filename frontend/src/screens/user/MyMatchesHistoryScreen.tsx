@@ -1,31 +1,26 @@
 import { useEffect, useState } from "react";
 import { useGetMyMatchesPlayed } from "@/services/UserServices.ts";
-import { MyMatch, MyMatchesHistoryTable } from "@/components/tables/MyMatchesHistoryTable.tsx";
+import { MyMatchesHistoryTable } from "@/components/tables/MyMatchesHistoryTable.tsx";
+import { RawMatchDTO} from "@/services/UserServices.ts";
 
 export const MyMatchesHistoryScreen = () => {
-  const { data: RawBasicMatchDTO, isLoading, error } = useGetMyMatchesPlayed();
-  const [matches, setMatches] = useState<MyMatch[]>([]);
+  const { data: RawMatchDTO, isLoading, error } = useGetMyMatchesPlayed();
+  const [matches, setMatches] = useState<RawMatchDTO[]>([]);
 
   useEffect(() => {
-    if (Array.isArray(RawBasicMatchDTO)) {
-      const mapped: MyMatch[] = RawBasicMatchDTO.map((m) => {
+    if (Array.isArray(RawMatchDTO)) {
+      const mapped: RawMatchDTO[] = RawMatchDTO.map((m) => {
         const start = new Date(m.startTime);
         const end = new Date(m.endTime);
         return {
-          matchId: m.matchId,
-          fieldName: m.fieldName,
-          fieldLocation: m.fieldLocation,
-          matchStatus: m.status,
-          date: m.date,
+          ...m,
           startTime: start.toLocaleTimeString("es-AR", { hour: "2-digit", minute: "2-digit" }),
           endTime: end.toLocaleTimeString("es-AR",   { hour: "2-digit", minute: "2-digit" }),
-          matchType: m.matchType,
-          result: m.result || "Pending",
         };
       });
       setMatches(mapped);
     }
-  }, [RawBasicMatchDTO]);
+  }, [RawMatchDTO]);
 
   return (
     <section>

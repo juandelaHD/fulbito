@@ -11,6 +11,7 @@ type TeamsTableProps = {
 
 export function TeamsTable({ data }: TeamsTableProps) {
   const [selectedTeam, setSelectedTeam] = useState<RawTeamDTO | null>(null);
+  const isOpen = selectedTeam !== null;
 
   const columns: ColumnDef<RawTeamDTO>[] = [
     {
@@ -43,13 +44,13 @@ export function TeamsTable({ data }: TeamsTableProps) {
     },
     {
       id: "actions",
-      header: "Acciones",
+      header: "Actions",
       cell: ({ row }) => (
         <button
           className="text-blue-600 underline"
           onClick={() => setSelectedTeam(row.original)}
         >
-          Ver equipo
+          View Team
         </button>
       ),
     },
@@ -62,6 +63,7 @@ export function TeamsTable({ data }: TeamsTableProps) {
         <TeamsModal
           team={selectedTeam}
           onClose={() => setSelectedTeam(null)}
+          isOpen={isOpen}
         />
       )}
     </>

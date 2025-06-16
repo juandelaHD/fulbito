@@ -10,6 +10,7 @@ type MyMatchesTableProps = {
 
 export function MyUpcomingMatchesTable({ data }: MyMatchesTableProps) {
   const [selectedTeam, setSelectedTeam] = useState<RawTeamDTO | null>(null);
+  const isOpen = selectedTeam !== null;
 
   const columns: ColumnDef<RawMatchDTO>[] = [
     {
@@ -51,10 +52,10 @@ export function MyUpcomingMatchesTable({ data }: MyMatchesTableProps) {
             className="text-blue-600 underline"
             onClick={() => setSelectedTeam(row.original.homeTeam ?? null)}
           >
-            Ver equipo
+            View Team
           </button>
         ) : (
-          <span className="text-gray-400">Sin equipo</span>
+          <span className="text-gray-400">No team</span>
         ),
     },
     {
@@ -66,10 +67,10 @@ export function MyUpcomingMatchesTable({ data }: MyMatchesTableProps) {
             className="text-blue-600 underline"
             onClick={() => setSelectedTeam(row.original.awayTeam ?? null)}
           >
-            Ver equipo
+            View Team
           </button>
         ) : (
-          <span className="text-gray-400">Sin equipo</span>
+          <span className="text-gray-400">No team</span>
         ),
     },
   ]
@@ -77,7 +78,7 @@ export function MyUpcomingMatchesTable({ data }: MyMatchesTableProps) {
     <>
       <Table columns={columns} data={data} />
       {selectedTeam && (
-        <TeamsModal team={selectedTeam} onClose={() => setSelectedTeam(null)} />
+        <TeamsModal team={selectedTeam} onClose={() => setSelectedTeam(null)} isOpen={isOpen} />
       )}
     </>
   );

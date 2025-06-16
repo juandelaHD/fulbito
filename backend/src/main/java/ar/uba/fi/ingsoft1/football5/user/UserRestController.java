@@ -122,7 +122,7 @@ class UserRestController {
             }
     )
     @ResponseStatus(HttpStatus.OK)
-    public List<MatchHistoryDTO> getMyPlayedMatches(@AuthenticationPrincipal JwtUserDetails userDetails) throws UserNotFoundException {
+    public List<MatchDTO> getMyPlayedMatches(@AuthenticationPrincipal JwtUserDetails userDetails) throws UserNotFoundException {
         return userService.getPlayedMatchesByUser(userDetails);
     }
 

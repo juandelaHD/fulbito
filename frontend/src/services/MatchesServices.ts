@@ -120,6 +120,7 @@ export type RawMatchDTO = {
     matchId: number;
     valid: boolean;
   };
+  result?: string;
 };
 
 export async function getOpenMatchesService(token: string): Promise<RawMatchDTO[]> {

@@ -58,7 +58,7 @@ const LoggedInLinks = ({ role, logOut }: LoggedInLinksProps) => (
             </Link>
             {role === "ADMIN" && (
                 <>
-                    <Link className={styles.navLink} href="/fields/new">
+                    <Link className={styles.navLink} href="/fields/create">
                         Create Field
                     </Link>
                     <Link className={styles.navLink} href="/fields/management">

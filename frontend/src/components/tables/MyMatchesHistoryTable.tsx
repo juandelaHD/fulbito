@@ -1,42 +1,35 @@
 import { ColumnDef } from "@tanstack/react-table"
 import { Table } from "@/components/tables/Table"
-
-export type MyMatch = {
-  matchId: number
-  matchType: string
-  matchStatus: string
-  fieldName: string
-  fieldLocation?: {
-    zone: string
-    address: string
-  }
-  date: string
-  startTime: string
-  endTime: string
-  result: string
-}
+import { RawMatchDTO, RawTeamDTO } from "@/services/UserServices.ts";
+import { useState } from "react";
+import { TeamsModal } from "@/components/modals/TeamsModal.tsx";
 
 type MyMatchesTableProps = {
-  data: MyMatch[]
+  data: RawMatchDTO[]
 }
 
-export function MyMatchesHistoryTable({ data  }: MyMatchesTableProps) {
-  const columns: ColumnDef<MyMatch>[] = [
+export function MyMatchesHistoryTable({ data }: MyMatchesTableProps) {
+  const [selectedTeam, setSelectedTeam] = useState<RawTeamDTO | null>(null);
+  const isOpen = selectedTeam !== null;
+
+  const columns: ColumnDef<RawMatchDTO>[] = [
     {
-      accessorKey: "fieldName",
+      id: "fieldName",
       header: "Field",
+      cell: ({ row }) => row.original.field.name,
     },
     {
       id: "fieldLocation",
       header: "Field Location",
       cell: ({ row }) => {
-        const location = row.original.fieldLocation
+        const location = row.original.field.location
         return location ? `${location.zone} - ${location.address}` : "N/A"
       },
     },
     {
-      accessorKey: "date",
+      id: "date",
       header: "Date",
+      cell: ({ row }) => row.original.date,
     },
     {
       id: "hour",
@@ -55,7 +48,44 @@ export function MyMatchesHistoryTable({ data  }: MyMatchesTableProps) {
       header: "Result",
       cell: ({ row }) => row.original.result || "Pending",
     },
+    {
+      id: "homeTeam",
+      header: "Home Team",
+      cell: ({ row }) =>
+        row.original.homeTeam ? (
+          <button
+            className="text-blue-600 underline"
+            onClick={() => setSelectedTeam(row.original.homeTeam ?? null)}
+          >
+            View Team
+          </button>
+        ) : (
+          <span className="text-gray-400">No team</span>
+        ),
+    },
+    {
+      id: "awayTeam",
+      header: "Away Team",
+      cell: ({ row }) =>
+        row.original.awayTeam ? (
+          <button
+            className="text-blue-600 underline"
+            onClick={() => setSelectedTeam(row.original.awayTeam ?? null)}
+          >
+            View Team
+          </button>
+        ) : (
+          <span className="text-gray-400">No team</span>
+        ),
+    },
   ]
 
-  return <Table columns={columns} data={data} />
+  return(
+    <>
+      <Table columns={columns} data={data} />
+      {selectedTeam && (
+        <TeamsModal team={selectedTeam} onClose={() => setSelectedTeam(null)} isOpen={isOpen} />
+      )}
+    </>
+  );
 }

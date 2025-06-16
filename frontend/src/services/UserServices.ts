@@ -97,6 +97,7 @@ export interface RawMatchDTO {
   endTime: string;   // "HH:mm"
   confirmationSent: boolean;
   invitation: RawInvitationDTO;
+  result?: string;
 }
 
 export function useLogin() {
@@ -250,7 +251,7 @@ export const useGetMyProfile = () => {
   });
 };
 
-export async function getMyMatchesHistoryService(token: string): Promise<RawBasicMatchDTO[]> {
+export async function getMyMatchesHistoryService(token: string): Promise<RawMatchDTO[]> {
   const response = await fetch(`${BASE_API_URL}/users/me/played-matches`, {
     method: "GET",
     headers: {
@@ -262,14 +263,14 @@ export async function getMyMatchesHistoryService(token: string): Promise<RawBasi
   if (!response.ok) {
     await handleErrorResponse(response, "fetching open matches");
   }
-  return (await response.json()) as RawBasicMatchDTO[];
+  return (await response.json()) as RawMatchDTO[];
 }
 
 export function useGetMyMatchesPlayed() {
   const [tokenState] = useToken();
   const token = tokenState.state === "LOGGED_IN" ? tokenState.accessToken : "";
 
-  return useQuery<RawBasicMatchDTO[], Error>({
+  return useQuery<RawMatchDTO[], Error>({
     queryKey: ["historyMatches"],
     queryFn: () => getMyMatchesHistoryService(token),
     enabled: token !== "",

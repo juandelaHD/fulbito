@@ -3,12 +3,15 @@ import { useGetMyReservations, RawMatchDTO } from "@/services/UserServices.ts";
 import { useGetMatchInviteLink, useCancelMatch } from "@/services/MatchesServices.ts";
 import { MyReservationsTable } from "@/components/tables/ReservationsTable.tsx";
 import { toast } from "react-hot-toast";
+import { useLocation } from "wouter";
 
 export const ReservationsScreen = () => {
   const { data: reservations, refetch } = useGetMyReservations();
   const { mutateAsync: getInviteLink } = useGetMatchInviteLink();
   const { mutateAsync: cancelMatch } = useCancelMatch();
   const [matches, setMatches] = useState<RawMatchDTO[]>([]);
+  const [, navigate] = useLocation();
+
   useEffect(() => {
     try {
       if (Array.isArray(reservations)) {
@@ -45,6 +48,12 @@ export const ReservationsScreen = () => {
       toast.error("Error while cancelling the match.");
     }
   }
+
+  const handleFormTeams = (matchId: number) => {
+    navigate(`/matches/${matchId}/teams`);
+  };
+
+
   return (
     <section>
       {Array.isArray(matches) && matches.length > 0 &&
@@ -53,6 +62,7 @@ export const ReservationsScreen = () => {
           onGetInviteLink={handleGetInviteLink}
           onCancel={handleCancelMatch}
           cancelId={null}
+          onFormTeams={handleFormTeams}
         />}
       {Array.isArray(matches) && matches.length === 0 && (
         <p className="text-gray-400 text-center">You don't have any reservations yet.</p>

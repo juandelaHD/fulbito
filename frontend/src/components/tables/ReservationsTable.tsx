@@ -7,9 +7,10 @@ type MyReservationTableProps = {
   onGetInviteLink: (id: number) => void
   onCancel: (matchId: number) => void
   cancelId: number | null
+  onFormTeams: (matchId: number) => void
 }
 
-export function MyReservationsTable({ data, onGetInviteLink, onCancel, cancelId }: MyReservationTableProps) {
+export function MyReservationsTable({ data, onGetInviteLink, onCancel, cancelId, onFormTeams }: MyReservationTableProps) {
   const columns: ColumnDef<RawMatchDTO>[] = [
     {
       id: "fieldName",
@@ -47,9 +48,19 @@ export function MyReservationsTable({ data, onGetInviteLink, onCancel, cancelId 
       cell: ({ row }) => {
         const status = row.original.status;
         return (
-          <span className={`text-sm ${status === "ACCEPTED" ? "text-green-600" : status === "PENDING" ? "text-yellow-600" : "text-red-600"}`}>
-            {status}
-          </span>
+          <span
+            className="text-sm"
+            style={{
+              color:
+                status === "ACCEPTED"
+                  ? "#16a34a" // verde-600
+                  : status === "PENDING"
+                    ? "#ca8a04" // amarillo-600
+                    : "#dc2626", // rojo-600
+            }}
+          >
+        {status}
+        </span>
         );
       },
     },
@@ -70,7 +81,13 @@ export function MyReservationsTable({ data, onGetInviteLink, onCancel, cancelId 
       header: "Invite Link",
       cell: ({ row }) => {
         const match = row.original;
-        return match.matchType === "OPEN" ? (
+        const canShowButton =
+          match.matchType === "OPEN" &&
+          match.status === "ACCEPTED" &&
+          Array.isArray(match.players) &&
+          match.players.length <= match.maxPlayers;
+
+        return canShowButton ? (
           <button
             onClick={(e) => {
               e.stopPropagation();
@@ -82,6 +99,34 @@ export function MyReservationsTable({ data, onGetInviteLink, onCancel, cancelId 
           </button>
         ) : (
           <span className="text-red-400 text-sm">Not Allowed</span>
+        );
+      },
+    },
+    {
+      id: "formTeams",
+      header: "Form Teams",
+      cell: ({ row }) => {
+        const match = row.original;
+        const canFormTeams =
+          match.matchType === "OPEN" &&
+          Array.isArray(match.players) &&
+          match.players.length >= match.minPlayers &&
+          match.status === "ACCEPTED";
+
+        if (!canFormTeams) {
+          return <span className="text-red-400 text-sm">Not Allowed</span>;
+        }
+
+        return (
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onFormTeams(match.id);
+            }}
+            className="text-sm text-white px-2 py-1 rounded bg-purple-600 hover:bg-purple-700 transition-all"
+          >
+            Form Teams
+          </button>
         );
       },
     },

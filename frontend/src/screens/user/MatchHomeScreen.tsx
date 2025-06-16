@@ -54,10 +54,6 @@ export const MatchHomeScreen = () => {
     }
   };
 
-  const handleFormTeams = (matchId: number) => {
-    navigate(`/matches/${matchId}/teams`);
-  };
-
   return (
     <CommonLayout>
       <section>
@@ -96,7 +92,6 @@ export const MatchHomeScreen = () => {
             data={matches}
             onJoin={handleJoin}
             onGetInviteLink={handleGetInviteLink}
-            onFormTeams={handleFormTeams}
             joiningId={null}
           />
         )}

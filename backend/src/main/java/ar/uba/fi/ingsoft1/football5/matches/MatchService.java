@@ -523,10 +523,9 @@ public class MatchService {
             throw new IllegalArgumentException("The match is already cancelled or finished.");
         Field field = match.getField();
 
-        if (!fieldService.isFieldAdmin(field.getId(), userDetails)) {
-            if (!match.getOrganizer().getUsername().equals(userDetails.username())) {
-                throw new IllegalArgumentException("Solo el admin de la cancha o el organizador pueden cancelar el partido.");
-            }
+        if (!fieldService.isFieldAdmin(field.getId(), userDetails) &&
+                !match.getOrganizer().getUsername().equals(userDetails.username())) {
+            throw new IllegalArgumentException("Solo el admin de la cancha o el organizador pueden cancelar el partido.");
         }
 
         match.setStatus(MatchStatus.CANCELLED);

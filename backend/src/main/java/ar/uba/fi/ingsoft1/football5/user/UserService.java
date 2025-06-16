@@ -161,18 +161,18 @@ public class UserService implements UserDetailsService {
         return teams;
     }
 
-    public List<MatchHistoryDTO> getPlayedMatchesByUser(JwtUserDetails userDetails) throws UserNotFoundException{
+    public List<MatchDTO> getPlayedMatchesByUser(JwtUserDetails userDetails) throws UserNotFoundException{
         User user = loadUserByUsername(userDetails.username());
         return user.getJoinedMatches().stream()
                 .filter(match -> match.getStatus() == MatchStatus.FINISHED)
-                .map(MatchHistoryDTO::new)
+                .map(MatchDTO::new)
                 .toList();
     }
 
     public List<MatchDTO> getReservationsByUser(JwtUserDetails userDetails) throws UserNotFoundException {
         User user = loadUserByUsername(userDetails.username());
         return user.getOrganizedMatches().stream()
-                .filter(match -> match.isConfirmationSent() )
+                .filter(match -> match.isConfirmationSent())
                 .map(MatchDTO::new)
                 .toList();
     }
