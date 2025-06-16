@@ -9,6 +9,7 @@ import ar.uba.fi.ingsoft1.football5.images.ImageService;
 import ar.uba.fi.ingsoft1.football5.matches.Match;
 import ar.uba.fi.ingsoft1.football5.matches.MatchRepository;
 import ar.uba.fi.ingsoft1.football5.matches.MatchStatus;
+import ar.uba.fi.ingsoft1.football5.matches.MatchType;
 import ar.uba.fi.ingsoft1.football5.user.User;
 import ar.uba.fi.ingsoft1.football5.user.UserService;
 import org.springframework.data.domain.Page;
@@ -205,6 +206,9 @@ public class FieldService {
 
         // Open matches requested, with missing players
         Map<LocalDateTime, Integer> matches = field.getMatches().stream()
+                .filter(match -> match.getType() == MatchType.OPEN &&
+                        match.getStatus() == MatchStatus.ACCEPTED &&
+                        match.getStartTime().isAfter(LocalDateTime.now()))
                 .collect(Collectors.toMap(
                         Match::getStartTime,
                         match -> Math.max(0, match.getMaxPlayers() - match.getPlayers().size())));
