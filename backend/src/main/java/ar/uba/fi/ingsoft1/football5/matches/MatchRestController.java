@@ -112,7 +112,6 @@ public class MatchRestController {
             summary = "Cancel open match (field admin only)",
             description = "Allows the field admin to cancel an open match, changing its status to CANCELLED."
     )
-    @PreAuthorize("hasRole('ADMIN')")
     public MatchDTO cancelMatch(
             @PathVariable Long matchId,
             @AuthenticationPrincipal JwtUserDetails userDetails

@@ -3,18 +3,29 @@ import { Link, useLocation } from "wouter";
 import { useToken } from "@/services/TokenContext";
 import styles from "./CommonLayout.module.css";
 
-export const CommonLayout = ({ children }: React.PropsWithChildren) => {
-    const [tokenState] = useToken();
-    const [location] = useLocation();
+export const CommonLayout = ({ children }: React.PropsWithChildren<{}>) => {
+    const [tokenState, setTokenState] = useToken();
+    const [location, navigate] = useLocation();
 
     const hideNav = location === "/login" || location === "/signup";
+
+    const logOut = () => {
+        setTokenState({ state: "LOGGED_OUT" });
+        navigate("/login");
+    };
 
     return (
         <div className={styles.mainLayout}>
             {!hideNav && (
                 <nav className={styles.navbar}>
                     <div className={styles.navLinks}>
-                        {tokenState.state === "LOGGED_OUT" ? <LoggedOutLinks /> : <LoggedInLinks />}
+                        {tokenState.state === "LOGGED_OUT" ? (
+                            <div className={styles.navLinksRight}>
+                                <LoggedOutLinks />
+                            </div>
+                        ) : (
+                            <LoggedInLinks role={tokenState.role} logOut={logOut} />
+                        )}
                     </div>
                 </nav>
             )}
@@ -34,24 +45,18 @@ const LoggedOutLinks = () => (
     </>
 );
 
-const LoggedInLinks = () => {
-    const [tokenState, setTokenState] = useToken();
+type LoggedInLinksProps = {
+    role: string;
+    logOut: () => void;
+};
 
-
-    const logOut = () => {
-        setTokenState({ state: "LOGGED_OUT" });
-    };
-
-    if (tokenState.state !== "LOGGED_IN") return null;
-    const { role } = tokenState;
-
-    return (
-        <>
+const LoggedInLinks = ({ role, logOut }: LoggedInLinksProps) => (
+    <>
+        <div className={styles.navLinksLeft}>
             <Link className={styles.navLink} href="/">
                 Main Page
             </Link>
-
-            { role === "ADMIN" && (
+            {role === "ADMIN" && (
                 <>
                     <Link className={styles.navLink} href="/fields/create">
                         Create Field
@@ -60,29 +65,38 @@ const LoggedInLinks = () => {
                         Manage Fields
                     </Link>
                 </>
-
             )}
-
-            { role === "USER" && (
+            {role === "USER" && (
                 <>
                     <Link className={styles.navLink} href="/fields">
-                        Fields
+                        View Fields
                     </Link>
                     <Link className={styles.navLink} href="/matches">
                         Matches
                     </Link>
-                    <Link className={styles.navLink} href="/teams">
-                        Teams
+                </>
+            )}
+            <Link className={styles.navLink} href="/search">
+                Search Users
+            </Link>
+        </div>
+        <div className={styles.navLinksRight}>
+            {role === "USER" && (
+                <>
+                    <Link className={styles.navLink} href="/my-reservations">
+                        My Reservations
                     </Link>
-                    <Link className={styles.navLink} href="/tournaments">
-                        Tournaments
+                    <Link className={styles.navLink} href="/my-matches">
+                        My Matches
                     </Link>
                 </>
             )}
-
+            <Link className={styles.navLink} href="/profile">
+                My Profile
+            </Link>
             <button onClick={logOut} className={styles.navLink}>
                 Log out
             </button>
-        </>
-    );
-};
+        </div>
+    </>
+);

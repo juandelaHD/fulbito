@@ -28,7 +28,7 @@ public class TeamService {
         this.imageService = imageService;
     }
 
-    public Optional<TeamDTO> createTeam(TeamCreateDTO teamCreate, String username, MultipartFile image) throws IllegalArgumentException{
+    public TeamDTO createTeam(TeamCreateDTO teamCreate, String username, MultipartFile image) throws IllegalArgumentException{
         validateUniqueName(teamCreate);
 
         User captain = userService.loadUserByUsername(username);
@@ -45,11 +45,11 @@ public class TeamService {
             throw new IllegalArgumentException("Error saving team image: " + e.getMessage());
         }
 
-        return Optional.of(new TeamDTO(teamSaved));
+        return new TeamDTO(teamSaved);
     }
 
     private void validateUniqueName(TeamCreateDTO teamCreate) {
-        if (teamRepository.existsByName(teamCreate.name())) {
+        if (teamRepository.existsByName(teamCreate.name().toLowerCase())) {
             throw new IllegalArgumentException("The name of the team already exists");
         }
     }

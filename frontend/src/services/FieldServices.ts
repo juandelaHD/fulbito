@@ -87,7 +87,7 @@ export function useGetFields(filters: GetFieldsRequest) {
           toast.error("Failed to fetch fields. Please try again later.");
           throw new Error(json.message || "Unknown error");
         }
-        return GetFieldsResponseSchema.parse(json);
+        return parsed;
       } catch (err) {
         console.error("Error fetching fields:", err);
         throw err;
@@ -129,9 +129,10 @@ export function useAvailableFields(token: string) {
 
 export type ScheduleSlot = {
   id: number;
-  start: string; // "HH:mm"
-  end: string;   // "HH:mm"
-  available: boolean;
+  date: string; // "YYYY-MM-DD"
+  startTime: string; // "HH:mm:ss"
+  endTime: string;   // "HH:mm::ss"
+  status: string; // "AVAILABLE"
 };
 
 export async function getFieldSchedulesService(fieldId: number, date: string, token: string): Promise<ScheduleSlot[]> {
@@ -143,7 +144,7 @@ export async function getFieldSchedulesService(fieldId: number, date: string, to
   });
   if (!res.ok) throw new Error("Error fetching schedules");
   const slots: ScheduleSlot[] = await res.json();
-  return slots.filter(slot => slot.available);
+  return slots.filter(slot => slot.status === "AVAILABLE")
 }
 
 

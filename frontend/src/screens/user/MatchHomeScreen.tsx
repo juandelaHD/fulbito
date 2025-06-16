@@ -33,8 +33,14 @@ export const MatchHomeScreen = () => {
   }, [rawMatches]);
 
   const handleJoin = async (matchId: number) => {
-    await joinMatch(matchId);
-    refetch();
+    try {
+      await joinMatch(matchId);
+      toast.success("You have joined the match successfully.");
+      refetch();
+    } catch (err) {
+      console.error(err);
+      toast.error("Error while joining the match.");
+    }
   };
 
   const handleGetInviteLink = async (matchId: number) => {
@@ -46,10 +52,6 @@ export const MatchHomeScreen = () => {
       console.log(err);
       toast.error("Error while getting invite link.");
     }
-  };
-
-  const handleFormTeams = (matchId: number) => {
-    navigate(`/matches/${matchId}/teams`);
   };
 
   return (
@@ -90,7 +92,6 @@ export const MatchHomeScreen = () => {
             data={matches}
             onJoin={handleJoin}
             onGetInviteLink={handleGetInviteLink}
-            onFormTeams={handleFormTeams}
             joiningId={null}
           />
         )}

@@ -2,6 +2,7 @@ package ar.uba.fi.ingsoft1.football5.user;
 
 import ar.uba.fi.ingsoft1.football5.common.exception.UserNotFoundException;
 import ar.uba.fi.ingsoft1.football5.config.security.JwtUserDetails;
+import ar.uba.fi.ingsoft1.football5.matches.MatchDTO;
 import ar.uba.fi.ingsoft1.football5.teams.TeamDTO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -78,7 +79,7 @@ class UserRestController {
             }
     )
     @ResponseStatus(HttpStatus.OK)
-    public List<MatchHistoryDTO> getUpcomingMatches(@AuthenticationPrincipal JwtUserDetails userDetails) throws UserNotFoundException {
+    public List<MatchDTO> getUpcomingMatches(@AuthenticationPrincipal JwtUserDetails userDetails) throws UserNotFoundException {
         return userService.getUpcomingMatchesByUser(userDetails);
     }
 
@@ -93,7 +94,7 @@ class UserRestController {
             }
     )
     @ResponseStatus(HttpStatus.OK)
-    public List<MatchHistoryDTO> getMyPlayedMatches(@AuthenticationPrincipal JwtUserDetails userDetails) throws UserNotFoundException {
+    public List<MatchDTO> getMyPlayedMatches(@AuthenticationPrincipal JwtUserDetails userDetails) throws UserNotFoundException {
         return userService.getPlayedMatchesByUser(userDetails);
     }
 
@@ -113,7 +114,7 @@ class UserRestController {
             }
     )
     @ResponseStatus(HttpStatus.OK)
-    public List<MatchHistoryDTO> getMyReservations(@AuthenticationPrincipal JwtUserDetails userDetails) throws UserNotFoundException {
+    public List<MatchDTO> getMyReservations(@AuthenticationPrincipal JwtUserDetails userDetails) throws UserNotFoundException {
         return userService.getReservationsByUser(userDetails);
     }
 

@@ -48,7 +48,7 @@ public class ReviewService {
     private void validateUserCanReviewField(Field field, User user) {
         boolean hasPlayedPastScheduledMatch = user.getJoinedMatches().stream()
                 .anyMatch(match -> match.getField().getId().equals(field.getId())
-                        && match.getStatus() == MatchStatus.SCHEDULED
+                        && match.getStatus() == MatchStatus.FINISHED
                         && match.getStartTime().isBefore(LocalDateTime.now()));
 
         if (!hasPlayedPastScheduledMatch) {

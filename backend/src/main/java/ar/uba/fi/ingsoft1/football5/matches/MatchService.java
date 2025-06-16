@@ -385,7 +385,7 @@ public class MatchService {
 
     public List<MatchDTO> getAvailableOpenMatches() {
         List<Match> matches = matchRepository.findByTypeAndStatusInAndStartTimeAfterAndPlayers_SizeLessThan(
-                List.of(MatchStatus.SCHEDULED),
+                List.of(MatchStatus.ACCEPTED),
                 LocalDateTime.now()
         );
         return matches.stream().map(MatchDTO::new).toList();
@@ -408,7 +408,7 @@ public class MatchService {
         Match match = loadMatchById(matchId);
         User user = userService.loadUserByUsername(userDetails.username());
 
-        // Solo partidos OPEN y en estado PENDING o CONFIRMED (no SCHEDULED ni posteriores)
+        // Solo partidos OPEN y en estado PENDING o ACCEPTED (no SCHEDULED ni posteriores)
         if (match.getType() != MatchType.OPEN) {
             throw new IllegalArgumentException("Only open matches can be left.");
         }
@@ -420,45 +420,17 @@ public class MatchService {
             throw new IllegalArgumentException("Cannot leave a match that is already " + status + ".");
         }
 
-        if (match.getOrganizer().getUsername().equals(user.getUsername())) {
-
-            emailSenderService.sendMatchCancelledMail(
-                    match.getOrganizer().getUsername(),
-                    match.getDate(),
-                    match.getStartTime(),
-                    match.getEndTime()
-            );
-
-            for (User player : match.getPlayers()) {
-                emailSenderService.sendMatchCancelledMail(
-                        player.getUsername(),
-                        match.getDate(),
-                        match.getStartTime(),
-                        match.getEndTime()
-                );
-            }
-
-            if (match.getInvitation() != null) {
-                matchInvitationService.invalidateMatchInvitation(match);
-            }
-            match.setStatus(MatchStatus.CANCELLED);
-            matchRepository.save(match);
-
-        } else {
-            if (!match.getPlayers().contains(user)) {
-                throw new IllegalArgumentException("You are not registered in this match.");
-            }
-
-            match.removePlayer(user);
-            matchRepository.save(match);
-
-            emailSenderService.sendUnsubscribeMail(
-                    user.getUsername(),
-                    match.getDate(),
-                    match.getStartTime(),
-                    match.getEndTime()
-            );
+        if (!match.getPlayers().contains(user)) {
+            throw new IllegalArgumentException("You are not registered in this match.");
         }
+        match.removePlayer(user);
+        matchRepository.save(match);
+        emailSenderService.sendUnsubscribeMail(
+                user.getUsername(),
+                match.getDate(),
+                match.getStartTime(),
+                match.getEndTime()
+        );
     }
 
     public MatchDTO confirmMatch(Long matchId, JwtUserDetails userDetails)
@@ -540,8 +512,11 @@ public class MatchService {
         if (match.getStatus() == MatchStatus.CANCELLED || match.getStatus() == MatchStatus.FINISHED)
             throw new IllegalArgumentException("The match is already cancelled or finished.");
         Field field = match.getField();
-        if (!fieldService.isFieldAdmin(field.getId(), userDetails))
-            throw new IllegalArgumentException("Only the field admin can cancel an open match.");
+
+        if (!fieldService.isFieldAdmin(field.getId(), userDetails) &&
+                !match.getOrganizer().getUsername().equals(userDetails.username())) {
+            throw new IllegalArgumentException("Solo el admin de la cancha o el organizador pueden cancelar el partido.");
+        }
 
         match.setStatus(MatchStatus.CANCELLED);
 
@@ -549,13 +524,8 @@ public class MatchService {
             matchInvitationService.invalidateMatchInvitation(match);
         }
 
-        if (match.getType() == MatchType.CLOSED) {
-            match.clearTeams();
-        }
-
-        if (match.getType() == MatchType.OPEN) {
-            match.clearPlayers();
-        }
+        match.clearPlayers();
+        match.clearTeams();
 
         scheduleService.markAsAvailable(
                 field,

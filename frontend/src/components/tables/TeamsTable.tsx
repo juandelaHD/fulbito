@@ -1,29 +1,19 @@
+import { useState } from "react";
 import { ColumnDef } from "@tanstack/react-table";
 import { Table } from "@/components/tables/Table";
 import { useImageById } from "@/services/ImageServices.ts";
-
-export type Team = {
-  id: number;
-  name: string;
-  imageUrl?: string;
-  mainColor: string;
-  secondaryColor: string;
-  ranking?: number;
-  captain?: {
-    firstName: string;
-    lastName: string;
-    username: string;
-    avatarUrl?: string;
-  };
-  members?: any[];
-};
+import { RawTeamDTO } from "@/services/UserServices.ts";
+import { TeamsModal } from "@/components/modals/TeamsModal.tsx";
 
 type TeamsTableProps = {
-  data: Team[];
+  data: RawTeamDTO[];
 };
 
 export function TeamsTable({ data }: TeamsTableProps) {
-  const columns: ColumnDef<Team>[] = [
+  const [selectedTeam, setSelectedTeam] = useState<RawTeamDTO | null>(null);
+  const isOpen = selectedTeam !== null;
+
+  const columns: ColumnDef<RawTeamDTO>[] = [
     {
       accessorKey: "imageUrl",
       header: "Logo",
@@ -47,64 +37,35 @@ export function TeamsTable({ data }: TeamsTableProps) {
         );
       }
     },
-    { accessorKey: "name", header: "Nombre" },
     {
-      id: "colors",
-      header: "Colors",
+      id: "name",
+      header: "Name",
+      cell: ({ row }) => row.original.name,
+    },
+    {
+      id: "actions",
+      header: "Actions",
       cell: ({ row }) => (
-        <div className="flex items-center gap-2">
-          <span
-            className="color-circle"
-            style={{ "--circle-color": row.original.mainColor || "#cccccc" } as React.CSSProperties}
-            title={row.original.mainColor || "Sin color"}
-          />
-          <span
-            className="color-circle"
-            style={{ "--circle-color": row.original.secondaryColor || "#cccccc" } as React.CSSProperties}
-            title={row.original.secondaryColor || "Sin color"}
-          />
-        </div>
+        <button
+          className="text-blue-600 underline"
+          onClick={() => setSelectedTeam(row.original)}
+        >
+          View Team
+        </button>
       ),
-    },
-    {
-      accessorKey: "ranking",
-      header: "Ranking",
-      cell: ({ row }) =>
-        row.original.ranking ? (
-          <span>{row.original.ranking}</span>
-        ) : (
-          <span className="text-gray-400">-</span>
-        ),
-    },
-    {
-      id: "captain",
-      header: "Captain",
-      cell: ({ row }) => {
-        const imageAvatarEndpoint = row.original.captain?.avatarUrl;
-        const imageAvatarUrl = useImageById(imageAvatarEndpoint);
-        return (
-          <div
-            className="w-[120px] h-[100px] overflow-hidden rounded bg-black/10 flex items-center justify-center"
-          >
-            {imageAvatarUrl ? (
-              <img
-                src={imageAvatarUrl}
-                alt={row.original.captain?.username}
-                className="w-full h-full object-cover block"
-              />
-            ) : (
-              <span className="text-xs">No logo</span>
-            )}
-          </div>
-        );
-      },
-    },
-    {
-      accessorKey: "members",
-      header: "Members",
-      cell: ({ row }) => <span>{row.original.members?.length ?? 0}</span>,
     },
   ];
 
-  return <Table columns={columns} data={data} />;
+  return (
+    <>
+      <Table columns={columns} data={data} />
+      {selectedTeam && (
+        <TeamsModal
+          team={selectedTeam}
+          onClose={() => setSelectedTeam(null)}
+          isOpen={isOpen}
+        />
+      )}
+    </>
+  );
 }

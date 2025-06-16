@@ -1,8 +1,10 @@
 .form {
-  display: grid;
   justify-content: center;
   grid-template-columns: auto auto;
   gap: 1rem;
+  max-width: 420px;
+  width: 100%;
+  margin: 0 auto;
 }
 
 .submitButton {

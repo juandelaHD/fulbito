@@ -87,16 +87,12 @@ public class TeamRestController {
             for (ConstraintViolation<TeamCreateDTO> violation : violations) {
                 errorMessage.append(violation.getPropertyPath()).append(" ").append(violation.getMessage()).append("; ");
             }
-            throw new org.springframework.web.server.ResponseStatusException(
-                    HttpStatus.BAD_REQUEST, errorMessage.toString()
-            );
+            throw new IllegalArgumentException("The provided team data is invalid: " + errorMessage.toString());
         }
 
-        return teamService.createTeam(dto, userDetails.username(), image)
-                .map(team -> ResponseEntity.status(HttpStatus.CREATED).body(team))
-                .orElseThrow(() -> new org.springframework.web.server.ResponseStatusException(
-                        HttpStatus.BAD_REQUEST, "Team creation failed. The name may already exist."
-                ));
+        TeamDTO created = teamService.createTeam(dto, userDetails.username(), image);
+        return ResponseEntity.ok(created);
+
     }
 
     @GetMapping(value = "/owned", produces = MediaType.APPLICATION_JSON_VALUE)
