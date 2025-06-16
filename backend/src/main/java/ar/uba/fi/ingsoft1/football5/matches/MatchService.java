@@ -401,46 +401,17 @@ public class MatchService {
             throw new IllegalArgumentException("Cannot leave a match that is already " + status + ".");
         }
 
-        if (match.getOrganizer().getUsername().equals(user.getUsername())) {
-            match.setStatus(MatchStatus.CANCELLED);
-            emailSenderService.sendMatchCancelledMail(
-                    match.getOrganizer().getUsername(),
-                    match.getDate(),
-                    match.getStartTime(),
-                    match.getEndTime()
-            );
-            for (User player : match.getPlayers()) {
-                emailSenderService.sendMatchCancelledMail(
-                        player.getUsername(),
-                        match.getDate(),
-                        match.getStartTime(),
-                        match.getEndTime()
-                );
-            }
-            match.clearPlayers();
-            if (match.getInvitation() != null) {
-                matchInvitationService.invalidateMatchInvitation(match);
-            }
-            scheduleService.markAsAvailable(
-                match.getField(),
-                match.getDate(),
-                match.getStartTime().toLocalTime(),
-                match.getEndTime().toLocalTime()
-            );
-            matchRepository.delete(match);
-        } else {
-            if (!match.getPlayers().contains(user)) {
-                throw new IllegalArgumentException("You are not registered in this match.");
-            }
-            match.removePlayer(user);
-            matchRepository.save(match);
-            emailSenderService.sendUnsubscribeMail(
-                    user.getUsername(),
-                    match.getDate(),
-                    match.getStartTime(),
-                    match.getEndTime()
-            );
+        if (!match.getPlayers().contains(user)) {
+            throw new IllegalArgumentException("You are not registered in this match.");
         }
+        match.removePlayer(user);
+        matchRepository.save(match);
+        emailSenderService.sendUnsubscribeMail(
+                user.getUsername(),
+                match.getDate(),
+                match.getStartTime(),
+                match.getEndTime()
+        );
     }
 
     public MatchDTO confirmMatch(Long matchId, JwtUserDetails userDetails)
@@ -534,13 +505,8 @@ public class MatchService {
             matchInvitationService.invalidateMatchInvitation(match);
         }
 
-        if (match.getType() == MatchType.CLOSED) {
-            match.clearTeams();
-        }
-
-        if (match.getType() == MatchType.OPEN) {
-            match.clearPlayers();
-        }
+        match.clearPlayers();
+        match.clearTeams();
 
         scheduleService.markAsAvailable(
                 field,

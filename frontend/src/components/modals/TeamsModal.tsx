@@ -78,7 +78,7 @@ export function TeamsModal({ team, onClose, isOpen }: TeamsModalProps) {
           {team.members.map((member, idx) => (
             <li key={member.id}>
               <div className="flex items-center gap-2 py-1">
-                <span>{member.firstName} {member.lastName}</span>
+                <span>{member.firstName} {member.lastName} </span>
                 <span className="text-xs text-gray-500">- ({member.username})</span>
               </div>
               {idx < team.members.length - 1 && (

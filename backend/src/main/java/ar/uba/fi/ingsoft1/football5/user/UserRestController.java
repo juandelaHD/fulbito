@@ -3,7 +3,6 @@ package ar.uba.fi.ingsoft1.football5.user;
 import ar.uba.fi.ingsoft1.football5.common.exception.UserNotFoundException;
 import ar.uba.fi.ingsoft1.football5.config.security.JwtUserDetails;
 import ar.uba.fi.ingsoft1.football5.matches.MatchDTO;
-import ar.uba.fi.ingsoft1.football5.matches.MatchStatus;
 import ar.uba.fi.ingsoft1.football5.teams.TeamDTO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -14,7 +13,6 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
@@ -102,13 +100,7 @@ class UserRestController {
     )
     @ResponseStatus(HttpStatus.OK)
     public List<MatchDTO> getUpcomingMatches(@AuthenticationPrincipal JwtUserDetails userDetails) throws UserNotFoundException {
-        User user = userService.loadUserByUsername(userDetails.username());
-        LocalDateTime now = LocalDateTime.now();
-        return user.getJoinedMatches().stream()
-                .filter(match -> match.getEndTime().isAfter(now)
-                        && (match.getStatus() == MatchStatus.SCHEDULED))
-                .map(MatchDTO::new)
-                .toList();
+        return userService.getUpcomingMatchesByUser(userDetails);
     }
 
 

@@ -169,6 +169,15 @@ public class UserService implements UserDetailsService {
                 .toList();
     }
 
+    public List<MatchDTO> getUpcomingMatchesByUser(JwtUserDetails userDetails) throws UserNotFoundException {
+        User user = loadUserByUsername(userDetails.username());
+        LocalDateTime now = LocalDateTime.now();
+        return user.getJoinedMatches().stream()
+                .filter(match -> match.getEndTime().isAfter(now) && match.getStatus() == MatchStatus.SCHEDULED)
+                .map(MatchDTO::new)
+                .toList();
+    }
+
     public List<MatchDTO> getReservationsByUser(JwtUserDetails userDetails) throws UserNotFoundException {
         User user = loadUserByUsername(userDetails.username());
         return user.getOrganizedMatches().stream()
@@ -180,7 +189,7 @@ public class UserService implements UserDetailsService {
     public List<MatchHistoryDTO> getJoinedMatchesByUser(JwtUserDetails userDetails) throws UserNotFoundException {
         User user = loadUserByUsername(userDetails.username());
         return user.getJoinedMatches().stream()
-                .filter(match -> match.getStatus() != MatchStatus.FINISHED                )
+                .filter(match -> match.getStatus() == MatchStatus.ACCEPTED)
                 .map(MatchHistoryDTO::new)
                 .toList();
     }
