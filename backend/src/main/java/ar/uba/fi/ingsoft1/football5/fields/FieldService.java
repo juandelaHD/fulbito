@@ -130,7 +130,7 @@ public class FieldService {
         List<Match> matches = matchRepository.findConflictingMatches(fieldId, date, startTime, endTime);
 
         Field field = fieldRepository.findById(fieldId)
-                .orElseThrow(() -> new IllegalArgumentException("Field not found with id: " + fieldId));
+                .orElseThrow(() -> new ItemNotFoundException(FIELD_ITEM, fieldId));
         boolean slotExists = field.getSchedules().stream()
                 .anyMatch(s -> s.getDate().equals(date)
                         && s.getStatus() == ScheduleStatus.AVAILABLE

@@ -26,7 +26,7 @@ import java.util.Set;
 
 @RestController
 @RequestMapping("/teams")
-@Tag(name = "Teams", description = "Endpoints for managing teams")
+@Tag(name = "4 - Teams", description = "Endpoints for managing teams")
 public class TeamRestController {
 
     private final TeamService teamService;
