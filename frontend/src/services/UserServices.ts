@@ -18,17 +18,6 @@ export function useLogin() {
   });
 }
 
-export function useSignup() {
-  const [, setToken] = useToken();
-
-  return useMutation({
-    mutationFn: async (req: SignupRequest & { invitationToken?: string }) => {
-      const tokenData = await signupService(req);
-      setToken({ state: "LOGGED_IN", ...tokenData });
-    },
-  });
-}
-
 export async function loginService(req: LoginRequest) {
   const response = await fetch(`${BASE_API_URL}/sessions/login`, {
     method: "POST",
@@ -46,6 +35,17 @@ export async function loginService(req: LoginRequest) {
   const json = await response.json();
   toast.success("Login successful!");
   return LoginResponseSchema.parse(json);
+}
+
+export function useSignup() {
+  const [, setToken] = useToken();
+
+  return useMutation({
+    mutationFn: async (req: SignupRequest & { invitationToken?: string }) => {
+      const tokenData = await signupService(req);
+      setToken({ state: "LOGGED_IN", ...tokenData });
+    },
+  });
 }
 
 export async function signupService(req: SignupRequest & { invitationToken?: string }) {
@@ -87,7 +87,6 @@ export async function signupService(req: SignupRequest & { invitationToken?: str
 }
 
 export async function forgotPasswordService(req: ForgotPasswordRequest) {
-  // Validar antes de enviar
   ForgotPasswordRequestSchema.parse(req);
 
   const response = await fetch(`${BASE_API_URL}/sessions/forgot-password`, {
@@ -99,6 +98,7 @@ export async function forgotPasswordService(req: ForgotPasswordRequest) {
   if (!response.ok) {
     await handleErrorResponse(response, "in forgot password");
   }
+  toast.success("If the email exists, you will receive a link to reset your password.");
 }
 
 export async function resetPasswordService(req: ResetPasswordRequest) {
@@ -113,6 +113,8 @@ export async function resetPasswordService(req: ResetPasswordRequest) {
   if (!response.ok) {
     await handleErrorResponse(response, "in reset password");
   }
+
+  toast.success("Password reset successfully!");
 }
 
 export async function verifyEmailService(token: string) {

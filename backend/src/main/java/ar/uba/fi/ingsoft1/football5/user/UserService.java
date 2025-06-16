@@ -133,9 +133,15 @@ public class UserService implements UserDetailsService {
         if (!passwordEncoder.matches(data.getPassword(), existingUser.getPassword())) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid password");
         }
+
         if (!existingUser.isEmailConfirmed()) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Email is not confirmed");
         }
+
+        if (!existingUser.isActiveUser()) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "User is not active");
+        }
+
         TokenDTO tokens = generateTokens(existingUser);
         return Optional.of(tokens);
     }
@@ -168,7 +174,7 @@ public class UserService implements UserDetailsService {
     public List<MatchHistoryDTO> getReservationsByUser(JwtUserDetails userDetails) throws UserNotFoundException {
         User user = loadUserByUsername(userDetails.username());
         return user.getOrganizedMatches().stream()
-                .filter(match -> match.isConfirmationSent() )
+                .filter(Match::isConfirmationSent)
                 .map(MatchHistoryDTO::new)
                 .toList();
     }
