@@ -87,7 +87,7 @@ export function useGetFields(filters: GetFieldsRequest) {
           toast.error("Failed to fetch fields. Please try again later.");
           throw new Error(json.message || "Unknown error");
         }
-        return GetFieldsResponseSchema.parse(json);
+        return parsed;
       } catch (err) {
         console.error("Error fetching fields:", err);
         throw err;

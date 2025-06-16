@@ -7,16 +7,18 @@ import { useGetFields } from "@/services/FieldServices.ts";
 import {GetFieldsRequest} from "@/models/GetFields.ts";
 import { ReviewsModal } from "@/components/modals/ReviewsModal.tsx"
 import type { Field as FieldForTable } from "@/components/tables/FieldsTable.tsx";
+import {ViewFieldMatchesModal} from "@/components/modals/ViewFieldMatches.tsx";
 
 export const FieldsScreen = () => {
   const [hasSearched, setHasSearched] = useState(false);
+  const [openMatchNeedsFor, setOpenMatchNeedsFor] = useState<FieldForTable | null>(null);
   const [filters, setFilters] = useState<FieldsFilters>({
     name: "",
     zone: "",
     address: "",
     grassType: "",
     isIlluminated: false,
-    hasOpenScheduledMatch: false,
+    hasOpenMatch: false,
     isEnabled: true
   });
 
@@ -40,7 +42,7 @@ export const FieldsScreen = () => {
         ? "HYBRID_TURF"
         : undefined,
     isIlluminated: filters.isIlluminated || undefined,
-    hasOpenScheduledMatch: filters.hasOpenScheduledMatch || undefined,
+    hasOpenMatch: filters.hasOpenMatch || undefined,
     isEnabled: filters.isEnabled || undefined,
     page: 0,
     size: 50,
@@ -60,7 +62,7 @@ export const FieldsScreen = () => {
           ? "HYBRID_TURF"
           : undefined,
       isIlluminated: filters.isIlluminated,
-      hasOpenScheduledMatch: filters.hasOpenScheduledMatch,
+      hasOpenMatch: filters.hasOpenMatch,
       page: 0,
       size: 50,
     };
@@ -86,6 +88,7 @@ export const FieldsScreen = () => {
       zone: item.location.zone,
       address: item.location.address,
       imageUrl: Array.isArray(item.imagesUrls) && item.imagesUrls.length > 0 ? item.imagesUrls[0] : undefined,
+      matchesWithMissingPlayers: item.matchesWithMissingPlayers ?? null,
     };
   }) || [];
 
@@ -115,6 +118,7 @@ export const FieldsScreen = () => {
                       toast.error(`⚠️ Reservations are not yet implemented for: ${f}`)
                   }
                   onViewReviews={(field) => setOpenReviewsFor(field)}
+                  onViewMatchNeeds={(field) => setOpenMatchNeedsFor(field)}
               />
           )}
 
@@ -130,6 +134,12 @@ export const FieldsScreen = () => {
             onClose={() => setOpenReviewsFor(null)}
             fieldName={openReviewsFor?.name}
             fieldId={openReviewsFor?.id ?? 0}
+        />
+
+        <ViewFieldMatchesModal
+            isOpen={!!openMatchNeedsFor}
+            onClose={() => setOpenMatchNeedsFor(null)}
+            field={openMatchNeedsFor}
         />
       </CommonLayout>
   );

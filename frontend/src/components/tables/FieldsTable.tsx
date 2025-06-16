@@ -11,15 +11,17 @@ export type Field = {
   address: string
   imageUrl?: string
   allImagesUrls?: string[]
+  matchesWithMissingPlayers?: Record<string, number> | null
 }
 
 type FieldsTableProps = {
   data: Field[]
   onReserve: (field: Field) => void
   onViewReviews: (field: Field) => void
+  onViewMatchNeeds: (field: Field) => void
 }
 
-export function FieldsTable({ data, onReserve , onViewReviews }: FieldsTableProps) {
+export function FieldsTable({ data, onReserve , onViewReviews, onViewMatchNeeds }: FieldsTableProps) {
   const columns: ColumnDef<Field>[] = [
     { accessorKey: "name", header: "Name" },
     { accessorKey: "grassType", header: "Grass Type" },
@@ -78,6 +80,24 @@ export function FieldsTable({ data, onReserve , onViewReviews }: FieldsTableProp
         )
       },
     },
+    {
+      id: "matchNeeds",
+      header: "Open Matches",
+      cell: ({row}) => {
+        const matchMap = row.original.matchesWithMissingPlayers;
+        return matchMap && Object.keys(matchMap).length > 0 ? (
+            <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onViewMatchNeeds(row.original);
+                }}
+                className="text-sm text-white bg-yellow-600 px-2 py-1 rounded hover:bg-yellow-700"
+            >
+              View Matches
+            </button>
+        ) : "[Use 'Has Open Match' Filter]";
+      }
+    }
   ]
 
   return (
