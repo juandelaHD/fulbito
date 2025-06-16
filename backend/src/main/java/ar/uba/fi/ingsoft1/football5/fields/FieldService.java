@@ -93,7 +93,7 @@ public class FieldService {
         Specification<Field> combinedSpec = specificationService.build(filters, owner);
 
         Page<Field> fieldPage = fieldRepository.findAll(combinedSpec, pageable);
-        return fieldPage.map(field -> mapToDTO(field, filters.hasOpenScheduledMatch()));
+        return fieldPage.map(field -> mapToDTO(field, filters.hasOpenMatch()));
     }
 
     public FieldDTO updateField(Long id, FieldCreateDTO fieldCreate, List<MultipartFile> images,

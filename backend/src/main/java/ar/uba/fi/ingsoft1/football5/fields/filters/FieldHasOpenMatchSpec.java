@@ -7,25 +7,25 @@ import ar.uba.fi.ingsoft1.football5.matches.MatchType;
 import jakarta.persistence.criteria.*;
 import org.springframework.data.jpa.domain.Specification;
 
-public class FieldHasOpenScheduledMatchSpec implements Specification<Field> {
+public class FieldHasOpenMatchSpec implements Specification<Field> {
 
-    private final Boolean hasOpenScheduledMatch;
+    private final Boolean hasOpenMatch;
 
-    public FieldHasOpenScheduledMatchSpec(Boolean hasOpenScheduledMatch) {
-        this.hasOpenScheduledMatch = hasOpenScheduledMatch;
+    public FieldHasOpenMatchSpec(Boolean hasOpenMatch) {
+        this.hasOpenMatch = hasOpenMatch;
     }
 
     @Override
     public Predicate toPredicate(Root<Field> root, CriteriaQuery<?> query, CriteriaBuilder criteriaBuilder) {
-        if(!Boolean.TRUE.equals(hasOpenScheduledMatch)) {
+        if(!Boolean.TRUE.equals(hasOpenMatch)) {
             return criteriaBuilder.conjunction();
         }
 
         query.distinct(true);
         Join<Field, Match> joinMatch = root.join("matches", JoinType.INNER);
         Predicate openPredicate = criteriaBuilder.equal(joinMatch.get("type"), MatchType.OPEN);
-        Predicate scheduledPredicate = criteriaBuilder.equal(joinMatch.get("status"), MatchStatus.SCHEDULED);
+        Predicate pendingPredicate = criteriaBuilder.equal(joinMatch.get("status"), MatchStatus.PENDING);
         Predicate futurePredicate = criteriaBuilder.greaterThan(joinMatch.get("startTime"), criteriaBuilder.currentTimestamp());
-        return criteriaBuilder.and(openPredicate, scheduledPredicate, futurePredicate);
+        return criteriaBuilder.and(openPredicate, pendingPredicate, futurePredicate);
     }
 }

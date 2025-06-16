@@ -16,7 +16,7 @@ import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class FieldHasOpenScheduledMatchSpecTest {
+class FieldHasOpenMatchSpecTest {
 
     @Mock
     private Root<Field> mockRoot;
@@ -46,8 +46,8 @@ class FieldHasOpenScheduledMatchSpecTest {
     private Predicate mockAndPredicate;
 
     @Test
-    void toPredicate_whenHasOpenScheduledMatchIsFalse_returnsConjunction() {
-        FieldHasOpenScheduledMatchSpec spec = new FieldHasOpenScheduledMatchSpec(false);
+    void toPredicate_whenHasOpenMatchIsFalse_returnsConjunction() {
+        FieldHasOpenMatchSpec spec = new FieldHasOpenMatchSpec(false);
         when(mockCb.conjunction()).thenReturn(mockConjunctionPredicate);
 
         Predicate result = spec.toPredicate(mockRoot, mockQuery, mockCb);
@@ -55,8 +55,8 @@ class FieldHasOpenScheduledMatchSpecTest {
     }
 
     @Test
-    void toPredicate_whenHasOpenScheduledMatchIsNull_returnsConjunction() {
-        FieldHasOpenScheduledMatchSpec spec = new FieldHasOpenScheduledMatchSpec(null);
+    void toPredicate_whenHasOpenMatchIsNull_returnsConjunction() {
+        FieldHasOpenMatchSpec spec = new FieldHasOpenMatchSpec(null);
         when(mockCb.conjunction()).thenReturn(mockConjunctionPredicate);
 
         Predicate result = spec.toPredicate(mockRoot, mockQuery, mockCb);
@@ -64,15 +64,15 @@ class FieldHasOpenScheduledMatchSpecTest {
     }
 
     @Test
-    void toPredicate_whenHasOpenScheduledMatchIsTrue_returnsAndPredicate() {
-        FieldHasOpenScheduledMatchSpec spec = new FieldHasOpenScheduledMatchSpec(true);
+    void toPredicate_whenHasOpenMatchIsTrue_returnsAndPredicate() {
+        FieldHasOpenMatchSpec spec = new FieldHasOpenMatchSpec(true);
 
         when(mockRoot.<Field, Match>join("matches", JoinType.INNER)).thenReturn(mockJoin);
         when(mockJoin.<MatchType>get("type")).thenReturn(mockTypePath);
         when(mockJoin.<MatchStatus>get("status")).thenReturn(mockStatusPath);
         when(mockJoin.<Timestamp>get("startTime")).thenReturn(mockStartTimePath);
         when(mockCb.equal(mockTypePath, MatchType.OPEN)).thenReturn(mockTypePredicate);
-        when(mockCb.equal(mockStatusPath, MatchStatus.SCHEDULED)).thenReturn(mockStatusPredicate);
+        when(mockCb.equal(mockStatusPath, MatchStatus.PENDING)).thenReturn(mockStatusPredicate);
         when(mockCb.greaterThan(mockStartTimePath, mockCb.currentTimestamp())).thenReturn(mockStartTimePredicate);
         when(mockCb.and(mockTypePredicate, mockStatusPredicate, mockStartTimePredicate)).thenReturn(mockAndPredicate);
 
