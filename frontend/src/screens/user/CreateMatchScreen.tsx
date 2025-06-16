@@ -85,8 +85,8 @@ export const CreateMatchScreen = ({ defaultMatchType = "OPEN" }: { defaultMatchT
         const selected = schedules.find(s => s.id.toString() === value.scheduleId);
         if (selected) {
           const dateStr = format(value.date, "yyyy-MM-dd");
-          startTime = new Date(`${dateStr}T${selected.start}:00`);
-          endTime = new Date(`${dateStr}T${selected.end}:00`);
+          startTime = new Date(`${dateStr}T${selected.startTime}`);
+          endTime = new Date(`${dateStr}T${selected.endTime}`);
         }
       }
 
@@ -124,7 +124,7 @@ export const CreateMatchScreen = ({ defaultMatchType = "OPEN" }: { defaultMatchT
       setSchedules(result);
       console.log("Fetched schedules:", result);
       setSchedulesFetched(true);
-      if (result.filter((s: ScheduleSlot) => s.available).length === 0) {
+      if (result.filter((s: ScheduleSlot) => s.status === "AVAILABLE").length === 0) {
         toast("No hours available for this field on the selected date.", { icon: "ℹ️", duration: 4000 });
       }
     } catch (e) {
@@ -216,7 +216,7 @@ export const CreateMatchScreen = ({ defaultMatchType = "OPEN" }: { defaultMatchT
                       ...(schedules.length === 0
                               ? [{ label: "No available schedules", value: "" }]
                               : schedules.map(s => ({
-                                label: `${s.start} - ${s.end}`,
+                                label: `${s.startTime} - ${s.endTime}`,
                                 value: s.id.toString(),
                               }))
                       )

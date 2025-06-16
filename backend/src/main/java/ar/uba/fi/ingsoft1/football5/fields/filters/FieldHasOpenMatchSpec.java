@@ -24,7 +24,7 @@ public class FieldHasOpenMatchSpec implements Specification<Field> {
         query.distinct(true);
         Join<Field, Match> joinMatch = root.join("matches", JoinType.INNER);
         Predicate openPredicate = criteriaBuilder.equal(joinMatch.get("type"), MatchType.OPEN);
-        Predicate pendingPredicate = criteriaBuilder.equal(joinMatch.get("status"), MatchStatus.PENDING);
+        Predicate pendingPredicate = criteriaBuilder.equal(joinMatch.get("status"), MatchStatus.ACCEPTED);
         Predicate futurePredicate = criteriaBuilder.greaterThan(joinMatch.get("startTime"), criteriaBuilder.currentTimestamp());
         return criteriaBuilder.and(openPredicate, pendingPredicate, futurePredicate);
     }

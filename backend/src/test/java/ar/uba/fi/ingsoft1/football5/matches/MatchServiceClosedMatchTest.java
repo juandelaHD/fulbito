@@ -122,7 +122,7 @@ public class MatchServiceClosedMatchTest {
 
         when(userDetails.username()).thenReturn(organizer.getUsername());
         when(userService.loadUserByUsername(organizer.getUsername())).thenReturn(organizer);
-        
+
         when(scheduleService.markAsReserved(any(Field.class), any(), any(), any()))
                 .thenReturn(new ScheduleDTO(1L, LocalDate.now(), LocalTime.of(9, 0), LocalTime.of(10, 0), ScheduleStatus.RESERVED));
 
@@ -318,7 +318,7 @@ public class MatchServiceClosedMatchTest {
         });
 
         assertEquals("Field is not available at the specified date and time", ex.getMessage());
-    } 
+    }
 
     @Test
     void testGetMatchById_notFound() {
@@ -329,7 +329,7 @@ public class MatchServiceClosedMatchTest {
         });
 
         assertEquals("Failed to find match with id '123'", ex.getMessage());
-    } 
+    }
 
     @Test
     void createClosedMatch_givenInvalidField() throws Exception {
@@ -418,7 +418,7 @@ public class MatchServiceClosedMatchTest {
             matchService.createMatch(dto, userDetails);
         });
 
-        assertEquals("Team sizes mismatch: home team has 3 players, but away team has 2. Both teams must have the same number of players.", 
+        assertEquals("Team sizes mismatch: home team has 3 players, but away team has 2. Both teams must have the same number of players.",
         ex.getMessage()
         );
     }
@@ -455,7 +455,7 @@ public class MatchServiceClosedMatchTest {
             matchService.createMatch(dto, userDetails);
         });
 
-        assertEquals("Team sizes mismatch: home team has 2 players, but away team has 3. Both teams must have the same number of players.", 
+        assertEquals("Team sizes mismatch: home team has 2 players, but away team has 3. Both teams must have the same number of players.",
         ex.getMessage()
         );
     }

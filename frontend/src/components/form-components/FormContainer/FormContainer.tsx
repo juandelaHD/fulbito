@@ -24,7 +24,7 @@ export const FormContainer = ({
 
     return (
         <form
-            className={`flex flex-col ${className}`}
+            className={`flex flex-col ${styles.form} ${className}`}
             onSubmit={(e) => {
                 form.handleSubmit();
                 e.preventDefault();
