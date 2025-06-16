@@ -2,6 +2,7 @@ package ar.uba.fi.ingsoft1.football5.user;
 
 import ar.uba.fi.ingsoft1.football5.common.exception.UserNotFoundException;
 import ar.uba.fi.ingsoft1.football5.config.security.JwtUserDetails;
+import ar.uba.fi.ingsoft1.football5.matches.MatchDTO;
 import ar.uba.fi.ingsoft1.football5.matches.MatchStatus;
 import ar.uba.fi.ingsoft1.football5.teams.TeamDTO;
 import io.swagger.v3.oas.annotations.Operation;
@@ -100,13 +101,13 @@ class UserRestController {
             }
     )
     @ResponseStatus(HttpStatus.OK)
-    public List<MatchHistoryDTO> getUpcomingMatches(@AuthenticationPrincipal JwtUserDetails userDetails) throws UserNotFoundException {
+    public List<MatchDTO> getUpcomingMatches(@AuthenticationPrincipal JwtUserDetails userDetails) throws UserNotFoundException {
         User user = userService.loadUserByUsername(userDetails.username());
         LocalDateTime now = LocalDateTime.now();
         return user.getJoinedMatches().stream()
                 .filter(match -> match.getEndTime().isAfter(now)
-                        && (match.getStatus() == MatchStatus.SCHEDULED || match.getStatus() == MatchStatus.ACCEPTED))
-                .map(MatchHistoryDTO::new)
+                        && (match.getStatus() == MatchStatus.SCHEDULED))
+                .map(MatchDTO::new)
                 .toList();
     }
 
@@ -121,7 +122,7 @@ class UserRestController {
             }
     )
     @ResponseStatus(HttpStatus.OK)
-    public List<MatchHistoryDTO> getMyPlayedMatches(@AuthenticationPrincipal JwtUserDetails userDetails) throws UserNotFoundException {
+    public List<MatchDTO> getMyPlayedMatches(@AuthenticationPrincipal JwtUserDetails userDetails) throws UserNotFoundException {
         return userService.getPlayedMatchesByUser(userDetails);
     }
 
@@ -141,7 +142,7 @@ class UserRestController {
             }
     )
     @ResponseStatus(HttpStatus.OK)
-    public List<MatchHistoryDTO> getMyReservations(@AuthenticationPrincipal JwtUserDetails userDetails) throws UserNotFoundException {
+    public List<MatchDTO> getMyReservations(@AuthenticationPrincipal JwtUserDetails userDetails) throws UserNotFoundException {
         return userService.getReservationsByUser(userDetails);
     }
 

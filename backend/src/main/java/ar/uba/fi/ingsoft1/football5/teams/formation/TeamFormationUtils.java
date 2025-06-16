@@ -21,6 +21,19 @@ public class TeamFormationUtils {
         Team teamB = new Team(teamBName, captainB);
         teamBPlayers.forEach(teamB::addMember);
 
+        if (teamA.getMembers().size() != teamB.getMembers().size()) {
+            throw new IllegalArgumentException("Teams must have the same number of members.");
+        }
+
+        teamA.setMainColor("#8B0000");
+        teamA.setSecondaryColor("#FF69B4");
+
+        teamB.setMainColor("#4B0082");
+        teamB.setSecondaryColor("#20B2AA");
+
+        teamA.setRanking(100); // Example ranking, can be adjusted
+        teamB.setRanking(100); // Example ranking, can be adjusted
+
         return new TeamFormationResult(teamA, teamB);
     }
 

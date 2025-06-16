@@ -117,6 +117,30 @@ ul {
   }
 }
 
+.dot-typing {
+  display: inline-block;
+  width: 40px;
+  text-align: left;
+}
+.dot-typing span {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  margin: 0 2px;
+  background: #0f0;
+  border-radius: 50%;
+  opacity: 0.6;
+  animation: dotTyping 1s infinite linear alternate;
+}
+.dot-typing span:nth-child(2) { animation-delay: 0.2s; }
+.dot-typing span:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes dotTyping {
+  0% { opacity: 0.2; }
+  50% { opacity: 1; }
+  100% { opacity: 0.2; }
+}
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;

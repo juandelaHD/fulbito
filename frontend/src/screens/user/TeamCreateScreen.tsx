@@ -56,7 +56,7 @@ export const TeamCreateScreen = () => {
       await mutateAsync(payload, {
         onSuccess: () => {
           toast.success("Team created successfully");
-          navigate("/teams"); // Navigate to the teams list after successful creation
+          navigate("/profile"); // Navigate to the user profile to see the new team
         },
         onError: (error) => {
           toast.error("Error creating team");

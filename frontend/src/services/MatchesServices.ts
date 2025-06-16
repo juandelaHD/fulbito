@@ -120,9 +120,9 @@ export type RawMatchDTO = {
     matchId: number;
     valid: boolean;
   };
+  result?: string;
 };
 
-// 1) Función que hace el fetch de partidos abiertos
 export async function getOpenMatchesService(token: string): Promise<RawMatchDTO[]> {
   const response = await fetch(`${BASE_API_URL}/matches/open-available`, {
     method: "GET",
@@ -138,7 +138,17 @@ export async function getOpenMatchesService(token: string): Promise<RawMatchDTO[
   return (await response.json()) as RawMatchDTO[];
 }
 
-// 2) Función que hace el “join” a un partido
+export function useGetOpenMatches() {
+  const [tokenState] = useToken();
+  const token = tokenState.state === "LOGGED_IN" ? tokenState.accessToken : "";
+
+  return useQuery<RawMatchDTO[], Error>({
+    queryKey: ["openMatches"],
+    queryFn: () => getOpenMatchesService(token),
+    enabled: token !== "",
+  });
+}
+
 export async function joinMatchService(matchId: number, token: string): Promise<void> {
   const response = await fetch(`${BASE_API_URL}/matches/${matchId}/join`, {
     method: "POST",
@@ -153,19 +163,6 @@ export async function joinMatchService(matchId: number, token: string): Promise<
   }
 }
 
-// 3) Hook para “GET /matches/open-available”
-export function useGetOpenMatches() {
-  const [tokenState] = useToken();
-  const token = tokenState.state === "LOGGED_IN" ? tokenState.accessToken : "";
-
-  return useQuery<RawMatchDTO[], Error>({
-    queryKey: ["openMatches"],
-    queryFn: () => getOpenMatchesService(token),
-    enabled: token !== "",
-  });
-}
-
-// 4) Hook para “join” a un partido
 export function useJoinMatch() {
   const [tokenState] = useToken();
   const token = tokenState.state === "LOGGED_IN" ? tokenState.accessToken : "";
@@ -180,6 +177,36 @@ export function useJoinMatch() {
     },
   });
 }
+
+export async function leaveMatchService(matchId: number, token: string): Promise<void> {
+  const response = await fetch(`${BASE_API_URL}/matches/${matchId}/leave-open`, {
+    method: "DELETE",
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+    },
+  });
+
+  if (!response.ok) {
+    await handleErrorResponse(response, "leaving match");
+  }
+}
+
+export function useLeaveMatch() {
+  const [tokenState] = useToken();
+  const token = tokenState.state === "LOGGED_IN" ? tokenState.accessToken : "";
+
+  return useMutation({
+    mutationFn: (matchId: number) => leaveMatchService(matchId, token),
+    onSuccess: () => {
+      toast.success("Successfully left match!", { duration: 5000 });
+    },
+    onError: (err: unknown) => {
+      console.log("Error while leaving match:", err);
+    },
+  });
+}
+
 
 export async function getMatchInviteLinkService(matchId: number, token: string): Promise<string> {
   const response = await fetch(`${BASE_API_URL}/matches/${matchId}/link-invite`, {
@@ -315,3 +342,34 @@ export function useGetMatchById(matchId?: number) {
     enabled: !!token && !!matchId,
   });
 }
+
+export async function cancelMatchService(matchId: number, token: string): Promise<void> {
+  const response = await fetch(`${BASE_API_URL}/matches/${matchId}/cancel`, {
+    method: "PUT",
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+    },
+  });
+
+  if (!response.ok) {
+    await handleErrorResponse(response, "leaving match");
+  }
+}
+
+export function useCancelMatch() {
+  const [tokenState] = useToken();
+  const token = tokenState.state === "LOGGED_IN" ? tokenState.accessToken : "";
+
+  return useMutation({
+    mutationFn: (matchId: number) => cancelMatchService(matchId, token),
+    onSuccess: () => {
+      toast.success("Successfully cancelled match!", { duration: 5000 });
+    },
+    onError: (err: unknown) => {
+      console.log("Error while leaving match:", err);
+    },
+  });
+}
+
+
