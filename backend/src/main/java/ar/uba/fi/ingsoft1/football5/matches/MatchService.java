@@ -366,7 +366,7 @@ public class MatchService {
 
     public List<MatchDTO> getAvailableOpenMatches() {
         List<Match> matches = matchRepository.findByTypeAndStatusInAndStartTimeAfterAndPlayers_SizeLessThan(
-                List.of(MatchStatus.SCHEDULED),
+                List.of(MatchStatus.PENDING),
                 LocalDateTime.now()
         );
         return matches.stream().map(MatchDTO::new).toList();

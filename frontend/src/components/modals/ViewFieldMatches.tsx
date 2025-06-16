@@ -8,6 +8,12 @@ type Props = {
 };
 
 export const ViewFieldMatchesModal = ({ isOpen, onClose, field }: Props) => {
+    const formatLocalDateTime = (raw: string): string => {
+        const [date, time] = raw.split("T");
+        const shortTime = time.slice(0, 5);
+        return `${date} [${shortTime}]`;
+    };
+
     return (
         <Modal
             isOpen={isOpen}
@@ -37,10 +43,11 @@ export const ViewFieldMatchesModal = ({ isOpen, onClose, field }: Props) => {
             {field?.matchesWithMissingPlayers &&
             Object.keys(field.matchesWithMissingPlayers).length > 0 ? (
                 <ul className="space-y-2">
-                    {Object.entries(field.matchesWithMissingPlayers).map(
-                        ([matchId, missingCount]) => (
-                            <li key={matchId}>
-                                Match ID: <span className="font-bold">{matchId}</span> – Missing Players:{" "}
+                    {Object.entries(field.matchesWithMissingPlayers)
+                        .sort(([a], [b]) => new Date(a).getTime() - new Date(b).getTime())
+                        .map(([datetime, missingCount]) => (
+                            <li key={datetime} className="text-sm">
+                                {formatLocalDateTime(datetime)} – Missing Players:{" "}
                                 <span className="text-red-400 font-semibold">{missingCount}</span>
                             </li>
                         )

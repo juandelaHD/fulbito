@@ -192,9 +192,9 @@ public class FieldService {
 
         // Si es true, se solicitan los partidos abiertos con jugadores
         // faltantes (matchesWithMissingPlayers = Map)
-        Map<String, Integer> matches = field.getMatches().stream()
+        Map<LocalDateTime, Integer> matches = field.getMatches().stream()
                 .collect(Collectors.toMap(
-                        match -> match.getId().toString(),
+                        Match::getStartTime,
                         match -> Math.max(0, match.getMaxPlayers() - match.getPlayers().size())));
         return new FieldDTO(field, matches);
     }
