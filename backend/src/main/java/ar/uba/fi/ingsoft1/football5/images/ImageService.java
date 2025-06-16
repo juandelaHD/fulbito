@@ -24,6 +24,9 @@ import java.util.List;
 @Transactional
 public class ImageService {
 
+    private static final String IMAGE_ITEM = "image";
+    private static final String DEFAULT_IMAGE = "default_profile.webp";
+
     private final String storagePath;
     private final ImageRepository imageRepository;
     private final UserRepository userRepository;
@@ -37,7 +40,9 @@ public class ImageService {
         TeamImage.injectRepository(teamRepository);
     }
 
-    public ImageService(@Value("${app.images.path}") String storagePath, ImageRepository imageRepository, UserRepository userRepository, FieldRepository fieldRepository, TeamRepository teamRepository) {
+    public ImageService(@Value("${app.images.path}") String storagePath, ImageRepository imageRepository,
+                        UserRepository userRepository, FieldRepository fieldRepository,
+                        TeamRepository teamRepository) {
         this.storagePath = storagePath;
         this.imageRepository = imageRepository;
         this.userRepository = userRepository;
@@ -60,7 +65,7 @@ public class ImageService {
         byte[] data;
 
         if (file == null || file.isEmpty()) {
-            Path pathImg = Paths.get(storagePath, "default_profile.webp");
+            Path pathImg = Paths.get(storagePath, DEFAULT_IMAGE);
             data = Files.readAllBytes(pathImg);
         } else {
             data = file.getBytes();
@@ -75,7 +80,7 @@ public class ImageService {
         byte[] data;
 
         if (file == null || file.isEmpty()) {
-            Path pathImg = Paths.get(storagePath, "default_profile.webp");
+            Path pathImg = Paths.get(storagePath, DEFAULT_IMAGE);
             data = Files.readAllBytes(pathImg);
         } else {
             data = file.getBytes();
@@ -87,20 +92,16 @@ public class ImageService {
     }
 
     public byte[] getImageData(Long id) throws ItemNotFoundException {
-        if (id == null) {
-            throw new ItemNotFoundException("image" , id);
-        }
         return imageRepository.findById(id)
                 .map(Image::getData)
-                .orElseThrow(() -> new ItemNotFoundException("image", id));
+                .orElseThrow(() -> new ItemNotFoundException(IMAGE_ITEM, id));
     }
 
     public void deleteImage(Long id, JwtUserDetails userDetails) throws ItemNotFoundException {
         Image image = imageRepository.findById(id)
-                .orElseThrow(() -> new ItemNotFoundException("image", id));
+                .orElseThrow(() -> new ItemNotFoundException(IMAGE_ITEM, id));
 
         image.validateOwnership(userDetails);
-
         imageRepository.delete(image);
     }
 }

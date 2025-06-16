@@ -20,10 +20,7 @@ public class PasswordResetService {
     public PasswordResetToken createToken(User user) {
         tokenRepo.deleteByUserId(user.getId());
         tokenRepo.flush();
-        PasswordResetToken token = new PasswordResetToken();
-        token.setToken(UUID.randomUUID().toString());
-        token.setUser(user);
-        token.setExpiryDate(LocalDateTime.now().plusHours(1));
+        PasswordResetToken token = new PasswordResetToken(UUID.randomUUID().toString(), user, LocalDateTime.now().plusHours(1));
         return tokenRepo.save(token);
     }
 

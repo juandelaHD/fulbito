@@ -81,7 +81,7 @@ export function useGetMyTeams(options?: { enabled?: boolean }) {
   return useQuery<RawTeamDTO[]>({
     queryKey: ["teams"],
     queryFn: async () => {
-      const response = await fetch(`${BASE_API_URL}/teams/my`, {
+      const response = await fetch(`${BASE_API_URL}/teams/owned`, {
         headers: {
           Authorization: `Bearer ${token}`,
           Accept: "application/json",

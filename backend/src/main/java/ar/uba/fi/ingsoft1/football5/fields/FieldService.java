@@ -9,6 +9,7 @@ import ar.uba.fi.ingsoft1.football5.images.ImageService;
 import ar.uba.fi.ingsoft1.football5.matches.Match;
 import ar.uba.fi.ingsoft1.football5.matches.MatchRepository;
 import ar.uba.fi.ingsoft1.football5.matches.MatchStatus;
+import ar.uba.fi.ingsoft1.football5.matches.MatchType;
 import ar.uba.fi.ingsoft1.football5.user.User;
 import ar.uba.fi.ingsoft1.football5.user.UserService;
 import org.springframework.data.domain.Page;
@@ -30,6 +31,7 @@ import java.util.stream.Collectors;
 @Transactional
 public class FieldService {
 
+    private static final String FIELD_ITEM = "field";
     private final FieldRepository fieldRepository;
     private final MatchRepository matchRepository;
     private final ImageService imageService;
@@ -60,15 +62,14 @@ public class FieldService {
 
     public Field loadFieldById(Long id) throws ItemNotFoundException {
         return fieldRepository.findById(id)
-                .orElseThrow(() -> new ItemNotFoundException("field", id));
+                .orElseThrow(() -> new ItemNotFoundException(FIELD_ITEM, id));
     }
 
-    public boolean isFieldAdmin(
-            Long fieldId,
-            JwtUserDetails userDetails) throws ItemNotFoundException, AccessDeniedException {
+    public boolean isFieldAdmin(Long fieldId, JwtUserDetails userDetails)
+            throws ItemNotFoundException, AccessDeniedException {
 
         Field field = fieldRepository.findById(fieldId)
-                .orElseThrow(() -> new ItemNotFoundException("field", fieldId));
+                .orElseThrow(() -> new ItemNotFoundException(FIELD_ITEM, fieldId));
 
         if (!field.getOwner().getUsername().equalsIgnoreCase(userDetails.username())) {
             throw new AccessDeniedException(String.format("User does not have access to field with id '%s'.",
@@ -80,7 +81,7 @@ public class FieldService {
     public void deleteField(Long id, JwtUserDetails userDetails)
             throws ItemNotFoundException, IllegalArgumentException {
         Field field = fieldRepository.findById(id)
-                .orElseThrow(() -> new ItemNotFoundException("field", id));
+                .orElseThrow(() -> new ItemNotFoundException(FIELD_ITEM, id));
 
         validateOwnership(field, userDetails);
         validateNonActiveMatches(field);
@@ -99,7 +100,7 @@ public class FieldService {
     public FieldDTO updateField(Long id, FieldCreateDTO fieldCreate, List<MultipartFile> images,
                                 JwtUserDetails userDetails) throws ItemNotFoundException, IOException {
         Field field = fieldRepository.findById(id)
-                .orElseThrow(() -> new ItemNotFoundException("field", id));
+                .orElseThrow(() -> new ItemNotFoundException(FIELD_ITEM, id));
 
         validateOwnership(field, userDetails);
         validateUniqueName(fieldCreate, id);
@@ -116,31 +117,46 @@ public class FieldService {
         return fieldPage.map(field -> mapToDTO(field, false));
     }
 
+    public Page<FieldDTO> getFieldsWithNonFilters(Pageable pageable) {
+        Page<Field> fieldPage = fieldRepository.findAll(pageable);
+        return fieldPage.map( field -> mapToDTO(field, false));
+    }
+
     public boolean validateFieldAvailability(
             Long fieldId,
             LocalDate date,
             LocalDateTime startTime,
-            LocalDateTime endTime) {
+            LocalDateTime endTime) throws ItemNotFoundException {
 
         List<Match> matches = matchRepository.findConflictingMatches(fieldId, date, startTime, endTime);
 
         Field field = fieldRepository.findById(fieldId)
-                .orElseThrow(() -> new IllegalArgumentException("Field not found with id: " + fieldId));
+                .orElseThrow(() -> new ItemNotFoundException(FIELD_ITEM, fieldId));
         boolean slotExists = field.getSchedules().stream()
                 .anyMatch(s -> s.getDate().equals(date)
                         && s.getStatus() == ScheduleStatus.AVAILABLE
                         && s.getStartTime().atDate(date).equals(startTime)
                         && s.getEndTime().atDate(date).equals(endTime));
+
+        validateNonConflictingMatches(matches, fieldId, date, startTime, endTime);
+        validateSlotAvailability(fieldId, date, startTime, endTime, slotExists);
+
+        return true;
+    }
+
+    private void validateNonConflictingMatches(List<Match> matches, Long fieldId, LocalDate date, LocalDateTime startTime, LocalDateTime endTime) {
+        if (!matches.isEmpty()) {
+            throw new IllegalArgumentException(String.format("Field with id '%s' is not available on %s from %s to %s.",
+                    fieldId, date, startTime, endTime));
+        }
+    }
+
+    private void validateSlotAvailability(Long fieldId, LocalDate date, LocalDateTime startTime, LocalDateTime endTime, boolean slotExists) {
         if (!slotExists) {
             throw new IllegalArgumentException(String.format(
                     "No available slot found for field with id '%s' on %s from %s to %s.",
                     fieldId, date, startTime.toLocalTime(), endTime.toLocalTime()));
         }
-        if (!matches.isEmpty()) {
-            throw new IllegalArgumentException(String.format("Field with id '%s' is not available on %s from %s to %s.",
-                    fieldId, date, startTime, endTime));
-        }
-        return true;
     }
 
     private void validateUniqueName(FieldCreateDTO fieldCreate, Long id) {
@@ -182,21 +198,17 @@ public class FieldService {
         }
     }
 
-    public Page<FieldDTO> getFieldsWithNonFilters(Pageable pageable) {
-        Page<Field> fieldPage = fieldRepository.findAll(pageable);
-        return fieldPage.map( field -> mapToDTO(field, null));
-    }
-
     private FieldDTO mapToDTO(Field field, Boolean includeMatches) {
-        // Si es false o null, no se solicitan los partidos abiertos con
-        // jugadores faltantes (matchesWithMissingPlayers = null).
+        // Open matches not requested
         if (!Boolean.TRUE.equals(includeMatches)) {
             return new FieldDTO(field);
         }
 
-        // Si es true, se solicitan los partidos abiertos con jugadores
-        // faltantes (matchesWithMissingPlayers = Map)
+        // Open matches requested, with missing players
         Map<LocalDateTime, Integer> matches = field.getMatches().stream()
+                .filter(match -> match.getType() == MatchType.OPEN &&
+                        match.getStatus() == MatchStatus.ACCEPTED &&
+                        match.getStartTime().isAfter(LocalDateTime.now()))
                 .collect(Collectors.toMap(
                         Match::getStartTime,
                         match -> Math.max(0, match.getMaxPlayers() - match.getPlayers().size())));

@@ -13,7 +13,6 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Valid;
 import jakarta.validation.Validator;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.lang.NonNull;
@@ -33,12 +32,11 @@ import java.util.Set;
 class SessionRestController {
 
     private final UserService userService;
+    private final Validator validator;
 
-    @Autowired
-    private Validator validator;
-
-    SessionRestController(UserService userService) {
+    SessionRestController(UserService userService, Validator validator) {
         this.userService = userService;
+        this.validator = validator;
     }
 
     @PostMapping(path = "/sign-up", produces = "application/json", consumes = "multipart/form-data")
@@ -81,7 +79,14 @@ class SessionRestController {
 
         ObjectMapper objectMapper = new ObjectMapper();
         UserCreateDTO data = objectMapper.readValue(userJson, UserCreateDTO.class);
-        // Validate JSON data with validator annotations in UserCreateDTO
+        validateJsonData(data);
+        return userService
+                .createUser(data, avatar)
+                .map(user -> ResponseEntity.status(HttpStatus.CREATED).body(user))
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "User creation failed"));
+    }
+
+    private void validateJsonData(UserCreateDTO data) {
         Set<ConstraintViolation<UserCreateDTO>> violations = validator.validate(data);
         if (!violations.isEmpty()) {
             StringBuilder errorMessage = new StringBuilder("Validation failed: ");
@@ -90,10 +95,6 @@ class SessionRestController {
             }
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, errorMessage.toString());
         }
-        return userService
-                .createUser(data, avatar)
-                .map(user -> ResponseEntity.status(HttpStatus.CREATED).body(user))
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "User creation failed"));
     }
 
     @PostMapping(path = "/login", produces = "application/json")

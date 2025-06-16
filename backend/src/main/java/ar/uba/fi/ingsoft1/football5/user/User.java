@@ -55,6 +55,9 @@ public class User implements UserDetails, UserCredentials {
     @Column(nullable = false)
     private boolean emailConfirmed = false;
 
+    @Column(nullable = false)
+    private boolean activeUser = true;
+
     @Column
     private String emailConfirmationToken;
 
@@ -84,7 +87,6 @@ public class User implements UserDetails, UserCredentials {
         this.age = age;
         this.password = password;
         this.role = role;
-        this.emailConfirmed = false;
     }
 
     @Override
@@ -184,6 +186,10 @@ public class User implements UserDetails, UserCredentials {
 
     public void setInvitationToken(String invitationToken) {
         this.invitationToken = invitationToken;
+    }
+
+    public boolean isActiveUser() {
+        return activeUser;
     }
 
 }

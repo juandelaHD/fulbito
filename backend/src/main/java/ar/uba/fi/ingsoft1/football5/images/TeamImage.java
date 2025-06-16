@@ -30,7 +30,7 @@ public class TeamImage extends Image {
                 .orElseThrow(() -> new ItemNotFoundException("team", team.getId()));
 
         if (!currentTeam.getCaptain().getUsername().equalsIgnoreCase(username)) {
-            throw new IllegalArgumentException("No sos el capitán de este equipo.");
+            throw new IllegalArgumentException("You are not the captain of the team associated with this image.");
         }
     }
 

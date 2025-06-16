@@ -24,6 +24,7 @@ public class MatchInvitationService {
     public void createInvitation(Long matchId) throws IllegalArgumentException {
         Match match = matchRepository.findById(matchId)
                 .orElseThrow(() -> new IllegalArgumentException("Match not found with id: " + matchId));
+
         if (match.getStatus() != MatchStatus.PENDING && match.getStatus() != MatchStatus.ACCEPTED) {
             throw new IllegalArgumentException("Cannot create invitation for this match. Current status: " + match.getStatus());
         }
@@ -36,8 +37,8 @@ public class MatchInvitationService {
         if (match.getStartTime().isBefore(LocalDateTime.now())) {
             throw new IllegalArgumentException("Cannot create invitation for a match that has already started.");
         }
-        String token = UUID.randomUUID().toString();
-        MatchInvitation invitation = new MatchInvitation(token, match);
+
+        MatchInvitation invitation = new MatchInvitation(UUID.randomUUID().toString(), match);
         invitation = invitationRepository.save(invitation);
 
         match.setInvitation(invitation);
@@ -49,14 +50,20 @@ public class MatchInvitationService {
     public Optional<MatchInvitation> validateToken(String token) throws IllegalArgumentException {
         MatchInvitation invitation = invitationRepository.findByToken(token)
                 .orElseThrow(() -> new IllegalArgumentException("Invalid invitation token: " + token));
+
+        validateValidToken(invitation, token);
+        return Optional.of(invitation);
+    }
+
+    private void validateValidToken(MatchInvitation invitation, String token) {
         if (!invitation.isValid()) {
             throw new IllegalArgumentException("Invitation token is no longer valid: " + token);
         }
-        return Optional.of(invitation);
     }
 
     public void invalidateMatchInvitation(Match match) throws IllegalArgumentException {
         Optional<MatchInvitation> invitation = invitationRepository.findByToken(match.getInvitation().getToken());
+
         if (invitation.isPresent()) {
             MatchInvitation inv = invitation.get();
             if (inv.getMatch().getId().equals(match.getId())) {
@@ -67,9 +74,8 @@ public class MatchInvitationService {
         }
     }
 
-    public void markAsInvalid(MatchInvitation invitation) {
+    private void markAsInvalid(MatchInvitation invitation) {
         invitation.setValid(false);
         invitationRepository.save(invitation);
     }
-
 }

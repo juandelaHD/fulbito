@@ -43,7 +43,10 @@ public record UserDTO(
         Role role,
 
         @Schema(description = "Indicates whether the user's email is confirmed", example = "true")
-        boolean emailConfirmed
+        boolean emailConfirmed,
+
+        @Schema(description = "Indicates whether the user is active", example = "true")
+        boolean activeUser
 
 ) {
     public UserDTO(User user) {
@@ -57,7 +60,8 @@ public record UserDTO(
                 user.getAge(),
                 user.getGender(),
                 user.getRole(),
-                user.isEmailConfirmed()
+                user.isEmailConfirmed(),
+                user.isActiveUser()
         );
     }
 }

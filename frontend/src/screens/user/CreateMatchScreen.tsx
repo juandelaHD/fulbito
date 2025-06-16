@@ -45,7 +45,7 @@ export const CreateMatchScreen = ({ defaultMatchType = "OPEN" }: { defaultMatchT
     defaultValues: {
       matchType: matchType,
       fieldId: "",
-      minPlayers: 1,
+      minPlayers: 2,
       maxPlayers: 10,
       date: new Date(),
       startTime: new Date(),

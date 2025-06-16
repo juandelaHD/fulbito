@@ -25,12 +25,7 @@ export const ResetPasswordScreen = () => {
       },
     },
     onSubmit: async ({ value }) => {
-      try {
-        await resetPasswordService({ token, ...value });
-        toast.success("Password reset successfully!");
-      } catch (err: any) {
-        toast.error(err.message || "Unexpected server error.");
-      }
+      await resetPasswordService({ token, ...value });
     },
   });
 
