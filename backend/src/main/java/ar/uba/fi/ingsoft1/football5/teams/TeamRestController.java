@@ -2,8 +2,6 @@ package ar.uba.fi.ingsoft1.football5.teams;
 
 import ar.uba.fi.ingsoft1.football5.common.exception.ItemNotFoundException;
 import ar.uba.fi.ingsoft1.football5.config.security.JwtUserDetails;
-import ar.uba.fi.ingsoft1.football5.images.ImageService;
-import ar.uba.fi.ingsoft1.football5.user.UserService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -15,7 +13,6 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validator;
 import jakarta.validation.constraints.Positive;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -31,20 +28,13 @@ import java.util.Set;
 @RequestMapping("/teams")
 @Tag(name = "Teams", description = "Endpoints for managing teams")
 public class TeamRestController {
+
     private final TeamService teamService;
-    private final TeamRepository teamRepository;
-    private final ImageService imageService;
+    private final Validator validator;
 
-    @Autowired
-    private Validator validator;
-
-    @Autowired
-    private UserService userService;
-
-    public TeamRestController(TeamService teamService, TeamRepository teamRepository, ImageService imageService) {
+    public TeamRestController(TeamService teamService, Validator validator) {
         this.teamService = teamService;
-        this.teamRepository = teamRepository;
-        this.imageService = imageService;
+        this.validator = validator;
     }
 
     @PostMapping(path = "/create", consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
@@ -87,7 +77,7 @@ public class TeamRestController {
             ) String teamJson,
             @RequestParam(value = "image", required = false) MultipartFile image,
             @AuthenticationPrincipal JwtUserDetails userDetails
-    ) throws IOException, ItemNotFoundException, IllegalArgumentException {
+    ) throws IOException, IllegalArgumentException {
         ObjectMapper objectMapper = new ObjectMapper();
         TeamCreateDTO dto = objectMapper.readValue(teamJson, TeamCreateDTO.class);
 
@@ -109,7 +99,7 @@ public class TeamRestController {
                 ));
     }
 
-    @GetMapping(value = "/my", produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(value = "/owned", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(
             summary = "List teams where the user is captain",
             description = "Returns all teams where the authenticated user is the captain.",
@@ -179,11 +169,7 @@ public class TeamRestController {
     ) throws Exception {
         ObjectMapper objectMapper = new ObjectMapper();
         TeamCreateDTO dto = objectMapper.readValue(teamJson, TeamCreateDTO.class);
-        TeamDTO updated = teamService.updateTeam(id, dto, userDetails.username());
-        if (image != null && !image.isEmpty()) {
-            Team team = teamRepository.findById(updated.id()).orElseThrow();
-            imageService.saveTeamImage(team, image);
-        }
+        TeamDTO updated = teamService.updateTeam(id, dto, userDetails.username(), image);
         return ResponseEntity.ok(updated);
     }
     @DeleteMapping("/{id}")
@@ -248,13 +234,8 @@ public class TeamRestController {
             @Parameter(description = "Team ID", required = true) @PathVariable @Positive Long teamId,
             @Parameter(description = "Image file", required = true) @RequestParam("file") MultipartFile file,
             @AuthenticationPrincipal JwtUserDetails userDetails
-    ) throws Exception {
-        Team team = teamRepository.findById(teamId)
-                .orElseThrow(() -> new ItemNotFoundException("team", teamId));
-        if (!team.getCaptain().getUsername().equalsIgnoreCase(userDetails.username())) {
-            throw new IllegalArgumentException("You are not the captain of this team.");
-        }
-        imageService.saveTeamImage(team, file);
+    ) throws IOException, ItemNotFoundException {
+        teamService.uploadTeamImage(teamId, file, userDetails.username());
     }
 
     @PostMapping("/{teamId}/members")

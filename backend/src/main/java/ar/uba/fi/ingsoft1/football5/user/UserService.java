@@ -8,7 +8,6 @@ import ar.uba.fi.ingsoft1.football5.matches.MatchStatus;
 import ar.uba.fi.ingsoft1.football5.matches.invitation.MatchInvitation;
 import ar.uba.fi.ingsoft1.football5.matches.invitation.MatchInvitationService;
 import ar.uba.fi.ingsoft1.football5.matches.Match;
-import ar.uba.fi.ingsoft1.football5.teams.Team;
 import ar.uba.fi.ingsoft1.football5.teams.TeamDTO;
 import ar.uba.fi.ingsoft1.football5.user.email.EmailSenderService;
 import ar.uba.fi.ingsoft1.football5.user.password_reset_token.PasswordResetService;
@@ -26,7 +25,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -35,7 +33,7 @@ import java.util.UUID;
 @Transactional
 public class UserService implements UserDetailsService {
 
-    private static final String USER_NOT_FOUND = "user";
+    private static final String USER_ITEM = "user";
 
     private final JwtService jwtService;
     private final PasswordEncoder passwordEncoder;
@@ -72,23 +70,18 @@ public class UserService implements UserDetailsService {
     public User loadUserByUsername(String username) {
         return userRepository
                 .findByUsername(username)
-                .orElseThrow(() -> new UserNotFoundException(USER_NOT_FOUND, username));
+                .orElseThrow(() -> new UserNotFoundException(USER_ITEM, username));
     }
 
     public User loadUserById(Long id) {
         return userRepository
                 .findById(id)
-                .orElseThrow(() -> new UserNotFoundException(USER_NOT_FOUND, id.toString()));
+                .orElseThrow(() -> new UserNotFoundException(USER_ITEM, id.toString()));
     }
 
-    public Optional<UserDTO> getUserByUsername(String username) throws UserNotFoundException {
+    public UserDTO getUserByUsername(String username) throws UserNotFoundException {
         User user = loadUserByUsername(username);
-        return Optional.of(new UserDTO(user));
-    }
-
-    public Optional<UserDTO> getUserByDetails(JwtUserDetails userDetails) {
-        return userRepository.findByUsername(userDetails.username())
-                .map(UserDTO::new);
+        return new UserDTO(user);
     }
 
     Optional<TokenDTO> createUser(UserCreateDTO data, MultipartFile avatar) throws IOException, IllegalArgumentException {
@@ -146,21 +139,11 @@ public class UserService implements UserDetailsService {
         return Optional.of(tokens);
     }
 
-    public Optional<List<TeamDTO>> getTeamsByUsername(String username) throws UserNotFoundException {
+    public List<TeamDTO> getTeamsByUsername(String username) throws UserNotFoundException {
         User user = loadUserByUsername(username);
-        List<TeamDTO> teams = user.getTeams().stream()
+        return user.getTeams().stream()
                 .map(TeamDTO::new)
                 .toList();
-        return Optional.of(teams);
-    }
-
-    public List<TeamDTO> getTeamsByUserDetails(JwtUserDetails userDetails) throws UserNotFoundException {
-        User user = loadUserByUsername(userDetails.username());
-        List<TeamDTO> teams = new ArrayList<>();
-        for (Team team : user.getTeams()) {
-            teams.add(new TeamDTO(team));
-        }
-        return teams;
     }
 
     public List<MatchHistoryDTO> getPlayedMatchesByUser(JwtUserDetails userDetails) throws UserNotFoundException{
@@ -182,7 +165,7 @@ public class UserService implements UserDetailsService {
     public List<MatchHistoryDTO> getJoinedMatchesByUser(JwtUserDetails userDetails) throws UserNotFoundException {
         User user = loadUserByUsername(userDetails.username());
         return user.getJoinedMatches().stream()
-                .filter(match -> match.getStatus() != MatchStatus.FINISHED                )
+                .filter(match -> match.getStatus() != MatchStatus.FINISHED)
                 .map(MatchHistoryDTO::new)
                 .toList();
     }
@@ -236,14 +219,12 @@ public class UserService implements UserDetailsService {
             PasswordResetToken token = passwordResetService.createToken(user);
             emailService.sendPasswordResetMail(user.getUsername(), token.getToken());
         });
-        // Always return success to avoid user enumeration
     }
 
     public void resetPassword(String token, String newPassword, String confirmPassword) {
         if (!newPassword.equals(confirmPassword)) {
             throw new IllegalArgumentException("Passwords do not match");
         }
-        // Validate token and reset password
         User user = passwordResetService.validateToken(token)
                 .orElseThrow(() -> new IllegalArgumentException("Invalid or expired token"));
         user.setPassword(passwordEncoder.encode(newPassword));
@@ -259,5 +240,15 @@ public class UserService implements UserDetailsService {
         ));
         RefreshToken refreshToken = refreshTokenService.createFor(user);
         return new TokenDTO(accessToken, refreshToken.value(), user.getRole());
+    }
+
+    public List<MatchHistoryDTO> getUpcomingMatchesByUser(JwtUserDetails userDetails) {
+        User user = loadUserByUsername(userDetails.username());
+        LocalDateTime now = LocalDateTime.now();
+        return user.getJoinedMatches().stream()
+                .filter(match -> match.getEndTime().isAfter(now)
+                        && (match.getStatus() == MatchStatus.SCHEDULED || match.getStatus() == MatchStatus.ACCEPTED))
+                .map(MatchHistoryDTO::new)
+                .toList();
     }
 }

@@ -144,7 +144,7 @@ class ReviewServiceTest {
     }
 
     @Test
-    void createReview_whenValidData_returnsReviewDTO() throws ItemNotFoundException {
+    void createReview_whenUserCanReviewField_returnsReviewDTO() throws ItemNotFoundException {
         Long fieldId = 1L;
         ReviewCreateDTO reviewCreateDTO = new ReviewCreateDTO(10, "Great field!");
         Review review = new Review(reviewCreateDTO.rating(), reviewCreateDTO.comment(), field, user);

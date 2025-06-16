@@ -22,7 +22,7 @@ public record FieldDTO(
                     field.getLocation(),
                     field.isEnabled(),
                     field.getImages().stream().map(image -> "/images/" + image.getId()).toList(),
-                    null // No se solicitan los partidos abiertos
+                    null // Open Matches not requested
             );
     }
 
@@ -35,7 +35,7 @@ public record FieldDTO(
                 field.getLocation(),
                 field.isEnabled(),
                 field.getImages().stream().map(image -> "/images/" + image.getId()).toList(),
-                openMatches // Se incluyen los partidos abiertos con jugadores faltantes
+                openMatches // Open matches requested, with missing players
         );
     }
 

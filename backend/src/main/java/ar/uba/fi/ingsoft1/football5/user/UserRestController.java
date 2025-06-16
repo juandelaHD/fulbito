@@ -2,7 +2,6 @@ package ar.uba.fi.ingsoft1.football5.user;
 
 import ar.uba.fi.ingsoft1.football5.common.exception.UserNotFoundException;
 import ar.uba.fi.ingsoft1.football5.config.security.JwtUserDetails;
-import ar.uba.fi.ingsoft1.football5.matches.MatchStatus;
 import ar.uba.fi.ingsoft1.football5.teams.TeamDTO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -13,7 +12,6 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
@@ -37,27 +35,8 @@ class UserRestController {
             }
     )
     @ResponseStatus(HttpStatus.OK)
-    // TODO: When are we using this service? Is it for the user or admin profile page? Decide PreAuthorize annotation.
     UserDTO getUser(@NonNull @PathVariable String username) throws UserNotFoundException {
-        return userService.getUserByUsername(username)
-                .orElseThrow(() -> new UserNotFoundException("User not found", username));
-    }
-
-    @GetMapping(path = "/{username}/teams", produces = "application/json")
-    @Operation(
-            summary = "Get teams by user",
-            description = "Returns a list of teams associated with the specified user by their username.",
-            responses = {
-                    @ApiResponse(responseCode = "200", description = "Teams retrieved successfully"),
-                    @ApiResponse(responseCode = "404", description = "User not found")
-            }
-    )
-    @ResponseStatus(HttpStatus.OK)
-    public List<TeamDTO> getTeamsByUser(
-            @PathVariable String username
-    ) throws UserNotFoundException {
-        return userService.getTeamsByUsername(username)
-                .orElseThrow(() -> new UserNotFoundException("User not found", username));
+        return userService.getUserByUsername(username);
     }
 
     @GetMapping(path = "/me", produces = "application/json")
@@ -71,8 +50,7 @@ class UserRestController {
     )
     @ResponseStatus(HttpStatus.OK)
     public UserDTO getMyProfile(@AuthenticationPrincipal JwtUserDetails userDetails) throws UserNotFoundException {
-        return userService.getUserByDetails(userDetails)
-                .orElseThrow(() -> new UserNotFoundException("User not found", userDetails.username()));
+        return userService.getUserByUsername(userDetails.username());
     }
 
     @GetMapping("/me/teams")
@@ -86,7 +64,7 @@ class UserRestController {
     )
     @ResponseStatus(HttpStatus.OK)
     public List<TeamDTO> getMyTeams(@AuthenticationPrincipal JwtUserDetails userDetails) throws UserNotFoundException {
-        return userService.getTeamsByUserDetails(userDetails);
+        return userService.getTeamsByUsername(userDetails.username());
     }
 
     @Transactional(readOnly = true)
@@ -101,13 +79,7 @@ class UserRestController {
     )
     @ResponseStatus(HttpStatus.OK)
     public List<MatchHistoryDTO> getUpcomingMatches(@AuthenticationPrincipal JwtUserDetails userDetails) throws UserNotFoundException {
-        User user = userService.loadUserByUsername(userDetails.username());
-        LocalDateTime now = LocalDateTime.now();
-        return user.getJoinedMatches().stream()
-                .filter(match -> match.getEndTime().isAfter(now)
-                        && (match.getStatus() == MatchStatus.SCHEDULED || match.getStatus() == MatchStatus.ACCEPTED))
-                .map(MatchHistoryDTO::new)
-                .toList();
+        return userService.getUpcomingMatchesByUser(userDetails);
     }
 
 

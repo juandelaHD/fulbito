@@ -20,7 +20,6 @@ public class Match {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // Cancha donde se jugará el partido
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "field_id",
                 foreignKey = @ForeignKey(name = "fk_field_match",
@@ -28,13 +27,11 @@ public class Match {
     @JsonManagedReference("match-field")
     private Field field;
 
-    // Organizador del partido
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     @JsonManagedReference("organizer-match")
     private User organizer;
 
-    // Jugadores inscritos para partido abierto
     @ManyToMany
     @JoinTable(
             name = "match_subscriptions",
@@ -44,7 +41,6 @@ public class Match {
     @JsonManagedReference("player-match")
     private Set<User> players = new HashSet<>();
 
-    // Equipos del partido
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "home_team_id", nullable = true)
     private Team homeTeam;
@@ -56,33 +52,26 @@ public class Match {
     @OneToOne(mappedBy = "match", cascade = CascadeType.ALL, orphanRemoval = true)
     private MatchInvitation invitation;
 
-    // Estado del partido
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private MatchStatus status = MatchStatus.PENDING;
 
-    // Tipo de partido (abierto o cerrado)
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private MatchType type;
 
-    // Número mínimo de jugadores para el partido
     @Column(nullable = false)
     private Integer minPlayers;
 
-    // Número máximo de jugadores para el partido
     @Column(nullable = false)
     private Integer maxPlayers;
 
-    // Fecha del partido
     @Column(nullable = false)
     private LocalDate date;
 
-    // Hora de inicio del partido
     @Column(nullable = false)
     private LocalDateTime startTime;
 
-    // Hora de finalización del partido
     @Column(nullable = false)
     private LocalDateTime endTime;
 
@@ -95,10 +84,9 @@ public class Match {
 
     public Match() {}
 
-    public Match(Field field, User organizer, MatchStatus status, MatchType type, Integer minPlayers, Integer maxPlayers, LocalDate date, LocalDateTime startTime, LocalDateTime endTime) {
+    public Match(Field field, User organizer, MatchType type, Integer minPlayers, Integer maxPlayers, LocalDate date, LocalDateTime startTime, LocalDateTime endTime) {
         this.field = field;
         this.organizer = organizer;
-        this.status = status;
         this.type = type;
         this.minPlayers = minPlayers;
         this.maxPlayers = maxPlayers;

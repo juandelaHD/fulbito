@@ -3,7 +3,6 @@ package ar.uba.fi.ingsoft1.football5.matches;
 import ar.uba.fi.ingsoft1.football5.common.exception.ItemNotFoundException;
 import ar.uba.fi.ingsoft1.football5.common.exception.UserNotFoundException;
 import ar.uba.fi.ingsoft1.football5.config.security.JwtUserDetails;
-import ar.uba.fi.ingsoft1.football5.matches.invitation.MatchInvitationService;
 import ar.uba.fi.ingsoft1.football5.teams.formation.TeamFormationRequestDTO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -24,8 +23,7 @@ public class MatchRestController {
     private final MatchService matchService;
 
     @Autowired
-    MatchRestController(MatchService matchService,
-                        MatchInvitationService matchInvitationService) {
+    MatchRestController(MatchService matchService) {
         this.matchService = matchService;
     }
 
@@ -43,8 +41,7 @@ public class MatchRestController {
     @ApiResponse(responseCode = "200", description = "Invitation link retrieved successfully")
     @ApiResponse(responseCode = "404", description = "Match not found")
     public String getInvitationLink(@PathVariable Long matchId) throws ItemNotFoundException {
-        String token = matchService.getMatchInvitationLink(matchId);
-        return "http://localhost:30003/invite/" + token; // TODO: Replace with actual URL generation logic
+        return matchService.getMatchInvitationLink(matchId);
     }
 
     @PostMapping(path = "/create", consumes = "application/json", produces = "application/json")
