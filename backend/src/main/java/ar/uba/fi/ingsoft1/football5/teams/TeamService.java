@@ -49,8 +49,14 @@ public class TeamService {
         return teamRepository.findByCaptainId(captain.getId()).stream().map(TeamDTO::new).toList();
     }
 
-    public List<TeamDTO> getAllTeams() {
+    public List<TeamDTO> getAllTeams(){
         return teamRepository.findAll().stream().map(TeamDTO::new).toList();
+    }
+
+    public TeamDTO getTeamById(Long id) throws ItemNotFoundException,IllegalArgumentException {
+        Team team = teamRepository.findById(id) 
+            .orElseThrow(() -> new ItemNotFoundException("team", id));
+        return new TeamDTO(team);
     }
 
     public TeamDTO addMember(Long teamId, String usernameToAdd, String captainUsername) throws UserNotFoundException, ItemNotFoundException, IllegalArgumentException {

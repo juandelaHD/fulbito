@@ -125,3 +125,30 @@ export function useGetTeams() {
     enabled: !!token,
   });
 }
+
+export function useEditTeam(id: String){
+  const [tokenState] = useToken();
+  const token = tokenState.state === "LOGGED_IN" ? tokenState.accessToken : "";
+  //
+  console.log(token);
+  //
+  return useQuery<RawTeamDTO>({
+    queryKey: ["teamEdit"],
+    queryFn: async () => {
+      const response = await fetch(`${BASE_API_URL}/teams/${id}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          Accept: "application/json",
+        },
+      });
+
+      if (!response.ok) {
+        const errorMessage = await response.text();
+        toast.error(`Error fetching teams: ${errorMessage}`, { duration: 5000 });
+        throw new Error("Error fetching teams");
+      }
+
+      return response.json();
+    }
+  });
+}
