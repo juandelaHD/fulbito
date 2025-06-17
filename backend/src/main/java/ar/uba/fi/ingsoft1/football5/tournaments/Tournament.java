@@ -9,7 +9,6 @@ import jakarta.validation.constraints.DecimalMin;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 import com.fasterxml.jackson.annotation.JsonManagedReference;
@@ -61,7 +60,7 @@ public class Tournament {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private TournamentStatus status = TournamentStatus.OPEN_FOR_REGISTRATION;
+    private TournamentStatus status;
 
     protected Tournament(){}
 
@@ -76,6 +75,7 @@ public class Tournament {
         this.rules = rules;
         this.prizes = prizes;
         this.registrationFee = registrationFee;
+        this.status = TournamentStatus.OPEN_FOR_REGISTRATION;
     }
 
     public long getId(){

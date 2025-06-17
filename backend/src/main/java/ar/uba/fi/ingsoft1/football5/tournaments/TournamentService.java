@@ -122,7 +122,8 @@ public class TournamentService {
         //TODO: enviar mensaje de registro al capitan
         tournamentRepository.save(tournament);
     }
-
+    
+    @Transactional
     public void deleteTournament(Long tournamentId, JwtUserDetails currentUser, boolean confirmed) throws ItemNotFoundException{
         Tournament tournament = tournamentRepository.findById(tournamentId)
             .orElseThrow(() -> new ItemNotFoundException("Tournament not found", tournamentId));
