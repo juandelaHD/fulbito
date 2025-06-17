@@ -11,6 +11,7 @@ import java.time.LocalDate;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 @Entity
+@Table(name = "tournaments")
 public class Tournament {
 
     @Id
@@ -30,8 +31,9 @@ public class Tournament {
 
     private LocalDate endDate;
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private String format; 
+    private TournamentFormat format;
 
     @Column(nullable = false)
     private Integer maxTeams;
@@ -45,11 +47,13 @@ public class Tournament {
     private BigDecimal registrationFee;
 
     @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     private TournamentStatus status = TournamentStatus.OPEN_FOR_REGISTRATION;
 
     protected Tournament(){}
 
-    public Tournament(String name, User organizer, LocalDate startDate, LocalDate endDate, String format, Integer maxTeams, String rules, String prizes, BigDecimal registrationFee) {
+    public Tournament(String name, User organizer, LocalDate startDate, LocalDate endDate, 
+                        TournamentFormat format, Integer maxTeams, String rules, String prizes, BigDecimal registrationFee) {
         this.name = name;
         this.organizer = organizer;
         this.startDate = startDate;
@@ -97,11 +101,11 @@ public class Tournament {
         this.endDate = endDate;
     }
 
-    public String getFormat(){
+    public TournamentFormat getFormat(){
         return format;
     }
 
-    public void setFormat(String format){
+    public void setFormat(TournamentFormat format){
         this.format = format;
     }
 

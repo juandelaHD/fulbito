@@ -28,6 +28,10 @@ public class TournamentService {
         User organizer = userRepository.findByUsername(organizerUsername)
                 .orElseThrow(() -> new EntityNotFoundException("Organizador no encontrado"));
 
+        if (dto.getStartDate() != null && dto.getEndDate() != null && dto.getEndDate().isBefore(dto.getStartDate())) {
+            throw new IllegalArgumentException("La fecha de finalización debe ser posterior o igual a la de inicio");
+        }
+
         Tournament tournament = new Tournament(dto.getName(),organizer, dto.getStartDate(), dto.getEndDate(), dto.getFormat(), 
                                                 dto.getMaxTeams(), dto.getRules(), dto.getPrizes(), dto.getRegistrationFee());
 

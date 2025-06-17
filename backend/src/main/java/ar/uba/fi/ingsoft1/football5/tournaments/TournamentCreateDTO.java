@@ -14,8 +14,8 @@ public class TournamentCreateDTO {
 
     private LocalDate endDate;
 
-    @NotBlank
-    private String format;
+    @NotNull
+    private TournamentFormat format;
 
     @NotNull
     private Integer maxTeams;
@@ -36,7 +36,7 @@ public class TournamentCreateDTO {
         return endDate;
     }
 
-    public String getFormat(){
+    public TournamentFormat getFormat(){
         return format;
     }
 

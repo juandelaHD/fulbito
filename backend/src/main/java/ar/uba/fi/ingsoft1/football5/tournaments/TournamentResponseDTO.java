@@ -11,7 +11,7 @@ public record TournamentResponseDTO (
     String name,
     LocalDate startDate,
     LocalDate endDate,
-    String format,
+    TournamentFormat format,
     Integer maxTeams,
     TournamentStatus status,
     String rules,
