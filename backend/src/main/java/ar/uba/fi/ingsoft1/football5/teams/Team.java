@@ -2,6 +2,7 @@ package ar.uba.fi.ingsoft1.football5.teams;
 
 import ar.uba.fi.ingsoft1.football5.images.TeamImage;
 import ar.uba.fi.ingsoft1.football5.matches.Match;
+import ar.uba.fi.ingsoft1.football5.tournaments.Tournament;
 import ar.uba.fi.ingsoft1.football5.user.User;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
@@ -40,6 +41,9 @@ public class Team {
 
     @OneToMany(mappedBy = "awayTeam")
     private Set<Match> awayMatches = new HashSet<>();
+
+    @OneToMany(mappedBy = "match")
+    private Set<Tournament> tournament = new HashSet<>();
 
     protected Team() {}
 
@@ -125,5 +129,9 @@ public class Team {
         allMatches.addAll(homeMatches);
         allMatches.addAll(awayMatches);
         return allMatches;
+    }
+
+    public Set<Tournament> getJoinedTournaments() {
+        return tournament;
     }
 }

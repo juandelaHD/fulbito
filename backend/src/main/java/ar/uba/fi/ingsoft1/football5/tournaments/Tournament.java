@@ -1,5 +1,6 @@
 package ar.uba.fi.ingsoft1.football5.tournaments;
 
+import ar.uba.fi.ingsoft1.football5.teams.Team;
 import ar.uba.fi.ingsoft1.football5.user.User;
 
 import jakarta.persistence.*;
@@ -7,6 +8,8 @@ import jakarta.validation.constraints.DecimalMin;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.HashSet;
+import java.util.Set;
 
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 
@@ -25,6 +28,16 @@ public class Tournament {
     @JoinColumn(name = "user_id", nullable = false)
     @JsonManagedReference("organizer-match")
     private User organizer;
+
+    // Equipos inscritos para torneo
+    @ManyToMany
+    @JoinTable(
+            name = "tournament_subscriptions",
+            joinColumns = @JoinColumn(name = "tournament_id"),
+            inverseJoinColumns = @JoinColumn(name = "team_id")
+    )
+    @JsonManagedReference("team-tournament")
+    private Set<Team> teams = new HashSet<>();
 
     @Column(nullable = false)
     private LocalDate startDate;
@@ -148,5 +161,16 @@ public class Tournament {
     public void setStatus(TournamentStatus status){
         this.status = status;
     }
+
+    public void addTeam(Team team) {
+        this.teams.add(team);
+        team.getJoinedTournaments().add(this);
+    }
+
+    public void removeTeam(Team team) {
+        this.teams.remove(team);
+        team.getJoinedTournaments().remove(this);
+    }
+
 
 }
