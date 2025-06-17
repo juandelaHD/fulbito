@@ -2,12 +2,12 @@ import { CommonLayout } from "@/components/CommonLayout/CommonLayout.tsx";
 import { useAppForm } from "@/config/use-app-form.ts";
 import { toast } from "react-hot-toast";
 import { FileInput } from "@/components/form-components/FileInput/FileInput.tsx";
-import { TeamCreateSchema } from "@/models/CreateTeam.ts"; // You must define this schema with zod or similar
-import { useEditTeam } from "@/services/TeamServices.ts"; // Hook to create team
-//import { useLocation,useRoute } from "wouter";
-import { useRoute } from "wouter";
+import { useEditTeam, useUpdateTeam } from "@/services/TeamServices.ts"; // Hook to create team
+import { useLocation,useRoute } from "wouter";
+import { TeamEditSchema } from "@/models/EditTeam";
 
 const fieldLabels: Record<string, string> = {
+  id: "Team Id",
   name: "Team name",
   mainColor: "Main color",
   secondaryColor: "Secondary color",
@@ -17,45 +17,28 @@ const fieldLabels: Record<string, string> = {
 
 
 export const TeamEditScreen  = () => {
-    // const [,navigate] = useLocation();
+    const [,navigate] = useLocation();
     const [,params] = useRoute("/teams/edit/:id");
+    const { mutateAsync } = useUpdateTeam();
     console.log('Team Edit Screen');
     const { id } = params as { id: string };
-    const { data,isLoading, error,refetch, isFetching } = useEditTeam(id);
-    console.log(data);
-
-
-    // Cargar equipos la primera vez manualmente
-    const handleInitialLoad = async () => {
-      const result = await refetch();
-      if (result.data) {
-        prevCount.current = result.data.length;
-      }
-    };
-
-    if (isLoading){
-      return <div>Loading team data...</div>;
-    } 
-    if (error){
-      return <div>Error loading team: {error.message}</div>;
-    } 
-    if (!data){
-      return <div>No team data found.</div>; // Handle case where data might be null/empty even after loading
-    } 
+    //const { data,isLoading, error, refetch } = useEditTeam(id);
+    const { data } = useEditTeam(id);
 
 
     const formData = useAppForm({
       defaultValues: {
-        name: data.id,
-        mainColor: data.mainColor,
-        secondaryColor: data.secondaryColor,
-        ranking: data.ranking,
+        id: data?.id,
+        name: data?.name,
+        mainColor: data?.mainColor,
+        secondaryColor: data?.secondaryColor,
+        ranking: data?.ranking,
         logo: null as File | null,
       },
       validators: {
         onSubmit: () => {
           const values = formData.store.state.values;
-          const result = TeamCreateSchema.safeParse(values);
+          const result = TeamEditSchema.safeParse(values);
           if (!result.success) {
             const errors = result.error.flatten().fieldErrors as Record<string, string[]>;
             const firstErrorKey = Object.keys(errors)[0];
@@ -70,26 +53,27 @@ export const TeamEditScreen  = () => {
         },
       },
       onSubmit: async ({ value }) => {
-        const result = TeamCreateSchema.safeParse(value);
+        const result = TeamEditSchema.safeParse(value);
         if (!result.success) return;
-        /* const payload = {
+        const payload = {
+          id: result.data.id,
           name: result.data.name,
           mainColor: result.data.mainColor,
           secondaryColor: result.data.secondaryColor,
           ranking: result.data.ranking ? Number(result.data.ranking) : undefined,
           logo: result.data.logo instanceof File ? result.data.logo : null,
-        }; */
-        /* await mutateAsync(payload, {
+        };
+        await mutateAsync(payload, {
           onSuccess: () => {
-            toast.success("Team created successfully");
-            navigate("/profile"); // Navigate to the user profile to see the new team
+            toast.success("Team updated successfully");
+            navigate("/teams"); // Navigate to the user profile to see the new team
           },
           onError: (error) => {
-            toast.error("Error creating team");
+            toast.error("Error updating team");
             console.error(error);
           }
-        }); */
-      },
+        });
+      }
     });
 
     return (
@@ -101,6 +85,11 @@ export const TeamEditScreen  = () => {
               </h1>
               <formData.AppForm>
                 <formData.FormContainer extraError={null} className="space-y-4 md:space-y-6">
+                  <formData.AppField name="id">
+                    {(field) => (
+                      <field.HiddenField />
+                    )}
+                  </formData.AppField>
                   <formData.AppField name="name">
                     {(field) => (
                       <field.TextField label="Team name" required />

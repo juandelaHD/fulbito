@@ -16,6 +16,19 @@ export const PasswordField = (props: FieldProps) => {
     return <FieldWithType {...props} type="password" />;
 };
 
+export const HiddenField = () => {
+  const id = useId();
+  const field = useFieldContext<string>();
+  return (
+    <input
+        id={id}
+        name={field.name}
+        value={field.state.value}
+        type='hidden'
+    />
+  );
+}
+
 const FieldWithType = ({
                            label,
                            type,

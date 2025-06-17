@@ -201,6 +201,8 @@ public class TeamRestController {
 		return teamService.getTeamById(id);
 	}
 
+	
+
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @Operation(
