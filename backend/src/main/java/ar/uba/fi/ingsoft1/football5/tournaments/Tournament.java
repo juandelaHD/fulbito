@@ -55,7 +55,7 @@ public class Tournament {
 
     private String prizes;
 
-    @DecimalMin(value = "0.0", inclusive = false)
+    @DecimalMin(value = "0.0", inclusive = true)
     private BigDecimal registrationFee;
 
     @Enumerated(EnumType.STRING)

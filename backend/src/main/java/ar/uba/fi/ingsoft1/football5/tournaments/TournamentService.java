@@ -11,6 +11,7 @@ import ar.uba.fi.ingsoft1.football5.user.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -18,6 +19,7 @@ import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 
 @Service
+@Transactional
 public class TournamentService {
 
     private final TournamentRepository tournamentRepository;
@@ -55,7 +57,6 @@ public class TournamentService {
             .collect(Collectors.toList());
     }
 
-    @Transactional
     public TournamentResponseDTO updateTournament(Long tournamentId, TournamentCreateDTO dto, JwtUserDetails currentUser) throws ItemNotFoundException{
         Tournament tournament = tournamentRepository.findById(tournamentId)
             .orElseThrow(() -> new ItemNotFoundException("Tournament not found", tournamentId));
@@ -78,6 +79,10 @@ public class TournamentService {
 
         if (!tournament.getName().equals(dto.getName()) && tournamentRepository.existsByName(dto.getName())) {
             throw new IllegalArgumentException("A tournament with that name already exists");
+        }
+
+        if (dto.getRegistrationFee().compareTo(BigDecimal.ZERO) < 0){
+            throw new IllegalArgumentException("Registration fee cannot be negative");
         }
 
         tournament.setName(dto.getName());
@@ -123,7 +128,6 @@ public class TournamentService {
         tournamentRepository.save(tournament);
     }
     
-    @Transactional
     public void deleteTournament(Long tournamentId, JwtUserDetails currentUser, boolean confirmed) throws ItemNotFoundException{
         Tournament tournament = tournamentRepository.findById(tournamentId)
             .orElseThrow(() -> new ItemNotFoundException("Tournament not found", tournamentId));
