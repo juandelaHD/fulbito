@@ -179,4 +179,13 @@ public class Tournament {
     public Boolean isFull(){
         return teams.size() >= maxTeams;
     }
+
+    public void clearTeams(){
+        if(teams != null){
+            for (Team team : teams){
+                team.getJoinedTournaments().remove(this);
+            }
+            teams.clear();
+        }
+    }
 }

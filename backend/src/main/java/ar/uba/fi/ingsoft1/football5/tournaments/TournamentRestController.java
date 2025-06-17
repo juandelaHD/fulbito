@@ -38,7 +38,7 @@ public class TournamentRestController {
             @RequestBody @Valid TournamentCreateDTO dto,
             @AuthenticationPrincipal JwtUserDetails userDetails)             
             throws UserNotFoundException {
-            Tournament created = tournamentService.createTournament(dto, userDetails.username());
+            Tournament created = tournamentService.createTournament(dto, userDetails);
             return (new TournamentResponseDTO(created));
     }
 
@@ -59,7 +59,7 @@ public class TournamentRestController {
         @AuthenticationPrincipal JwtUserDetails userDetails,  
         @Valid @RequestBody TournamentCreateDTO dto)
         throws UserNotFoundException, ItemNotFoundException {
-        return tournamentService.updateTournament(tournamentId, dto, userDetails.username());
+        return tournamentService.updateTournament(tournamentId, dto, userDetails);
     }
 
     @PostMapping("/{tournamentId}/register")
@@ -67,7 +67,16 @@ public class TournamentRestController {
         @PathVariable Long tournamentId,
         @RequestParam Long teamId,
         @AuthenticationPrincipal JwtUserDetails userDetails) throws ItemNotFoundException {
-            tournamentService.registerTeam(tournamentId,teamId, userDetails.username());
-            return ResponseEntity.ok("Equipo inscrito correctamente");
+            tournamentService.registerTeam(tournamentId,teamId, userDetails);
+            return ResponseEntity.ok("Team successfully registered");
+        }
+
+    @DeleteMapping("/{tournamentId}")
+    public ResponseEntity<?> deleteTournament(
+        @PathVariable Long tournamentId,
+        @RequestParam boolean confirm,
+        @AuthenticationPrincipal JwtUserDetails userDetails) throws ItemNotFoundException{
+            tournamentService.deleteTournament(tournamentId, userDetails, confirm);
+            return ResponseEntity.ok("Tournament successfully deleted");
         }
 }

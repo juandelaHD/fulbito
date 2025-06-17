@@ -2,6 +2,7 @@ package ar.uba.fi.ingsoft1.football5.tournaments;
 
 import ar.uba.fi.ingsoft1.football5.common.exception.ItemNotFoundException;
 import ar.uba.fi.ingsoft1.football5.common.exception.UnauthorizedException;
+import ar.uba.fi.ingsoft1.football5.config.security.JwtUserDetails;
 import ar.uba.fi.ingsoft1.football5.teams.Team;
 import ar.uba.fi.ingsoft1.football5.teams.TeamRepository;
 import ar.uba.fi.ingsoft1.football5.user.User;
@@ -29,15 +30,15 @@ public class TournamentService {
         this.teamRepository = teamRepository;
     }
 
-    public Tournament createTournament(TournamentCreateDTO dto, String organizerUsername) {
+    public Tournament createTournament(TournamentCreateDTO dto, JwtUserDetails currentUser) {
         if (tournamentRepository.existsByName(dto.getName()))
-            throw new IllegalArgumentException("Ya existe un torneo con ese nombre");
+            throw new IllegalArgumentException("A tournament with that name already exists");
 
-        User organizer = userRepository.findByUsername(organizerUsername)
+        User organizer = userRepository.findByUsername(currentUser.username())
                 .orElseThrow(() -> new EntityNotFoundException("Organizador no encontrado"));
 
         if (dto.getStartDate() != null && dto.getEndDate() != null && dto.getEndDate().isBefore(dto.getStartDate())) {
-            throw new IllegalArgumentException("La fecha de finalización debe ser posterior o igual a la de inicio");
+            throw new IllegalArgumentException("The end date must be the same as or later than the start date");
         }
 
         Tournament tournament = new Tournament(dto.getName(),organizer, dto.getStartDate(), dto.getEndDate(), dto.getFormat(), 
@@ -55,28 +56,28 @@ public class TournamentService {
     }
 
     @Transactional
-    public TournamentResponseDTO updateTournament(Long tournamentId, TournamentCreateDTO dto, String currentUser) throws ItemNotFoundException{
+    public TournamentResponseDTO updateTournament(Long tournamentId, TournamentCreateDTO dto, JwtUserDetails currentUser) throws ItemNotFoundException{
         Tournament tournament = tournamentRepository.findById(tournamentId)
-            .orElseThrow(() -> new ItemNotFoundException("Torneo no encontrado", tournamentId));
+            .orElseThrow(() -> new ItemNotFoundException("Tournament not found", tournamentId));
 
-        if (!tournament.getOrganizer().getUsername().equals(currentUser)) {
-            throw new UnauthorizedException("Solo el organizador del torneo puede editarlo", null);
+        if (!tournament.getOrganizer().getUsername().equals(currentUser.username())) {
+            throw new UnauthorizedException("Only the tournament organizer can edit it", null);
         }
 
         if (!tournament.getStatus().equals(TournamentStatus.OPEN_FOR_REGISTRATION)) {
-            throw new IllegalStateException("El torneo no puede editarse si no está abierto para inscripción");
+            throw new IllegalStateException("The tournament cannot be edited unless it is open for registration");
         }
 
         if (!tournament.getStartDate().isAfter(LocalDate.now())) {
-            throw new IllegalStateException("El torneo no puede editarse si ya comenzó");
+            throw new IllegalStateException("The tournament cannot be edited once it has started");
         }
 
         if (dto.getEndDate() != null && dto.getEndDate().isBefore(dto.getStartDate())) {
-            throw new IllegalStateException("No puede tener una fecha de inicio posterior a la de fin");
+            throw new IllegalStateException("The start date cannot be later than the end date");
         }
 
         if (!tournament.getName().equals(dto.getName()) && tournamentRepository.existsByName(dto.getName())) {
-            throw new IllegalArgumentException("Ya existe un torneo con ese nombre");
+            throw new IllegalArgumentException("A tournament with that name already exists");
         }
 
         tournament.setName(dto.getName());
@@ -93,33 +94,56 @@ public class TournamentService {
         return new TournamentResponseDTO(tournament);
     }
 
-    public void registerTeam(Long tournamentId, Long teamId, String currentUser) throws ItemNotFoundException {
+    public void registerTeam(Long tournamentId, Long teamId, JwtUserDetails currentUser) throws ItemNotFoundException {
         Tournament tournament = tournamentRepository.findById(tournamentId)
-            .orElseThrow(() -> new ItemNotFoundException("Torneo no encontrado", tournamentId));
+            .orElseThrow(() -> new ItemNotFoundException("Tournament not found", tournamentId));
 
 
         if (!tournament.getStatus().equals(TournamentStatus.OPEN_FOR_REGISTRATION)) {
-            throw new IllegalStateException("El torneo no está abierto a inscripciones.");
+            throw new IllegalStateException("The tournament is not open for registrations");
         }
 
         Team team = teamRepository.findById(teamId)
-            .orElseThrow(() -> new ItemNotFoundException("Equipo no encontrado", teamId));
+            .orElseThrow(() -> new ItemNotFoundException("Team not found", teamId));
 
-        if (!team.getCaptain().getUsername().equals(currentUser)) {
-            throw new UnauthorizedException("Solo el capitán puede inscribir el equipo.", null);
+        if (!team.getCaptain().getUsername().equals(currentUser.username())) {
+            throw new UnauthorizedException("Only the captain can register the team", null);
         }
 
         if (tournament.getRegisteredTeams().contains(team)) {
-            throw new IllegalStateException("El equipo ya está inscrito en este torneo.");
+            throw new IllegalStateException("The team is already registered in this tournament");
         }
 
         if (tournament.isFull()) {
-            throw new IllegalStateException("Ya se alcanzó el máximo de equipos.");
+            throw new IllegalStateException("The maximum number of teams has been reached");
         }
 
         tournament.getRegisteredTeams().add(team);
         //TODO: enviar mensaje de registro al capitan
         tournamentRepository.save(tournament);
+    }
+
+    public void deleteTournament(Long tournamentId, JwtUserDetails currentUser, boolean confirmed) throws ItemNotFoundException{
+        Tournament tournament = tournamentRepository.findById(tournamentId)
+            .orElseThrow(() -> new ItemNotFoundException("Tournament not found", tournamentId));
+        
+        if (!tournament.getOrganizer().getUsername().equals(currentUser.username())) {
+            throw new UnauthorizedException("Only the tournament organizer can delete it", null);
+        }
+
+        if(!confirmed){
+            throw new IllegalArgumentException("Explicit confirmation is required");
+        }
+
+        if(tournament.getStatus().equals(TournamentStatus.IN_PROGRESS) || tournament.getStatus().equals(TournamentStatus.FINISHED)){
+            throw new IllegalArgumentException("A tournament in progress or already finished cannot be deleted");
+        }
+        //TODO: enviar a los capitanes y al organizador mail con que se cancelo el torneo
+        tournament.clearTeams();
+
+        tournament.setStatus(TournamentStatus.CANCELED);
+        tournamentRepository.save(tournament);
+
     }
 }
 
