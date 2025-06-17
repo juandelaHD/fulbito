@@ -1,5 +1,6 @@
 package ar.uba.fi.ingsoft1.football5.tournaments;
 
+import ar.uba.fi.ingsoft1.football5.common.exception.ItemNotFoundException;
 import ar.uba.fi.ingsoft1.football5.common.exception.UserNotFoundException;
 import ar.uba.fi.ingsoft1.football5.config.security.JwtUserDetails;
 import io.swagger.v3.oas.annotations.Operation;
@@ -41,7 +42,6 @@ public class TournamentRestController {
             return (new TournamentResponseDTO(created));
     }
 
-
     @GetMapping(path = "/available", produces = "application/json")
     @Operation(
         summary = "Get all currently available tournaments",
@@ -51,5 +51,14 @@ public class TournamentRestController {
     @ResponseStatus(HttpStatus.OK)
     public List<TournamentResponseDTO> getAllTournaments() {
         return tournamentService.getAllTournaments();
+    }
+ 
+    @PutMapping("/tournaments/{id}")
+    public TournamentResponseDTO updateTournament(
+        @PathVariable("id") Long tournamentId,
+        @AuthenticationPrincipal JwtUserDetails userDetails,  
+        @Valid @RequestBody TournamentCreateDTO dto)
+        throws UserNotFoundException, ItemNotFoundException {
+        return tournamentService.updateTournament(tournamentId, dto, userDetails.username());
     }
 }

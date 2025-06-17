@@ -26,7 +26,6 @@ public class Tournament {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
-    @JsonManagedReference("organizer-match")
     private User organizer;
 
     // Equipos inscritos para torneo
