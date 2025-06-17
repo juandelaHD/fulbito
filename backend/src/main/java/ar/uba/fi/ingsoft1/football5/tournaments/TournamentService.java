@@ -142,7 +142,7 @@ public class TournamentService {
         //TODO: enviar a los capitanes y al organizador mail con que se cancelo el torneo
         tournament.clearTeams();
 
-        tournament.setStatus(TournamentStatus.CANCELED);
+        tournament.setStatus(TournamentStatus.CANCELLED);
         tournamentRepository.save(tournament);
 
     }
