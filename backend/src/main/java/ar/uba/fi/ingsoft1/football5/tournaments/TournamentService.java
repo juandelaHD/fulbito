@@ -2,6 +2,8 @@ package ar.uba.fi.ingsoft1.football5.tournaments;
 
 import ar.uba.fi.ingsoft1.football5.common.exception.ItemNotFoundException;
 import ar.uba.fi.ingsoft1.football5.common.exception.UnauthorizedException;
+import ar.uba.fi.ingsoft1.football5.teams.Team;
+import ar.uba.fi.ingsoft1.football5.teams.TeamRepository;
 import ar.uba.fi.ingsoft1.football5.user.User;
 import ar.uba.fi.ingsoft1.football5.user.UserRepository;
 
@@ -19,10 +21,12 @@ public class TournamentService {
 
     private final TournamentRepository tournamentRepository;
     private final UserRepository userRepository;
+    private final TeamRepository teamRepository;
 
-    public TournamentService(TournamentRepository repository, UserRepository userRepository) {
+    public TournamentService(TournamentRepository repository, UserRepository userRepository, TeamRepository teamRepository) {
         this.tournamentRepository = repository;
         this.userRepository = userRepository;
+        this.teamRepository = teamRepository;
     }
 
     public Tournament createTournament(TournamentCreateDTO dto, String organizerUsername) {
@@ -87,6 +91,35 @@ public class TournamentService {
         tournamentRepository.save(tournament);
 
         return new TournamentResponseDTO(tournament);
+    }
+
+    public void registerTeam(Long tournamentId, Long teamId, String currentUser) throws ItemNotFoundException {
+        Tournament tournament = tournamentRepository.findById(tournamentId)
+            .orElseThrow(() -> new ItemNotFoundException("Torneo no encontrado", tournamentId));
+
+
+        if (!tournament.getStatus().equals(TournamentStatus.OPEN_FOR_REGISTRATION)) {
+            throw new IllegalStateException("El torneo no está abierto a inscripciones.");
+        }
+
+        Team team = teamRepository.findById(teamId)
+            .orElseThrow(() -> new ItemNotFoundException("Equipo no encontrado", teamId));
+
+        if (!team.getCaptain().getUsername().equals(currentUser)) {
+            throw new UnauthorizedException("Solo el capitán puede inscribir el equipo.", null);
+        }
+
+        if (tournament.getRegisteredTeams().contains(team)) {
+            throw new IllegalStateException("El equipo ya está inscrito en este torneo.");
+        }
+
+        if (tournament.isFull()) {
+            throw new IllegalStateException("Ya se alcanzó el máximo de equipos.");
+        }
+
+        tournament.getRegisteredTeams().add(team);
+        //TODO: enviar mensaje de registro al capitan
+        tournamentRepository.save(tournament);
     }
 }
 

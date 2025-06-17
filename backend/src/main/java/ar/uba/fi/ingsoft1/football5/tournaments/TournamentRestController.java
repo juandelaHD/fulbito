@@ -13,7 +13,7 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
@@ -61,4 +61,13 @@ public class TournamentRestController {
         throws UserNotFoundException, ItemNotFoundException {
         return tournamentService.updateTournament(tournamentId, dto, userDetails.username());
     }
+
+    @PostMapping("/{tournamentId}/register")
+    public ResponseEntity<?> registerTeamToTournament(
+        @PathVariable Long tournamentId,
+        @RequestParam Long teamId,
+        @AuthenticationPrincipal JwtUserDetails userDetails) throws ItemNotFoundException {
+            tournamentService.registerTeam(tournamentId,teamId, userDetails.username());
+            return ResponseEntity.ok("Equipo inscrito correctamente");
+        }
 }

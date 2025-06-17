@@ -9,6 +9,7 @@ import jakarta.validation.constraints.DecimalMin;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import com.fasterxml.jackson.annotation.JsonManagedReference;
@@ -171,5 +172,11 @@ public class Tournament {
         team.getJoinedTournaments().remove(this);
     }
 
+    public Set<Team> getRegisteredTeams(){
+        return teams;
+    }
 
+    public Boolean isFull(){
+        return teams.size() >= maxTeams;
+    }
 }
