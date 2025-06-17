@@ -53,7 +53,7 @@ public class TournamentRestController {
         return tournamentService.getAllTournaments();
     }
  
-    @PutMapping("/tournaments/{id}")
+    @PutMapping("/{id}")
     public TournamentResponseDTO updateTournament(
         @PathVariable("id") Long tournamentId,
         @AuthenticationPrincipal JwtUserDetails userDetails,  

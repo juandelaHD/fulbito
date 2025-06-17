@@ -51,12 +51,12 @@ public class TournamentService {
     }
 
     @Transactional
-    public TournamentResponseDTO updateTournament(Long tournamentId, TournamentCreateDTO dto, String organizerUsername) throws ItemNotFoundException{
+    public TournamentResponseDTO updateTournament(Long tournamentId, TournamentCreateDTO dto, String currentUser) throws ItemNotFoundException{
         Tournament tournament = tournamentRepository.findById(tournamentId)
             .orElseThrow(() -> new ItemNotFoundException("Torneo no encontrado", tournamentId));
 
-        if (!tournament.getOrganizer().getUsername().equals(organizerUsername)) {
-            throw new UnauthorizedException("No sos el organizador de este torneo", null);
+        if (!tournament.getOrganizer().getUsername().equals(currentUser)) {
+            throw new UnauthorizedException("Solo el organizador del torneo puede editarlo", null);
         }
 
         if (!tournament.getStatus().equals(TournamentStatus.OPEN_FOR_REGISTRATION)) {
