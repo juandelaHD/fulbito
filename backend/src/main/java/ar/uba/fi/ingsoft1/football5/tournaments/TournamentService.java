@@ -16,6 +16,7 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -49,12 +50,27 @@ public class TournamentService {
         return tournamentRepository.save(tournament);
     }
 
-    public List<TournamentResponseDTO> getAllTournaments(){
-        List<Tournament> tournaments = tournamentRepository.findAllWithOrganizer();
+    public List<TournamentResponseDTO> getTournamentsFiltered(String organizerUsername, Boolean openForRegistration) {
+        Specification<Tournament> spec = Specification.where(null);
+
+        if (organizerUsername != null && !organizerUsername.isEmpty()) {
+            spec = spec.and((root, query, cb) ->
+                cb.equal(root.join("organizer").get("username"), organizerUsername)
+            );
+        }
+
+        if (Boolean.TRUE.equals(openForRegistration)) {
+            spec = spec.and((root, query, cb) ->
+                cb.equal(root.get("status"), TournamentStatus.OPEN_FOR_REGISTRATION)
+            );
+        }
+
+        List<Tournament> tournaments;
+        tournaments = tournamentRepository.findAll(spec);
 
         return tournaments.stream()
-            .map(TournamentResponseDTO::new)
-            .collect(Collectors.toList());
+                .map(TournamentResponseDTO::new)
+                .collect(Collectors.toList());
     }
 
     public TournamentResponseDTO updateTournament(Long tournamentId, TournamentCreateDTO dto, JwtUserDetails currentUser) throws ItemNotFoundException{

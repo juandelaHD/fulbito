@@ -45,16 +45,14 @@ public class TournamentRestController {
     }
 
     @GetMapping(path = "/available", produces = "application/json")
-    @Operation(
-        summary = "Get all currently available tournaments",
-        description = "Returns a list of all tournaments."
-    )
     @ApiResponse(responseCode = "200", description = "List of tournaments retrieved successfully")
-    @ResponseStatus(HttpStatus.OK)
-    public List<TournamentResponseDTO> getAllTournaments() {
-        return tournamentService.getAllTournaments();
+    public List<TournamentResponseDTO> getTournaments(
+        @RequestParam(required = false) String organizerUsername,
+        @RequestParam(required = false) Boolean openForRegistration
+    ) {
+        return tournamentService.getTournamentsFiltered(organizerUsername, openForRegistration);
     }
- 
+
     @PutMapping("/{id}")
     @Operation(summary = "Update an existing tournament")
     @ApiResponses(value = {
@@ -76,7 +74,8 @@ public class TournamentRestController {
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Team successfully registered"),
         @ApiResponse(responseCode = "400", description = "Invalid team or tournament"),
-        @ApiResponse(responseCode = "404", description = "Tournament or team not found")
+        @ApiResponse(responseCode = "404", description = "Tournament or team not found"),
+        @ApiResponse(responseCode = "409", description = "Team already registered")
     })
     public ResponseEntity<?> registerTeamToTournament(
         @PathVariable Long tournamentId,
