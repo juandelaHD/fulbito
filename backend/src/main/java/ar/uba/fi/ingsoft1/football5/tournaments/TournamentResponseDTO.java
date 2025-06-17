@@ -2,7 +2,6 @@ package ar.uba.fi.ingsoft1.football5.tournaments;
 
 import java.time.LocalDate;
 
-import ar.uba.fi.ingsoft1.football5.user.User;
 import ar.uba.fi.ingsoft1.football5.user.UserDTO;
 import io.swagger.v3.oas.annotations.media.Schema;
 

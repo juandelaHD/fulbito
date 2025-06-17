@@ -1,7 +1,6 @@
 package ar.uba.fi.ingsoft1.football5.tournaments;
 
 import ar.uba.fi.ingsoft1.football5.user.User;
-import ar.uba.fi.ingsoft1.football5.user.UserDTO;
 import ar.uba.fi.ingsoft1.football5.user.UserRepository;
 
 import jakarta.persistence.EntityNotFoundException;
