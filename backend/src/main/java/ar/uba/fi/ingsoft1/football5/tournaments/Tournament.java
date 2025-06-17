@@ -3,6 +3,7 @@ package ar.uba.fi.ingsoft1.football5.tournaments;
 import ar.uba.fi.ingsoft1.football5.user.User;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.DecimalMin;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -35,15 +36,18 @@ public class Tournament {
     @Column(nullable = false)
     private Integer maxTeams;
 
-    @Lob
+    @Column(length = 10000) 
     private String rules;
 
     private String prizes;
 
+    @DecimalMin(value = "0.0", inclusive = false)
     private BigDecimal registrationFee;
 
     @Enumerated(EnumType.STRING)
     private TournamentStatus status = TournamentStatus.OPEN_FOR_REGISTRATION;
+
+    protected Tournament(){}
 
     public Tournament(String name, User organizer, LocalDate startDate, LocalDate endDate, String format, Integer maxTeams, String rules, String prizes, BigDecimal registrationFee) {
         this.name = name;

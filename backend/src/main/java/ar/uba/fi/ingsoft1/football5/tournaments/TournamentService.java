@@ -1,25 +1,29 @@
 package ar.uba.fi.ingsoft1.football5.tournaments;
 
 import ar.uba.fi.ingsoft1.football5.user.User;
+import ar.uba.fi.ingsoft1.football5.user.UserDTO;
 import ar.uba.fi.ingsoft1.football5.user.UserRepository;
 
 import jakarta.persistence.EntityNotFoundException;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 
 @Service
 public class TournamentService {
 
-    private final TournamentRepository repository;
+    private final TournamentRepository tournamentRepository;
     private final UserRepository userRepository;
 
     public TournamentService(TournamentRepository repository, UserRepository userRepository) {
-        this.repository = repository;
+        this.tournamentRepository = repository;
         this.userRepository = userRepository;
     }
 
     public Tournament createTournament(TournamentCreateDTO dto, String organizerUsername) {
-        if (repository.existsByName(dto.getName()))
+        if (tournamentRepository.existsByName(dto.getName()))
             throw new IllegalArgumentException("Ya existe un torneo con ese nombre");
 
         User organizer = userRepository.findByUsername(organizerUsername)
@@ -28,6 +32,15 @@ public class TournamentService {
         Tournament tournament = new Tournament(dto.getName(),organizer, dto.getStartDate(), dto.getEndDate(), dto.getFormat(), 
                                                 dto.getMaxTeams(), dto.getRules(), dto.getPrizes(), dto.getRegistrationFee());
 
-        return repository.save(tournament);
+        return tournamentRepository.save(tournament);
+    }
+
+    public List<TournamentResponseDTO> getAllTournaments(){
+        List<Tournament> tournaments = tournamentRepository.findAllWithOrganizer();
+
+        return tournaments.stream()
+            .map(TournamentResponseDTO::new)
+            .collect(Collectors.toList());
     }
 }
+

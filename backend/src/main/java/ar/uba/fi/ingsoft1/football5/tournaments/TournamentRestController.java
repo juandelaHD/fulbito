@@ -1,43 +1,55 @@
 package ar.uba.fi.ingsoft1.football5.tournaments;
 
-
+import ar.uba.fi.ingsoft1.football5.common.exception.UserNotFoundException;
 import ar.uba.fi.ingsoft1.football5.config.security.JwtUserDetails;
-
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 
+import java.util.List;
+
+
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/tournaments")
+@RequestMapping("/tournaments")
+@Tag(name = "6 - Tournaments", description = "Endpoints for managing footbal tournaments")
 public class TournamentRestController {
+    private final TournamentService tournamentService;
 
-    private final TournamentService service;
-
-    public TournamentRestController(TournamentService service) {
-        this.service = service;
+    @Autowired
+    TournamentRestController(TournamentService tournamentService) {
+        this.tournamentService = tournamentService;
     }
 
-    @PostMapping
-    public ResponseEntity<TournamentResponseDTO> createTournament(
+    @PostMapping(path = "/create", consumes = "application/json", produces = "application/json")
+    @Operation(summary = "Create a new tournament")
+    @ResponseStatus(HttpStatus.CREATED)
+    @ApiResponse(responseCode = "201", description = "Tournament created successfully")
+    @ApiResponse(responseCode = "400", description = "Invalid tournament parameters")
+    @ApiResponse(responseCode = "404", description = "Organizer not found")
+    TournamentResponseDTO createTournament(
             @RequestBody @Valid TournamentCreateDTO dto,
-            @AuthenticationPrincipal JwtUserDetails userDetails) {
+            @AuthenticationPrincipal JwtUserDetails userDetails)             
+            throws UserNotFoundException {
+            Tournament created = tournamentService.createTournament(dto, userDetails.username());
+            return (new TournamentResponseDTO(created));
+    }
 
-        Tournament created = service.createTournament(dto, userDetails.username());
 
-        TournamentResponseDTO response = new TournamentResponseDTO(
-            created.getId(),
-            created.getName(),
-            created.getStartDate(),
-            created.getEndDate(),
-            created.getFormat(),
-            created.getMaxTeams(),
-            created.getStatus(),
-            created.getOrganizer()
-        );
-
-        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    @GetMapping(path = "/available", produces = "application/json")
+    @Operation(
+        summary = "Get all currently available tournaments",
+        description = "Returns a list of all tournaments."
+    )
+    @ApiResponse(responseCode = "200", description = "List of tournaments retrieved successfully")
+    @ResponseStatus(HttpStatus.OK)
+    public List<TournamentResponseDTO> getAllTournaments() {
+        return tournamentService.getAllTournaments();
     }
 }
