@@ -25,7 +25,7 @@ export const TournamentTable = ({ data, onClickTournament }: Props) => {
             <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Format</th>
             <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
             {showActions && (
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Registration</th>
             )}
           </tr>
         </thead>
@@ -51,7 +51,7 @@ export const TournamentTable = ({ data, onClickTournament }: Props) => {
                       onClick={tournament.onRegister}
                       className="bg-blue-600 text-white px-3 py-1 rounded text-sm hover:bg-blue-700 transition"
                     >
-                      Register My Team
+                      ✍️ Register My Team
                     </button>
                   )}
                 </td>
