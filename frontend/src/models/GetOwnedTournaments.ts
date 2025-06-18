@@ -19,7 +19,7 @@ export const UserSchema = z.object({
 export const TeamSchema = z.object({
   id: z.number(),
   name: z.string(),
-  imageUrl: z.string().url(),
+  imageUrl: z.string(),
   mainColor: z.string(),
   secondaryColor: z.string(),
   ranking: z.number(),
@@ -38,12 +38,13 @@ export const GetOwnedTournamentsResponseSchema = z.array(
     maxTeams: z.number(),
     status: z.enum(["OPEN_FOR_REGISTRATION", "IN_PROGRESS", "FINISHED", "CANCELLED"]),
     rules: z.string(),
-    prizes: z.string(),
-    registrationFee: z.number(),
+    prizes: z.string().or(z.null()).default(""),
+    registrationFee: z.number().or(z.null()).default(0),
     organizer: UserSchema,
     registeredTeams: z.array(TeamSchema),
   })
 )
+
 
 // === Types ===
 export type TournamentOrganizer = z.infer<typeof UserSchema>
