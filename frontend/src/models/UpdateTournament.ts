@@ -3,14 +3,14 @@ import { TournamentFormatEnum, TournamentStatusEnum } from "./GetAvailableTourna
 
 // === REQUEST ===
 export const UpdateTournamentRequestSchema = z.object({
-  name: z.string().min(1),
-  startDate: z.string(), // formato ISO
+  name: z.string(),
+  startDate: z.string(),
   endDate: z.string(),
-  format: TournamentFormatEnum,
-  maxTeams: z.number().int().min(2),
-  rules: z.string().min(1),
-  prizes: z.string().min(1),
-  registrationFee: z.number().nonnegative(),
+  format: z.enum(["SINGLE_ELIMINATION", "GROUP_STAGE_WITH_ELIMINATION", "ROUND_ROBIN"]),
+  maxTeams: z.number(),
+  rules: z.string(),
+  prizes: z.string(),
+  registrationFee: z.number(),
 })
 
 export type UpdateTournamentRequest = z.infer<typeof UpdateTournamentRequestSchema>
