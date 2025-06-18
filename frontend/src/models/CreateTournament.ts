@@ -1,5 +1,5 @@
 import { z } from "zod"
-import { TournamentFormatEnum, TournamentStatusEnum } from "@/models/GetTournaments"
+import { TournamentFormatEnum, TournamentStatusEnum } from "@/models/GetAvailableTournaments"
 
 export const CreateTournamentRequestSchema = z.object({
   name: z.string(),
