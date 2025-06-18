@@ -6,6 +6,7 @@ import { DeleteFieldConfirmationModal } from "@/components/modals/DeleteFieldCon
 import { useState } from "react";
 import { useMemo } from "react";
 import {EditFieldModal} from "@/components/modals/EditFieldModal.tsx";
+import { useLocation } from "wouter";
 
 export type Field = {
   id: number
@@ -24,6 +25,7 @@ export function ManageFieldsTable() {
   const { mutateAsync: deleteField } = useDeleteField();
   const [fieldToDelete, setFieldToDelete] = useState<Field | null>(null);
   const [editingField, setEditingField] = useState<Field | null>(null);
+  const [, navigate] = useLocation();
 
   function mapFieldDTOtoField(dto: any): Field {
     return {
@@ -43,6 +45,10 @@ export function ManageFieldsTable() {
     await deleteField(fieldId);
     refetch();
   };
+
+  const handleSchedulesClick = (field: Field) => {
+    navigate(`/schedules/${field.id}`);
+  }
 
   const columns: ColumnDef<Field>[] = useMemo(() => [
     { accessorKey: "name", header: "Name" },
