@@ -60,7 +60,7 @@ public class TournamentRestController {
         return tournamentService.getTournamentsOrganized(userDetails);
     }
 
-    @GetMapping(path = "/organized-Tournaments", produces = "application/json")
+    @GetMapping(path = "/organized-Tournaments-by", produces = "application/json")
     @ApiResponse(responseCode = "200", description = "List of tournaments retrieved successfully")
     public List<TournamentResponseDTO> getTournamentsOrganizedBy(            
         @RequestParam String organizerUsername) {
