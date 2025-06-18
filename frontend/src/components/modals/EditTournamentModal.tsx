@@ -2,6 +2,7 @@ import Modal from "react-modal"
 import { useState } from "react"
 import { OwnedTournament } from "@/models/GetOwnedTournaments"
 import { useUpdateTournament } from "@/services/TournamentServices"
+import styles from "@/components/modals/AddTournamentModal.module.css"
 
 type Props = {
   tournament: OwnedTournament
@@ -23,16 +24,26 @@ export function EditTournamentModal({ tournament, onClose, onSaved }: Props) {
     registrationFee: tournament.registrationFee ?? 0,
   })
 
-  const handleSubmit = async () => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target
+    setForm((prev) => ({
+      ...prev,
+      [name]: name === "maxTeams" || name === "registrationFee" ? Number(value) : value,
+    }))
+  }
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
     await updateTournament(form)
     onSaved()
   }
 
   return (
     <Modal
-      isOpen={true}
+      isOpen
       onRequestClose={onClose}
-      shouldCloseOnOverlayClick={true}
+      shouldCloseOnOverlayClick
+      contentLabel="Edit Tournament"
       style={{
         overlay: {
           backgroundColor: "rgba(0,0,0,0.4)",
@@ -40,115 +51,118 @@ export function EditTournamentModal({ tournament, onClose, onSaved }: Props) {
           zIndex: 1000,
         },
         content: {
-          backgroundColor: "#0f1e11",
-          color: "#f0f0f0",
-          maxWidth: "fit-content",
-          width: "fit-content",
-          maxHeight: "fit-content",
-          margin: "auto",
-          borderRadius: "12px",
-          padding: "24px",
-          border: "1px solid #3a4d39",
-          position: "relative",
+          top: "5vh",
+          bottom: "auto",
+          left: "50%",
+          right: "auto",
+          transform: "translateX(-50%)",
+          padding: 0,
+          border: "none",
+          background: "none",
+          overflow: "visible",
+          maxHeight: "90vh",
         },
       }}
     >
-      <div className="flex justify-between items-center mb-4">
-        <h2 className="text-2xl font-bold">Edit Tournament</h2>
-        <button
-          onClick={onClose}
-          className="text-white hover:text-green-400 transition"
-          aria-label="Close modal"
-        >
-          <span className="text-2xl leading-none font-bold">✖</span>
+      <form onSubmit={handleSubmit} className={styles.modalContainer}>
+        <button type="button" className={styles.closeButton} onClick={onClose}>
+          ✖
         </button>
-      </div>
+        <h2 className={styles.modalTitle}>Edit Tournament</h2>
 
-      <form className="space-y-3">
-        <input
-          type="text"
-          className="w-full border border-gray-500 bg-white text-black p-2 rounded"
-          value={form.name}
-          onChange={(e) => setForm({ ...form, name: e.target.value })}
-          placeholder="Tournament Name"
-        />
+        <div className={styles.fieldGroup}>
+          <label className={styles.label}>Name</label>
+          <input
+            name="name"
+            value={form.name}
+            onChange={handleChange}
+            className={styles.input}
+          />
+        </div>
 
-        <label className="block">
-          <span className="text-sm font-medium">Format</span>
+        <div className={styles.fieldGroup}>
+          <label className={styles.label}>Start Date</label>
+          <input
+            name="startDate"
+            type="date"
+            value={form.startDate}
+            onChange={handleChange}
+            className={styles.input}
+          />
+        </div>
+
+        <div className={styles.fieldGroup}>
+          <label className={styles.label}>End Date</label>
+          <input
+            name="endDate"
+            type="date"
+            value={form.endDate}
+            onChange={handleChange}
+            className={styles.input}
+          />
+        </div>
+
+        <div className={styles.fieldGroup}>
+          <label className={styles.label}>Format</label>
           <select
-            className="w-full border border-gray-500 bg-white text-black p-2 rounded mt-1"
+            name="format"
             value={form.format}
-            onChange={(e) =>
-              setForm({ ...form, format: e.target.value as typeof form.format })
-            }
+            onChange={handleChange}
+            className={styles.select}
           >
-            <option value="SINGLE_ELIMINATION">Single Elimination</option>
-            <option value="GROUP_STAGE_WITH_ELIMINATION">Group + Elim.</option>
-            <option value="ROUND_ROBIN">Round Robin</option>
+            <option value="SINGLE_ELIMINATION">Direct Elimination</option>
+            <option value="GROUP_STAGE_WITH_ELIMINATION">Group + Elimination</option>
+            <option value="ROUND_ROBIN">League</option>
           </select>
-        </label>
+        </div>
 
-        <input
-          type="number"
-          className="w-full border border-gray-500 bg-white text-black p-2 rounded"
-          value={form.maxTeams}
-          onChange={(e) => setForm({ ...form, maxTeams: parseInt(e.target.value, 10) })}
-          placeholder="Max Teams"
-        />
+        <div className={styles.fieldGroup}>
+          <label className={styles.label}>Max Teams</label>
+          <input
+            name="maxTeams"
+            type="number"
+            value={form.maxTeams}
+            onChange={handleChange}
+            className={styles.input}
+          />
+        </div>
 
-        <input
-          type="date"
-          className="w-full border border-gray-500 bg-white text-black p-2 rounded"
-          value={form.startDate}
-          onChange={(e) => setForm({ ...form, startDate: e.target.value })}
-        />
+        <div className={styles.fieldGroup}>
+          <label className={styles.label}>Rules</label>
+          <textarea
+            name="rules"
+            value={form.rules}
+            onChange={handleChange}
+            className={styles.textarea}
+            rows={3}
+          />
+        </div>
 
-        <input
-          type="date"
-          className="w-full border border-gray-500 bg-white text-black p-2 rounded"
-          value={form.endDate}
-          onChange={(e) => setForm({ ...form, endDate: e.target.value })}
-        />
+        <div className={styles.fieldGroup}>
+          <label className={styles.label}>Prizes</label>
+          <input
+            name="prizes"
+            value={form.prizes}
+            onChange={handleChange}
+            className={styles.input}
+          />
+        </div>
 
-        <textarea
-          className="w-full border border-gray-500 bg-white text-black p-2 rounded"
-          rows={3}
-          value={form.rules}
-          onChange={(e) => setForm({ ...form, rules: e.target.value })}
-          placeholder="Rules"
-        />
+        <div className={styles.fieldGroup}>
+          <label className={styles.label}>Registration Fee</label>
+          <input
+            name="registrationFee"
+            type="number"
+            value={form.registrationFee}
+            onChange={handleChange}
+            className={styles.input}
+          />
+        </div>
 
-        <input
-          type="text"
-          className="w-full border border-gray-500 bg-white text-black p-2 rounded"
-          value={form.prizes}
-          onChange={(e) => setForm({ ...form, prizes: e.target.value })}
-          placeholder="Prizes"
-        />
-
-        <input
-          type="number"
-          className="w-full border border-gray-500 bg-white text-black p-2 rounded"
-          value={form.registrationFee}
-          onChange={(e) => setForm({ ...form, registrationFee: parseFloat(e.target.value) })}
-          placeholder="Registration Fee"
-        />
+        <button type="submit" className={styles.submitButton}>
+          Save Changes
+        </button>
       </form>
-
-      <div className="mt-4 flex justify-end space-x-2">
-        <button
-          onClick={onClose}
-          className="px-4 py-2 text-sm rounded bg-gray-100 text-gray-800 hover:bg-gray-200 transition"
-        >
-          Cancel
-        </button>
-        <button
-          onClick={handleSubmit}
-          className="px-4 py-2 text-sm rounded bg-blue-600 text-white hover:bg-blue-700 transition"
-        >
-          Save
-        </button>
-      </div>
     </Modal>
   )
 }
