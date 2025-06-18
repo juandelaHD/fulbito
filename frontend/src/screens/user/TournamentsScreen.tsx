@@ -1,49 +1,55 @@
-import { useState } from "react";
-import { toast } from "react-hot-toast";
-import { CommonLayout } from "@/components/CommonLayout/CommonLayout.tsx";
-import { AddTournamentModal } from "@/components/modals/AddTournamentModal.tsx";
-import { useGetTournaments } from "@/services/TournamentServices.ts";
-import type { GetTournamentsRequest, Tournament } from "@/models/GetTournaments.ts";
-import {
-  TournamentFiltersContainer,
-} from "@/components/filters/TournamentFilters.tsx";
+import { useState } from "react"
+import { toast } from "react-hot-toast"
+import { CommonLayout } from "@/components/CommonLayout/CommonLayout"
+import { AddTournamentModal } from "@/components/modals/AddTournamentModal"
+import { useGetAvailableTournaments } from "@/services/TournamentServices"
+import { TournamentFiltersContainer } from "@/components/filters/TournamentFilters"
 import {
   TournamentTable,
   TournamentForTable,
-} from "@/components/tables/TournamentsTable.tsx";
+} from "@/components/tables/TournamentsTable"
+import { TournamentStatus } from "@/models/GetAvailableTournaments"
 
 export const TournamentsScreen = () => {
-  const [filters, setFilters] = useState<GetTournamentsRequest>({
-    name: "",
-    status: undefined,
-  });
-  const [showAddModal, setShowAddModal] = useState(false);
+  const [filters, setFilters] = useState({
+    organizerUsername: "",
+    openForRegistration: true,
+  })
+
+  const [showAddModal, setShowAddModal] = useState(false)
 
   const {
     data: fetchedTournaments,
     refetch,
     isFetching,
-  } = useGetTournaments(filters);
+    isError,
+  } = useGetAvailableTournaments({
+    organizerUsername: filters.organizerUsername || undefined,
+    openForRegistration: filters.openForRegistration || undefined,
+  })
 
   const handleSearch = async () => {
-    await refetch();
-  };
+    await refetch()
+  }
 
-  const tournaments: Tournament[] = fetchedTournaments?.content || [];
-
-  const rowsForTable: TournamentForTable[] = tournaments.map((t) => ({
-    id: t.id,
-    name: t.name,
-    startDate: t.startDate,
-    format: t.format,
-    status: t.status,
-  }));
+  const rowsForTable: TournamentForTable[] =
+    fetchedTournaments?.map((t) => ({
+      id: t.id,
+      name: t.name,
+      startDate: t.startDate,
+      format: t.format,
+      status: t.status as TournamentStatus,
+      onRegister:
+        t.status === "OPEN_FOR_REGISTRATION"
+          ? () => toast.success(`Clicked Register for "${t.name}"`)
+          : undefined,
+    })) || []
 
   return (
     <CommonLayout>
       <div className="w-[1040px] mx-auto px-4">
         <div className="flex justify-between items-center mb-4">
-          <h1 className="text-2xl font-bold">Search Tournaments</h1>
+          <h1 className="text-2xl font-bold">Search Available Tournaments</h1>
           <button
             type="button"
             onClick={() => setShowAddModal(true)}
@@ -54,25 +60,29 @@ export const TournamentsScreen = () => {
         </div>
 
         <TournamentFiltersContainer
-        filters={{
-            name: filters.name ?? "",
-            status: filters.status,
-        }}
-        setFilters={setFilters}
-        onSearch={handleSearch}
+          filters={filters}
+          setFilters={setFilters}
+          onSearch={handleSearch}
         />
 
-        {isFetching ? (
-          <p className="text-sm text-gray-500">Loading tournaments...</p>
-        ) : rowsForTable.length === 0 ? (
-          <p className="text-sm text-gray-500">No tournaments found matching your filters.</p>
-        ) : (
-          <TournamentTable
-            data={rowsForTable}
-            onClickTournament={(t) =>
-              toast(`You clicked on ${t.name}`)
-            }
-          />
+        {isError && (
+          <p className="text-sm text-red-500 mt-4">
+            ❌ Error loading tournaments. Please try again.
+          </p>
+        )}
+
+        {isFetching && (
+          <p className="text-sm text-gray-500 mt-4">Loading tournaments...</p>
+        )}
+
+        {!isFetching && !isError && rowsForTable.length === 0 && (
+          <p className="text-sm text-gray-500 mt-4">
+            No tournaments found matching your criteria.
+          </p>
+        )}
+
+        {!isFetching && !isError && rowsForTable.length > 0 && (
+          <TournamentTable data={rowsForTable} />
         )}
       </div>
 
@@ -80,11 +90,11 @@ export const TournamentsScreen = () => {
         isOpen={showAddModal}
         onClose={() => setShowAddModal(false)}
         onSubmit={async () => {
-          setShowAddModal(false);
-          toast.success("Tournament created!");
-          await refetch();
+          setShowAddModal(false)
+          toast.success("Tournament created!")
+          await refetch()
         }}
       />
     </CommonLayout>
-  );
-};
+  )
+}

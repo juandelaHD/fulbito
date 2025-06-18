@@ -182,7 +182,6 @@ export function useDeleteTournament() {
       })
 
       if (!response.ok) {
-        const json = await response.json().catch(() => ({}))
         await handleErrorResponse(response, "deleting tournament")
       }
 
