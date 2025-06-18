@@ -6,13 +6,6 @@ import { EditTournamentModal } from "@/components/modals/EditTournamentModal"
 import { useMemo, useState } from "react"
 import { OwnedTournament } from "@/models/GetOwnedTournaments"
 
-
-type Props = {
-  tournament: OwnedTournament
-  onClose: () => void
-  onSaved: () => void
-}
-
 export function ManageTournamentsTable() {
   const { data, isLoading, isError, refetch } = useGetOwnedTournaments()
   const { mutateAsync: deleteTournament } = useDeleteTournament()
@@ -29,7 +22,7 @@ export function ManageTournamentsTable() {
     {
       id: "registered",
       header: "Registered",
-      cell: ({ row }) => row.original.registeredTeams.length
+      cell: ({ row }) => row.original.registeredTeams.length,
     },
     {
       id: "actions",
@@ -57,9 +50,7 @@ export function ManageTournamentsTable() {
     <>
       {isLoading && <div>Loading tournaments...</div>}
       {isError && <div className="text-red-500">Error loading tournaments</div>}
-      {!isLoading && data && (
-        <Table columns={columns} data={data} />
-      )}
+      {!isLoading && data && <Table columns={columns} data={data} />}
 
       {tournamentToDelete && (
         <DeleteTournamentConfirmationModal

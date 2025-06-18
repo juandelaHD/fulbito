@@ -19,6 +19,8 @@ export function EditTournamentModal({ tournament, onClose, onSaved }: Props) {
     startDate: tournament.startDate,
     endDate: tournament.endDate,
     rules: tournament.rules,
+    prizes: tournament.prizes ?? "",
+    registrationFee: tournament.registrationFee ?? 0,
   })
 
   const handleSubmit = async () => {
@@ -114,6 +116,22 @@ export function EditTournamentModal({ tournament, onClose, onSaved }: Props) {
           value={form.rules}
           onChange={(e) => setForm({ ...form, rules: e.target.value })}
           placeholder="Rules"
+        />
+
+        <input
+          type="text"
+          className="w-full border border-gray-500 bg-white text-black p-2 rounded"
+          value={form.prizes}
+          onChange={(e) => setForm({ ...form, prizes: e.target.value })}
+          placeholder="Prizes"
+        />
+
+        <input
+          type="number"
+          className="w-full border border-gray-500 bg-white text-black p-2 rounded"
+          value={form.registrationFee}
+          onChange={(e) => setForm({ ...form, registrationFee: parseFloat(e.target.value) })}
+          placeholder="Registration Fee"
         />
       </form>
 
