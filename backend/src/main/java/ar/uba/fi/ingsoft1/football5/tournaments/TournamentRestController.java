@@ -53,6 +53,20 @@ public class TournamentRestController {
         return tournamentService.getTournamentsFiltered(organizerUsername, openForRegistration);
     }
 
+    @GetMapping(path = "/organized-Tournaments", produces = "application/json")
+    @ApiResponse(responseCode = "200", description = "List of tournaments retrieved successfully")
+    public List<TournamentResponseDTO> getTournamentsOrganized(            
+        @AuthenticationPrincipal JwtUserDetails userDetails) {
+        return tournamentService.getTournamentsOrganized(userDetails);
+    }
+
+    @GetMapping(path = "/organized-Tournaments", produces = "application/json")
+    @ApiResponse(responseCode = "200", description = "List of tournaments retrieved successfully")
+    public List<TournamentResponseDTO> getTournamentsOrganizedBy(            
+        @RequestParam String organizerUsername) {
+        return tournamentService.getTournamentsOrganizedBy(organizerUsername);
+    }
+
     @PutMapping("/{id}")
     @Operation(summary = "Update an existing tournament")
     @ApiResponses(value = {
