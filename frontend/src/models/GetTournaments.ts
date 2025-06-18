@@ -1,18 +1,24 @@
 import { z } from "zod"
 
-export const TournamentStatusEnum = z.enum(["OPEN", "ONGOING", "FINISHED"])
+export const TournamentStatusEnum = z.enum([
+  "OPEN_FOR_REGISTRATION", 
+  "IN_PROGRESS", 
+  "FINISHED",
+  "CANCELLED",
+])
+
 export type TournamentStatus = z.infer<typeof TournamentStatusEnum>
 
 export const TournamentFormatEnum = z.enum([
   "SINGLE_ELIMINATION",
-  "GROUPS_AND_ELIMINATION",
+  "GROUP_STAGE_WITH_ELIMINATION",
   "ROUND_ROBIN",
 ])
 export type TournamentFormat = z.infer<typeof TournamentFormatEnum>
 
 export type GetTournamentsRequest = {
-  name?: string
-  status?: TournamentStatus
+  organizerUsername?: string
+  openForRegistration?: boolean
 }
 
 export const TournamentSchema = z.object({

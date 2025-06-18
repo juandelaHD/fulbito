@@ -62,7 +62,7 @@ export function useGetTournaments(filters: GetTournamentsRequest) {
         }
       })
 
-      const url = `${BASE_API_URL}/tournaments/filters?${params.toString()}`
+      const url = `${BASE_API_URL}/tournaments/available?${params.toString()}`
 
       try {
         const response = await fetch(url, {
