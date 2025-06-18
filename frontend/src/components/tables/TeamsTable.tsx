@@ -4,6 +4,8 @@ import { Table } from "@/components/tables/Table";
 import { useImageById } from "@/services/ImageServices.ts";
 import { RawTeamDTO } from "@/services/UserServices.ts";
 import { TeamsModal } from "@/components/modals/TeamsModal.tsx";
+import { useLocation } from "wouter";
+
 
 type TeamsTableProps = {
   data: RawTeamDTO[];
@@ -12,6 +14,7 @@ type TeamsTableProps = {
 export function TeamsTable({ data }: TeamsTableProps) {
   const [selectedTeam, setSelectedTeam] = useState<RawTeamDTO | null>(null);
   const isOpen = selectedTeam !== null;
+  const [, navigate] = useLocation();
 
   const columns: ColumnDef<RawTeamDTO>[] = [
     {
@@ -53,7 +56,18 @@ export function TeamsTable({ data }: TeamsTableProps) {
           View Team
         </button>
       ),
-    },
+    },{
+      accessorKey: "imageUrl",
+      header: "Edit",
+      cell: ({ row }) => {
+        return <button
+          className="text-blue-600 underline"
+          onClick={() => navigate('/teams/edit/'+row.original.id)}
+        >
+          Editar Team
+        </button>
+      }
+    }
   ];
 
   return (
