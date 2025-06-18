@@ -10,7 +10,7 @@ import { AdminHomePage } from "./screens/admin/AdminHomePage.tsx";
 import { PlayerHomePage } from "./screens/user/PlayerHomePage.tsx";
 import { ForgotPasswordScreen } from "@/screens/ForgotPasswordScreen.tsx";
 import { ResetPasswordScreen } from "@/screens/ResetPasswordScreen.tsx";
-import {FieldsManagementScreen} from "@/screens/admin/FieldManagementScreen.tsx";
+import { FieldsManagementScreen } from "@/screens/admin/FieldManagementScreen.tsx";
 import { SignupInvitationScreen } from "@/screens/SignupWithInvitation.tsx";
 import { TeamCreateScreen } from "@/screens/user/TeamCreateScreen.tsx";
 import { TeamsScreen } from "@/screens/user/TeamsScreen.tsx";
@@ -19,6 +19,7 @@ import { CreateClosedMatchScreen } from "@/screens/user/CreateClosedMatchScreen.
 import { CreateOpenMatchScreen } from "@/screens/user/CreateOpenMatchScreen.tsx";
 import { FormTeamsScreen } from "@/screens/user/FormTeamsScreen.tsx";
 import {TournamentsScreen} from "@/screens/user/TournamentsScreen.tsx";
+import { TournamentManagementScreen } from "@/screens/user/TournamentManagementScreen.tsx";
 import {VerifyEmailScreen} from "@/screens/VerifyEmailScreen.tsx";
 import UserProfileScreen from "@/screens/UserProfileScreen";
 import SearchUsersScreen from "@/screens/SearchUsersScreen";
@@ -77,6 +78,9 @@ export const Navigation = () => {
           </Route>
           <Route path="/tournaments">
             <TournamentsScreen />
+          </Route>
+          <Route path="/tournaments/management">
+              <TournamentManagementScreen />
           </Route>
           <Route path="/profile">
             <UserProfileScreen />
