@@ -100,7 +100,7 @@ public class TournamentRestController {
             return ResponseEntity.ok("Tournament successfully deleted");
         }
 
-    @PostMapping("/{tournamentId}/register")
+    @PostMapping("/{tournamentId}/unregister")
     @Operation(summary = "Unregister a team of a tournament")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Team successfully unregistered"),
