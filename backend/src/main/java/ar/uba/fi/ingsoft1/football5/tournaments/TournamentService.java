@@ -7,7 +7,7 @@ import ar.uba.fi.ingsoft1.football5.teams.Team;
 import ar.uba.fi.ingsoft1.football5.teams.TeamRepository;
 import ar.uba.fi.ingsoft1.football5.user.User;
 import ar.uba.fi.ingsoft1.football5.user.UserRepository;
-
+import ar.uba.fi.ingsoft1.football5.user.email.EmailSenderService;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 
@@ -28,11 +28,13 @@ public class TournamentService {
     private final TournamentRepository tournamentRepository;
     private final UserRepository userRepository;
     private final TeamRepository teamRepository;
+    private final EmailSenderService emailSenderService;
 
-    public TournamentService(TournamentRepository repository, UserRepository userRepository, TeamRepository teamRepository) {
+    public TournamentService(TournamentRepository repository, UserRepository userRepository, TeamRepository teamRepository, EmailSenderService emailSenderService) {
         this.tournamentRepository = repository;
         this.userRepository = userRepository;
         this.teamRepository = teamRepository;
+        this.emailSenderService = emailSenderService;
     }
 
     public Tournament createTournament(TournamentCreateDTO dto, JwtUserDetails currentUser) {
@@ -152,7 +154,9 @@ public class TournamentService {
         }
 
         tournament.getRegisteredTeams().add(team);
-        //TODO: enviar mensaje de registro al capitan
+        
+        emailSenderService.sendTeamCaptainTournamentMail(team.getCaptain().getUsername(),tournament.getStartDate(),tournament.getEndDate(),
+                                                        tournament.getOrganizer().getUsername(), tournament.getName());
         tournamentRepository.save(tournament);
     }
     

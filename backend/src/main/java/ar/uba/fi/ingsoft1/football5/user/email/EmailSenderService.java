@@ -52,6 +52,11 @@ public class EmailSenderService {
     }
 
     @Async
+    public void sendTeamCaptainTournamentMail(String recipientEmail, LocalDate start, LocalDate end, String OrganizerUsername, String tournamentName) {
+        this.sendMail(recipientEmail, new TeamCaptainTournamentRegisterMailWriter(start, end, OrganizerUsername, tournamentName));
+    }
+
+    @Async
     public void sendTeamAssignmentMail(String recipientEmail, String teamName, LocalDate date, LocalDateTime start, LocalDateTime end) {
         this.sendMail(recipientEmail, new TeamAssignmentMailWriter(teamName, date, start, end));
     }
@@ -75,6 +80,8 @@ public class EmailSenderService {
     public void sendMatchCancelledMail(String recipientEmail, LocalDate date, LocalDateTime start, LocalDateTime end) {
         this.sendMail(recipientEmail, new MatchCancelledMailWriter(date, start, end));
     }
+
+
 
     private void sendMail(String recipientEmailAddress, EmailWriter mailType) {
         SimpleMailMessage message = new SimpleMailMessage();
