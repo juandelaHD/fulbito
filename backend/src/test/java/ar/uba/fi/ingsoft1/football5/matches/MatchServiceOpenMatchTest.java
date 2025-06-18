@@ -68,7 +68,7 @@ class MatchServiceOpenMatchTest {
     void setUp() {
         Field field = mock(Field.class);
         organizer = new User("organizer", "Org", "User", "M", "Zone", 30, "pass", Role.USER);
-        openMatch = new Match(field, organizer, MatchStatus.PENDING, MatchType.OPEN,
+        openMatch = new Match(field, organizer, MatchType.OPEN,
                 1,
                 2,
                 LocalDate.now().plusDays(1),

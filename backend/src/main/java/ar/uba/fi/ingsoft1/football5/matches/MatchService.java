@@ -28,7 +28,11 @@ import java.util.stream.Collectors;
 
 @Service
 @Transactional
+// TODO: It can be separates by OPEN and CLOSED matches logic
 public class MatchService {
+
+    private static final String MATCH_ITEM = "match";
+    private static final String INVITATION_PATH = "http://localhost:30003/invite/:token";
 
     private final MatchRepository matchRepository;
     private final TeamRepository teamRepository;
@@ -58,15 +62,16 @@ public class MatchService {
 
     public Match loadMatchById(Long id) throws ItemNotFoundException {
         return matchRepository.findById(id)
-                .orElseThrow(() -> new ItemNotFoundException("match", id));
+                .orElseThrow(() -> new ItemNotFoundException(MATCH_ITEM, id));
     }
 
     public MatchDTO getMatchById(Long id) throws ItemNotFoundException {
         return matchRepository.findById(id)
                 .map(MatchDTO::new)
-                .orElseThrow(() -> new ItemNotFoundException("match", id));
+                .orElseThrow(() -> new ItemNotFoundException(MATCH_ITEM, id));
     }
 
+    // TODO: Encapsulate validations in a separate class or service
     public void validationsClosedMatch(MatchCreateDTO match, Team homeTeam, Team awayTeam)
             throws IllegalArgumentException, UserNotFoundException {
 
@@ -103,6 +108,7 @@ public class MatchService {
         }
     }
 
+    // TODO: Refactor to use a notification service or similar
     private void notifyReservation(MatchCreateDTO match, User user) {
         emailSenderService.sendReservationMail(
                 user.getUsername(),
@@ -135,7 +141,6 @@ public class MatchService {
         );
     }
 
-
     public MatchDTO createMatch(MatchCreateDTO match, JwtUserDetails userDetails)
             throws IllegalArgumentException, ItemNotFoundException, UserNotFoundException {
 
@@ -144,26 +149,12 @@ public class MatchService {
 
         User organizerUser = userService.loadUserByUsername(userDetails.username());
 
-        if (match.date().isBefore(LocalDate.now())) {
-            throw new IllegalArgumentException("Match date cannot be in the past");
-        }
-
-        if (match.startTime().isAfter(match.endTime())) {
-            throw new IllegalArgumentException("Match start time cannot be after end time");
-        }
-
-        if (match.minPlayers() < 2 || match.maxPlayers() < match.minPlayers()) {
-            throw new IllegalArgumentException("Invalid number of players for the match");
-        }
-
-        if (match.maxPlayers() % 2 != 0) {
-            throw new IllegalArgumentException("Maximum number of players must be even for open matches");
-        }
+        validateMatchTime(match);
+        validatePlayersCount(match);
 
         Match newMatch = new Match(
                 field,
                 organizerUser,
-                MatchStatus.PENDING,
                 match.matchType(),
                 match.minPlayers(),
                 match.maxPlayers(),
@@ -172,7 +163,7 @@ public class MatchService {
                 match.endTime()
         );
 
-        if(match.matchType() == MatchType.CLOSED){
+        if (match.matchType() == MatchType.CLOSED){
             joinClosedMatch(match, newMatch);
         }
 
@@ -194,6 +185,31 @@ public class MatchService {
         notifyFieldAdmin(match, field);
 
         return new MatchDTO(savedMatch);
+    }
+
+    private void validateMatchTime(MatchCreateDTO match) {
+        if (match.date().isBefore(LocalDate.now())) {
+            throw new IllegalArgumentException("Match date cannot be in the past");
+        }
+
+        if (match.startTime().isAfter(match.endTime())) {
+            throw new IllegalArgumentException("Match start time cannot be after end time");
+        }
+    }
+
+    private void validatePlayersCount(MatchCreateDTO match) {
+
+        if (match.minPlayers() < 2) {
+            throw new IllegalArgumentException("Minimum number of players must be at least 2");
+        }
+
+        if (match.maxPlayers() < match.minPlayers()) {
+            throw new IllegalArgumentException("Maximum number of players must be greater than or equal to minimum number of players");
+        }
+
+        if (match.maxPlayers() % 2 != 0) {
+            throw new IllegalArgumentException("Maximum number of players must be even for open matches.");
+        }
     }
 
     public MatchDTO joinOpenMatch(Long matchId, JwtUserDetails userDetails)
@@ -254,7 +270,7 @@ public class MatchService {
         notifyTeamCaptain(match, awayTeam.getCaptain(), newMatch.getOrganizer());
     }
 
-    private void validateFieldForMatch(Field field, MatchCreateDTO match) {
+    private void validateFieldForMatch(Field field, MatchCreateDTO match) throws ItemNotFoundException {
         if (!field.isEnabled()) {
             throw new IllegalArgumentException("Field is not enabled for matches");
         }
@@ -355,13 +371,16 @@ public class MatchService {
 
     public String getMatchInvitationLink(Long matchId) throws ItemNotFoundException {
         Match match = loadMatchById(matchId);
+
         if (match.getInvitation() == null || !match.getInvitation().isValid()) {
-            throw new ItemNotFoundException("match", matchId);
+            throw new ItemNotFoundException(MATCH_ITEM, matchId);
         }
+
         if (match.getInvitation().getToken() == null) {
             throw new IllegalArgumentException("Match invitation token is not set");
         }
-        return match.getInvitation().getToken();
+        String token = match.getInvitation().getToken();
+        return INVITATION_PATH.replace(":token", token);
     }
 
     public List<MatchDTO> getAvailableOpenMatches() {

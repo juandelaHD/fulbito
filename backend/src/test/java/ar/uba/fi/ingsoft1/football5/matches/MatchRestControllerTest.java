@@ -75,7 +75,7 @@ class MatchRestControllerTest {
         organizer = new UserDTO(
                         1L, "Test", "User", "testuser",
                         "/images/1", "Zone", 25, "M",
-                        Role.ADMIN, true);
+                        Role.ADMIN, true, true);
 
         match = new MatchDTO(
                 1L,
@@ -222,7 +222,7 @@ class MatchRestControllerTest {
         User playerC = new User("playerC", "agustin", "C", "Other", "ZoneC", 42, "pass", Role.USER);
         User playerD = new User("organizer", "Org", "anizer", "M", "Zone", 30, "pass", Role.USER);
 
-        UserDTO organizer = new UserDTO(5l,"org","anizer","organizer","asd","asd",5,"M",Role.USER,true);
+        UserDTO organizer = new UserDTO(5l,"org", "anizer", "organizer", "asd", "asd", 5, "M", Role.USER, true, true);
 
         AvatarImage avatar = mock(AvatarImage.class);
         playerA.setAvatar(avatar);

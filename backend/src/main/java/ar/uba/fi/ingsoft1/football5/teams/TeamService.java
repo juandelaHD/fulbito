@@ -9,12 +9,15 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 
 @Service
 @Transactional
 public class TeamService {
+
+    private static final String TEAM_ITEM = "team";
     private final TeamRepository teamRepository;
     private final UserService userService;
     private final ImageService imageService;
@@ -25,23 +28,30 @@ public class TeamService {
         this.imageService = imageService;
     }
 
-    public Optional<TeamDTO> createTeam(TeamCreateDTO dto, String username, MultipartFile image) throws IllegalArgumentException {
-        if (teamRepository.existsByName(dto.name().toLowerCase())) {
-            throw new IllegalArgumentException("The name of the team already exists");
-        }
+    public TeamDTO createTeam(TeamCreateDTO teamCreate, String username, MultipartFile image) throws IllegalArgumentException{
+        validateUniqueName(teamCreate);
+
         User captain = userService.loadUserByUsername(username);
-        Team team = new Team(dto.name().toLowerCase(), captain);
-        // Set default colors if not provided
-        team.setMainColor(dto.mainColor() != null ? dto.mainColor() : "#FFFFFF");
-        team.setSecondaryColor(dto.secondaryColor() != null ? dto.secondaryColor() : "#000000");
-        team.setRanking(dto.ranking() != null ? dto.ranking() : 100);
+        Team team = new Team(teamCreate.name(), captain);
+
+        team.setMainColor(teamCreate.mainColor() != null ? teamCreate.mainColor() : "#FFFFFF");
+        team.setSecondaryColor(teamCreate.secondaryColor() != null ? teamCreate.secondaryColor() : "#000000");
+        team.setRanking(teamCreate.ranking() != null ? teamCreate.ranking() : 100);
         Team teamSaved = teamRepository.save(team);
+
         try {
             imageService.saveTeamImage(teamSaved, image);
         } catch (Exception e) {
             throw new IllegalArgumentException("Error saving team image: " + e.getMessage());
         }
-        return Optional.of(new TeamDTO(teamSaved));
+
+        return new TeamDTO(teamSaved);
+    }
+
+    private void validateUniqueName(TeamCreateDTO teamCreate) {
+        if (teamRepository.existsByName(teamCreate.name().toLowerCase())) {
+            throw new IllegalArgumentException("The name of the team already exists");
+        }
     }
 
     public List<TeamDTO> getTeamsByCaptain(String username) throws UserNotFoundException {
@@ -55,62 +65,93 @@ public class TeamService {
 
     public TeamDTO addMember(Long teamId, String usernameToAdd, String captainUsername) throws UserNotFoundException, ItemNotFoundException, IllegalArgumentException {
         Team team = teamRepository.findById(teamId)
-                .orElseThrow(() -> new ItemNotFoundException("team", teamId));
-        if (!team.getCaptain().getUsername().equalsIgnoreCase(captainUsername)) {
-            throw new IllegalArgumentException("Only the captain can add members.");
-        }
+                .orElseThrow(() -> new ItemNotFoundException(TEAM_ITEM, teamId));
+
+        validateIsCaptain(team, captainUsername);
+
         User userToAdd = userService.loadUserByUsername(usernameToAdd);
-        if (team.getMembers().contains(userToAdd)) {
-            throw new IllegalArgumentException("The user is already a member of the team.");
-        }
+        validateIsNotAlreadyMember(team, userToAdd);
+
         team.addMember(userToAdd);
         return new TeamDTO(teamRepository.save(team));
     }
- 
-    public TeamDTO removeMember(Long teamId, String usernameToRemove, String captainUsername) throws UserNotFoundException, ItemNotFoundException, IllegalArgumentException {
-        Team team = teamRepository.findById(teamId)
-                .orElseThrow(() -> new ItemNotFoundException("team", teamId));
-        if (!team.getCaptain().getUsername().equalsIgnoreCase(captainUsername)) {
-            throw new IllegalArgumentException("Only the captain can remove members.");
+
+    private void validateIsNotAlreadyMember(Team team, User userToAdd) {
+        if (team.getMembers().contains(userToAdd)) {
+            throw new IllegalArgumentException("The user is already a member of the team.");
         }
-        User userToRemove = userService.loadUserByUsername(usernameToRemove);
+    }
+
+    private void validateIsCaptain(Team team, String captainUsername) {
+        if (!team.getCaptain().getUsername().equalsIgnoreCase(captainUsername)) {
+            throw new IllegalArgumentException("Only the captain can edit the team members.");
+        }
+    }
+
+    private void validateIsAlreadyMember(Team team, User userToRemove) {
         if (!team.getMembers().contains(userToRemove)) {
             throw new IllegalArgumentException("The user is not a member of the team.");
         }
+    }
+
+    public TeamDTO removeMember(Long teamId, String usernameToRemove, String captainUsername)
+            throws UserNotFoundException, ItemNotFoundException, IllegalArgumentException {
+        Team team = teamRepository.findById(teamId)
+                .orElseThrow(() -> new ItemNotFoundException(TEAM_ITEM, teamId));
+
+        validateIsCaptain(team, captainUsername);
+
+        User userToRemove = userService.loadUserByUsername(usernameToRemove);
+        validateIsAlreadyMember(team, userToRemove);
+
         team.removeMember(userToRemove);
         return new TeamDTO(teamRepository.save(team));
     }
 
-    public TeamDTO updateTeam(Long id, TeamCreateDTO dto, String username) throws ItemNotFoundException, IllegalArgumentException {
+    public TeamDTO updateTeam(Long id, TeamCreateDTO teamCreate, String username, MultipartFile image)
+            throws ItemNotFoundException, IllegalArgumentException, IOException {
         Team team = teamRepository.findById(id)
-                .orElseThrow(() -> new ItemNotFoundException("team", id));
-        if (!team.getCaptain().getUsername().equalsIgnoreCase(username)) {
-            throw new IllegalArgumentException("You are not the captain of this team.");
+                .orElseThrow(() -> new ItemNotFoundException(TEAM_ITEM, id));
+
+        validateIsCaptain(team, username);
+        validateUniqueName(teamCreate);
+
+        team.setName(teamCreate.name());
+
+        if (teamCreate.mainColor() != null) {
+            team.setMainColor(teamCreate.mainColor());
         }
-        if (dto.name() != null && !dto.name().equals(team.getName())) {
-            if (teamRepository.existsByName(dto.name())) {
-                throw new IllegalArgumentException("The name of the team already exists");
-            }
-            team.setName(dto.name());
+        if (teamCreate.secondaryColor() != null) {
+            team.setSecondaryColor(teamCreate.secondaryColor());
         }
-        if (dto.mainColor() != null) {
-            team.setMainColor(dto.mainColor());
+        if (teamCreate.ranking() != null) {
+            team.setRanking(teamCreate.ranking());
         }
-        if (dto.secondaryColor() != null) {
-            team.setSecondaryColor(dto.secondaryColor());
+
+        TeamDTO updatedTeam = new TeamDTO(teamRepository.save(team));
+
+        if (image != null && !image.isEmpty()) {
+            Team updated = teamRepository.findById(updatedTeam.id()).orElseThrow();
+            imageService.saveTeamImage(updated, image);
         }
-        if (dto.ranking() != null) {
-            team.setRanking(dto.ranking());
-        }
-        return new TeamDTO(teamRepository.save(team));
+
+        return updatedTeam;
     }
 
     public void deleteTeam(Long id, String username) throws ItemNotFoundException, IllegalArgumentException {
         Team team = teamRepository.findById(id)
-                .orElseThrow(() -> new ItemNotFoundException("team", id));
-        if (!team.getCaptain().getUsername().equalsIgnoreCase(username)) {
-            throw new IllegalArgumentException("You are not the captain of this team.");
-        }
+                .orElseThrow(() -> new ItemNotFoundException(TEAM_ITEM, id));
+
+        validateIsCaptain(team, username);
         teamRepository.delete(team);
+    }
+
+    public void uploadTeamImage(Long teamId, MultipartFile file, String username)
+            throws ItemNotFoundException, IOException {
+        Team team = teamRepository.findById(teamId)
+                .orElseThrow(() -> new ItemNotFoundException(TEAM_ITEM, teamId));
+
+        validateIsCaptain(team, username);
+        imageService.saveTeamImage(team, file);
     }
 }

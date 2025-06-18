@@ -17,7 +17,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 @RestController
 @RequestMapping("/images")
-@Tag(name = "5 - Images")
+@Tag(name = "6 - Images")
 public class ImageController {
 
     private final ImageService imageService;

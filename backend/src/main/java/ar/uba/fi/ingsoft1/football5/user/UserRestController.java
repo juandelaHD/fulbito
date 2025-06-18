@@ -36,27 +36,8 @@ class UserRestController {
             }
     )
     @ResponseStatus(HttpStatus.OK)
-    // TODO: When are we using this service? Is it for the user or admin profile page? Decide PreAuthorize annotation.
     UserDTO getUser(@NonNull @PathVariable String username) throws UserNotFoundException {
-        return userService.getUserByUsername(username)
-                .orElseThrow(() -> new UserNotFoundException("User not found", username));
-    }
-
-    @GetMapping(path = "/{username}/teams", produces = "application/json")
-    @Operation(
-            summary = "Get teams by user",
-            description = "Returns a list of teams associated with the specified user by their username.",
-            responses = {
-                    @ApiResponse(responseCode = "200", description = "Teams retrieved successfully"),
-                    @ApiResponse(responseCode = "404", description = "User not found")
-            }
-    )
-    @ResponseStatus(HttpStatus.OK)
-    public List<TeamDTO> getTeamsByUser(
-            @PathVariable String username
-    ) throws UserNotFoundException {
-        return userService.getTeamsByUsername(username)
-                .orElseThrow(() -> new UserNotFoundException("User not found", username));
+        return userService.getUserByUsername(username);
     }
 
     @GetMapping(path = "/me", produces = "application/json")
@@ -70,8 +51,7 @@ class UserRestController {
     )
     @ResponseStatus(HttpStatus.OK)
     public UserDTO getMyProfile(@AuthenticationPrincipal JwtUserDetails userDetails) throws UserNotFoundException {
-        return userService.getUserByDetails(userDetails)
-                .orElseThrow(() -> new UserNotFoundException("User not found", userDetails.username()));
+        return userService.getUserByUsername(userDetails.username());
     }
 
     @GetMapping("/me/teams")
@@ -85,7 +65,7 @@ class UserRestController {
     )
     @ResponseStatus(HttpStatus.OK)
     public List<TeamDTO> getMyTeams(@AuthenticationPrincipal JwtUserDetails userDetails) throws UserNotFoundException {
-        return userService.getTeamsByUserDetails(userDetails);
+        return userService.getTeamsByUsername(userDetails.username());
     }
 
     @Transactional(readOnly = true)

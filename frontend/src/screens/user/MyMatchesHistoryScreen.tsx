@@ -27,11 +27,11 @@ export const MyMatchesHistoryScreen = () => {
       <div className="flex flex-col items-center gap-2 mb-4">
         <h2 className="text-2xl font-semibold text-center">History Matches</h2>
       </div>
-      {isLoading && <p>Loading teams...</p>}
-      {error && <p className="text-red-500">Error while loading teams</p>}
+      {isLoading && <p>Loading history matches...</p>}
+      {error && <p className="text-red-500">Error while loading matches</p>}
       {Array.isArray(matches) && matches.length > 0 && <MyMatchesHistoryTable data={matches} />}
       {Array.isArray(matches) && matches.length === 0 && (
-        <p className="text-gray-400 text-center">You don't have any teams yet.</p>
+        <p className="text-gray-400 text-center">You don't have any past matches yet.</p>
       )}
     </section>
   );

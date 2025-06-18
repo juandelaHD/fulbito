@@ -9,12 +9,12 @@ public record TeamCreateDTO(
         @Schema(description = "Team name", example = "The Galactic")
         String name,
 
-        @Schema(description = "Color principal del equipo", example = "Rojo")
+        @Schema(description = "Team  main color", example = "Red")
         String mainColor,
 
-        @Schema(description = "Color secundario del equipo", example = "Blanco")
+        @Schema(description = "Team Secondary color", example = "White")
         String secondaryColor,
 
-        @Schema(description = "Ranking o nivel del equipo", example = "5")
+        @Schema(description = "Team level or ranking", example = "5")
         Integer ranking
 ) {}
