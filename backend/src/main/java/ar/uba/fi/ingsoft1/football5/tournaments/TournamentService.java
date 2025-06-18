@@ -120,7 +120,12 @@ public class TournamentService {
 
         tournamentRepository.save(tournament);
 
-        emailSenderService.sendTournamentUpdatedOrganizerMail(tournament.getOrganizer().getUsername(), tournament);     
+        emailSenderService.sendTournamentUpdatedOrganizerMail(tournament.getOrganizer().getUsername(), tournament);    
+        
+        for (Team team: tournament.getRegisteredTeams()){
+                emailSenderService.sendTeamCaptainTournamentUpdated(team.getCaptain().getUsername(),tournament.getStartDate(),
+                                                                    tournament.getEndDate(), tournament.getName());
+        }
 
         return new TournamentResponseDTO(tournament);
     }

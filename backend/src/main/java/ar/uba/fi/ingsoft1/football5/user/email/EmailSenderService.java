@@ -1,6 +1,7 @@
 package ar.uba.fi.ingsoft1.football5.user.email;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cglib.core.Local;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.scheduling.annotation.Async;
@@ -61,6 +62,11 @@ public class EmailSenderService {
     @Async
     public void sendTeamAssignmentMail(String recipientEmail, String teamName, LocalDate date, LocalDateTime start, LocalDateTime end) {
         this.sendMail(recipientEmail, new TeamAssignmentMailWriter(teamName, date, start, end));
+    }
+
+    @Async
+    public void sendTeamCaptainTournamentUpdated(String recipientEmail, LocalDate start, LocalDate end, String tournamentName){
+        this.sendMail(recipientEmail, new TeamCaptainTournamentUpdatedMailWritter(start,end,tournamentName));
     }
 
     @Async
