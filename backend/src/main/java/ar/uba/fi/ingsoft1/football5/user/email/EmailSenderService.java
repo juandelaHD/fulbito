@@ -6,6 +6,8 @@ import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
+import ar.uba.fi.ingsoft1.football5.tournaments.Tournament;
+
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
@@ -84,6 +86,11 @@ public class EmailSenderService {
     @Async
     public void sendTournamentOrganizerMail(String recipientEmail, LocalDate start, LocalDate end, String tournamentName){
         this.sendMail(recipientEmail, new TournamentCreatedMailWriter(start, end, recipientEmail, tournamentName));
+    }
+
+    @Async
+    public void sendTournamentUpdatedOrganizerMail(String recipientEmail,Tournament tournament){
+        this.sendMail(recipientEmail, new TournamentUpdatedMailWritter(tournament));
     }
 
 

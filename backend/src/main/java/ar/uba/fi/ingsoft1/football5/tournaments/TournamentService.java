@@ -116,8 +116,11 @@ public class TournamentService {
         tournament.setRules(dto.getRules());
         tournament.setPrizes(dto.getPrizes());
         tournament.setRegistrationFee(dto.getRegistrationFee());
+        
 
         tournamentRepository.save(tournament);
+
+        emailSenderService.sendTournamentUpdatedOrganizerMail(tournament.getOrganizer().getUsername(), tournament);     
 
         return new TournamentResponseDTO(tournament);
     }
