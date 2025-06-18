@@ -74,6 +74,11 @@ public class EmailSenderService {
     }
 
     @Async
+    public void sendTeamCaptainUnregisterTournamentMail(String recipientEmail, LocalDate start, LocalDate end, String tournamentName){
+        this.sendMail(recipientEmail, new TeamCapitanUnregisterTournament(start, end, tournamentName));
+    }
+
+    @Async
     public void sendUnsubscribeMail(String recipientEmail, LocalDate date, LocalDateTime start, LocalDateTime end) {
         this.sendMail(recipientEmail, new UnsubscribeMailWriter(date, start, end));
     }

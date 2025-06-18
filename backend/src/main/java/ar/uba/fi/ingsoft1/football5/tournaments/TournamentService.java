@@ -198,7 +198,32 @@ public class TournamentService {
 
         tournament.setStatus(TournamentStatus.CANCELLED);
         tournamentRepository.save(tournament);
+    }
 
+    public void unregisterTeam(Long tournamentId, Long teamId, JwtUserDetails currentUser) throws ItemNotFoundException {
+        Tournament tournament = tournamentRepository.findById(tournamentId)
+            .orElseThrow(() -> new ItemNotFoundException("Tournament not found", tournamentId));
+
+        if (!tournament.getStatus().equals(TournamentStatus.OPEN_FOR_REGISTRATION)) {
+            throw new IllegalStateException("Cannot unregister team. Tournament is not accepting registration changes (current status: "
+                                            + tournament.getStatus() + ").");
+        }
+
+        Team team = teamRepository.findById(teamId)
+            .orElseThrow(() -> new ItemNotFoundException("Team not found", teamId));
+
+        if (!team.getCaptain().getUsername().equals(currentUser.username())) {
+            throw new UnauthorizedException("Team unregistration can only be performed by the team captain", null);
+        }
+
+        if (!tournament.getRegisteredTeams().contains(team)) {
+            throw new IllegalStateException("The team is not registered in this tournament");
+        }
+
+        emailSenderService.sendTeamCaptainUnregisterTournamentMail(team.getCaptain().getUsername(), tournament.getStartDate(),
+                                                                    tournament.getEndDate(), tournament.getName());
+        tournament.getRegisteredTeams().remove(team);
+        tournamentRepository.save(tournament);
     }
 }
 
