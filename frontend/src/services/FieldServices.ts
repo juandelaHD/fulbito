@@ -144,9 +144,74 @@ export async function getFieldSchedulesService(fieldId: number, date: string, to
   });
   if (!res.ok) throw new Error("Error fetching schedules");
   const slots: ScheduleSlot[] = await res.json();
-  return slots.filter(slot => slot.status === "AVAILABLE")
+  return slots
 }
 
+export type CreateFieldScheduleRequest = {
+  startDate: string; // "YYYY-MM-DD"
+  endDate: string;   // "YYYY-MM-DD"
+  openingTime: string; // "HH:mm"
+  closingTime: string; // "HH:mm"
+  slotDurationMinutes: number;
+  breakDurationMinutes: number;
+  daysOfWeek: string[]; // Ej: ["MONDAY", "TUESDAY"]
+};
+
+export async function createFieldScheduleService(
+  fieldId: number,
+  data: CreateFieldScheduleRequest,
+  token: string
+): Promise<ScheduleSlot[]> {
+  const res = await fetch(`${BASE_API_URL}/fields/${fieldId}/schedules`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+      Accept: "application/json",
+    },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) throw new Error("Error creating schedule");
+  return await res.json();
+}
+
+export async function updateScheduleSlotStatusService(
+  fieldId: number,
+  scheduleId: number,
+  status: "AVAILABLE" | "BLOCKED",
+  token: string
+) {
+  const res = await fetch(
+    `${BASE_API_URL}/fields/${fieldId}/schedules/${scheduleId}/status?status=${status}`,
+    {
+      method: "PUT",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        Accept: "application/json",
+      },
+    }
+  );
+  if (!res.ok) throw new Error("Error updating schedule status");
+  return await res.json();
+}
+
+export async function deleteFieldScheduleService(
+  fieldId: number,
+  scheduleId: number,
+  token: string
+): Promise<void> {
+  const res = await fetch(
+    `${BASE_API_URL}/fields/${fieldId}/schedules/${scheduleId}`,
+    {
+      method: "DELETE",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        Accept: "application/json",
+      },
+    }
+  );
+  if (!res.ok) throw new Error("Error while deleting schedule");
+}
 
 export function useGetOwnedFields() {
     const [tokenState] = useToken();

@@ -5,7 +5,6 @@ import ar.uba.fi.ingsoft1.football5.common.exception.UserNotFoundException;
 import ar.uba.fi.ingsoft1.football5.config.security.JwtUserDetails;
 import ar.uba.fi.ingsoft1.football5.fields.Field;
 import ar.uba.fi.ingsoft1.football5.fields.FieldService;
-import ar.uba.fi.ingsoft1.football5.fields.schedules.ScheduleDTO;
 import ar.uba.fi.ingsoft1.football5.fields.schedules.ScheduleService;
 import ar.uba.fi.ingsoft1.football5.matches.invitation.MatchInvitationService;
 import ar.uba.fi.ingsoft1.football5.teams.formation.TeamFormationRequestDTO;
@@ -167,13 +166,12 @@ public class MatchService {
             joinClosedMatch(match, newMatch);
         }
 
-        // TODO: REFACTOR - Change "times" to "slots" in the DTO and method names?
-        ScheduleDTO slot = scheduleService.markAsReserved(
+        scheduleService.markAsReserved(
                 field,
                 match.date(),
                 match.startTime().toLocalTime(),
                 match.endTime().toLocalTime()
-        );
+            );
 
         Match savedMatch = matchRepository.save(newMatch);
 
