@@ -370,6 +370,18 @@ class MatchServiceOpenMatchTest {
     }
 
     @Test
+    void testCancelMatch_asOrganizer_switchStatus() throws Exception {
+        openMatch.addPlayer(user);
+        when(userDetails.username()).thenReturn("organizer");
+        when(matchRepository.findById(1L)).thenReturn(Optional.of(openMatch));
+
+        matchService.cancelMatch(1L, userDetails);
+
+        assertEquals(MatchStatus.CANCELLED, openMatch.getStatus());
+        verify(emailSenderService).sendMatchCancelledMail(eq("organizer"), any(), any(), any());
+    }
+
+    @Test
     void testLeaveOpenMatch_matchNotFound() {
         when(matchRepository.findById(99L)).thenReturn(Optional.empty());
         assertThrows(ItemNotFoundException.class, () ->
