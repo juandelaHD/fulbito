@@ -41,10 +41,7 @@ export const TournamentsScreen = () => {
       startDate: t.startDate,
       format: t.format,
       status: t.status as TournamentStatus,
-      onRegister:
-        t.status === "OPEN_FOR_REGISTRATION"
-          ? () => toast.success(`Clicked Register for "${t.name}"`)
-          : undefined,
+      onRegister: t.status === "OPEN_FOR_REGISTRATION" ? () => {} : undefined,
     })) || []
 
   return (
