@@ -81,6 +81,10 @@ public class EmailSenderService {
         this.sendMail(recipientEmail, new MatchCancelledMailWriter(date, start, end));
     }
 
+    @Async
+    public void sendTournamentOrganizerMail(String recipientEmail, LocalDate start, LocalDate end, String tournamentName){
+        this.sendMail(recipientEmail, new TournamentCreatedMailWriter(start, end, recipientEmail, tournamentName));
+    }
 
 
     private void sendMail(String recipientEmailAddress, EmailWriter mailType) {

@@ -51,6 +51,9 @@ public class TournamentService {
         Tournament tournament = new Tournament(dto.getName(),organizer, dto.getStartDate(), dto.getEndDate(), dto.getFormat(), 
                                                 dto.getMaxTeams(), dto.getRules(), dto.getPrizes(), dto.getRegistrationFee());
 
+        emailSenderService.sendTournamentOrganizerMail(tournament.getOrganizer().getUsername(),tournament.getStartDate(),
+                                                        tournament.getEndDate(), tournament.getName());         
+                                                                                               
         return tournamentRepository.save(tournament);
     }
 
@@ -154,7 +157,7 @@ public class TournamentService {
         }
 
         tournament.getRegisteredTeams().add(team);
-        
+
         emailSenderService.sendTeamCaptainTournamentMail(team.getCaptain().getUsername(),tournament.getStartDate(),tournament.getEndDate(),
                                                         tournament.getOrganizer().getUsername(), tournament.getName());
         tournamentRepository.save(tournament);
