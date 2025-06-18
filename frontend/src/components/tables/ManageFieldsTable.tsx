@@ -47,7 +47,7 @@ export function ManageFieldsTable() {
   };
 
   const handleSchedulesClick = (field: Field) => {
-    navigate(`/fields/${field.id}/schedules`);
+    navigate(`/fields/${field.id}/schedules/${field.name}`);
   }
 
   const columns: ColumnDef<Field>[] = useMemo(() => [

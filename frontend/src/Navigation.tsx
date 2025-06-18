@@ -42,7 +42,7 @@ export const Navigation = () => {
           <Route path="/fields/management">
               <FieldsManagementScreen />
           </Route>
-          <Route path="/fields/:id/schedules">
+          <Route path="/fields/:id/schedules/:name">
             <FieldSchedulesScreen />
           </Route >
           <Route path="/fields/create">
