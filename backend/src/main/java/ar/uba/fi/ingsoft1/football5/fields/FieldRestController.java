@@ -221,7 +221,31 @@ class FieldRestController {
         return scheduleService.getAvailableSchedulesByFieldId(fieldId, pageable);
     }
 
-    // TODO --- Mark a schedule for a match as blocked
+
+    @PutMapping(path = "/{fieldId}/schedules/{scheduleId}/status", produces = "application/json")
+    @Operation(summary = "Update the status of a schedule(AVAILABLE o BLOCKED)")
+    @ResponseStatus(HttpStatus.OK)
+    @PreAuthorize("hasRole('ADMIN')")
+    public ScheduleDTO updateScheduleStatus(
+            @PathVariable("fieldId") Long fieldId,
+            @PathVariable("scheduleId") Long scheduleId,
+            @RequestParam("status") String status, // "AVAILABLE" o "BLOCKED" ("RESERVED" no se puede cambiar)
+            @AuthenticationPrincipal JwtUserDetails userDetails
+    ) throws ItemNotFoundException, IllegalArgumentException {
+        return scheduleService.updateScheduleStatus(fieldId, scheduleId, status, userDetails);
+    }
+
+    @DeleteMapping(path = "/{fieldId}/schedules/{scheduleId}", produces = "application/json")
+    @Operation(summary = "Eliminar un schedule de una cancha")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @PreAuthorize("hasRole('ADMIN')")
+    public void deleteSchedule(
+            @PathVariable("fieldId") Long fieldId,
+            @PathVariable("scheduleId") Long scheduleId,
+            @AuthenticationPrincipal JwtUserDetails userDetails
+    ) throws ItemNotFoundException {
+        scheduleService.deleteSchedule(fieldId, scheduleId, userDetails);
+    }
 
 }
 
