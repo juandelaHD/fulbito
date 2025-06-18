@@ -8,6 +8,8 @@ import ar.uba.fi.ingsoft1.football5.teams.TeamDTO;
 import ar.uba.fi.ingsoft1.football5.user.UserDTO;
 import io.swagger.v3.oas.annotations.media.Schema;
 
+import java.math.BigDecimal;
+
 @Schema(description = "Data Transfer Object representing a tournaments.")
 public record TournamentResponseDTO (    
     Long id,
@@ -18,10 +20,11 @@ public record TournamentResponseDTO (
     Integer maxTeams,
     TournamentStatus status,
     String rules,
+    String prizes,                    
+    BigDecimal registrationFee,      
     UserDTO organizer,
     Set<TeamDTO> registeredTeams
-    ){
-
+) {
     public TournamentResponseDTO(Tournament t) {
         this(
             t.getId(),
@@ -32,6 +35,8 @@ public record TournamentResponseDTO (
             t.getMaxTeams(),
             t.getStatus(),
             t.getRules() != null ? t.getRules() : "",
+            t.getPrizes(),                
+            t.getRegistrationFee(),              
             new UserDTO(t.getOrganizer()),
             t.getRegisteredTeams().stream().map(TeamDTO::new).collect(Collectors.toSet())
         );

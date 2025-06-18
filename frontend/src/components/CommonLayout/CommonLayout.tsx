@@ -89,6 +89,9 @@ const LoggedInLinks = ({ role, logOut }: LoggedInLinksProps) => (
                     <Link className={styles.navLink} href="/my-reservations">
                         My Reservations
                     </Link>
+                    <Link className={styles.navLink} href="/tournaments/management">
+                        My Tournaments
+                    </Link>
                     <Link className={styles.navLink} href="/my-matches">
                         My Matches
                     </Link>
