@@ -13,7 +13,9 @@ import jakarta.transaction.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.springframework.data.jpa.domain.Specification;
@@ -119,9 +121,12 @@ public class TournamentService {
         Tournament tournament = tournamentRepository.findById(tournamentId)
             .orElseThrow(() -> new ItemNotFoundException("Tournament not found", tournamentId));
 
-
         if (!tournament.getStatus().equals(TournamentStatus.OPEN_FOR_REGISTRATION)) {
             throw new IllegalStateException("The tournament is not open for registrations");
+        }
+
+        if (tournament.isFull()) {
+            throw new IllegalStateException("The maximum number of teams has been reached");
         }
 
         Team team = teamRepository.findById(teamId)
@@ -135,8 +140,15 @@ public class TournamentService {
             throw new IllegalStateException("The team is already registered in this tournament");
         }
 
-        if (tournament.isFull()) {
-            throw new IllegalStateException("The maximum number of teams has been reached");
+        Set<User> registeredPlayers = new HashSet<>();
+        for (Team registeredTeam : tournament.getRegisteredTeams()) {
+            registeredPlayers.addAll(registeredTeam.getMembers());
+        }
+
+        for (User player : team.getMembers()) {
+            if (registeredPlayers.contains(player)) {
+                throw new IllegalStateException("A player in this team is already registered in another team in the tournament");
+            }
         }
 
         tournament.getRegisteredTeams().add(team);
