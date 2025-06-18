@@ -5,6 +5,8 @@ import { FileInput } from "@/components/form-components/FileInput/FileInput.tsx"
 import { useEditTeam, useUpdateTeam } from "@/services/TeamServices.ts"; // Hook to create team
 import { useLocation,useRoute } from "wouter";
 import { TeamEditSchema } from "@/models/EditTeam";
+import { TeamMembersTable } from "@/components/tables/MembersTable";
+import { RawUserDTO } from "@/services/UserServices.ts";
 
 const fieldLabels: Record<string, string> = {
   id: "Team Id",
@@ -24,8 +26,13 @@ export const TeamEditScreen  = () => {
     const { id } = params as { id: string };
     //const { data,isLoading, error, refetch } = useEditTeam(id);
     const { data } = useEditTeam(id);
-
-
+    let count: number | undefined = data?.members.length;
+    let miembros: RawUserDTO[] = [];
+    let condicion :boolean = (count !== undefined && count > 0);
+    if ( data?.members ){
+      miembros = data.members;
+    }
+    //
     const formData = useAppForm({
       defaultValues: {
         id: data?.id,
@@ -135,6 +142,18 @@ export const TeamEditScreen  = () => {
                       />
                     )}
                   </formData.AppField>
+                  { condicion && 
+                    <section>
+                      <div>
+                        <h1 className="text-center text-2xl font-semibold my-2">
+                          Team Members
+                        </h1>
+                      </div>
+                      <div>
+                        <TeamMembersTable data={miembros} />
+                      </div>
+                    </section>
+                  }
                 </formData.FormContainer>
               </formData.AppForm>
             </div>
