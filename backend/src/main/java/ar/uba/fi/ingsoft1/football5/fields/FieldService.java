@@ -5,6 +5,7 @@ import ar.uba.fi.ingsoft1.football5.config.security.JwtUserDetails;
 import ar.uba.fi.ingsoft1.football5.fields.filters.FieldFiltersDTO;
 import ar.uba.fi.ingsoft1.football5.fields.filters.SpecificationService;
 import ar.uba.fi.ingsoft1.football5.fields.schedules.ScheduleStatus;
+import ar.uba.fi.ingsoft1.football5.images.FieldImage;
 import ar.uba.fi.ingsoft1.football5.images.ImageService;
 import ar.uba.fi.ingsoft1.football5.matches.Match;
 import ar.uba.fi.ingsoft1.football5.matches.MatchRepository;
@@ -213,5 +214,10 @@ public class FieldService {
                         Match::getStartTime,
                         match -> Math.max(0, match.getMaxPlayers() - match.getPlayers().size())));
         return new FieldDTO(field, matches);
+    }
+
+    public List<FieldImage> getfFieldImagesByFieldId(Long fieldId) throws ItemNotFoundException{
+        Field field = loadFieldById(fieldId);
+        return field.getImages();
     }
 }

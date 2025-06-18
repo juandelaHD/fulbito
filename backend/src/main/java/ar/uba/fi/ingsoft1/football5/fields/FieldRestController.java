@@ -9,6 +9,8 @@ import ar.uba.fi.ingsoft1.football5.fields.reviews.ReviewService;
 import ar.uba.fi.ingsoft1.football5.fields.schedules.ScheduleCreateDTO;
 import ar.uba.fi.ingsoft1.football5.fields.schedules.ScheduleDTO;
 import ar.uba.fi.ingsoft1.football5.fields.schedules.ScheduleService;
+import ar.uba.fi.ingsoft1.football5.images.FieldImage;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -22,10 +24,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.io.IOException;
 import java.time.LocalDate;
@@ -245,6 +249,15 @@ class FieldRestController {
             @AuthenticationPrincipal JwtUserDetails userDetails
     ) throws ItemNotFoundException {
         scheduleService.deleteSchedule(fieldId, scheduleId, userDetails);
+    }
+
+    @GetMapping("{fieldId}/images")
+    public ResponseEntity<List<FieldImage>> getFieldImages(@PathVariable Long fieldId) throws ItemNotFoundException{
+        List<FieldImage> images = fieldService.getfFieldImagesByFieldId(fieldId);
+        if (images.isEmpty()){
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Images not found for the field "+ fieldId);
+        }
+        return ResponseEntity.ok(images);
     }
 
 }
