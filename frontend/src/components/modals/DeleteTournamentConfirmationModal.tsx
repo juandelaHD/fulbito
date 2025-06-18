@@ -45,9 +45,11 @@ export const DeleteTournamentConfirmationModal = ({ isOpen, onConfirm, onCancel,
             </div>
 
             <p className="text-sm mb-4">
-                {tournamentName
+                {
+                    tournamentName
                     ? `Are you sure you want to delete "${tournamentName}"?`
-                    : "Are you sure you want to delete this field?"}
+                    : "Are you sure you want to delete this tournament?" 
+                }
             </p>
 
             <div className="flex justify-end space-x-3 pt-2">
