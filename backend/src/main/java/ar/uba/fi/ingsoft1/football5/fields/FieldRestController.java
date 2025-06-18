@@ -33,7 +33,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/fields")
-@Tag(name = "4 - Fields")
+@Tag(name = "5 - Fields")
 class FieldRestController {
 
     private final FieldService fieldService;

@@ -20,12 +20,7 @@ export const ForgotPasswordScreen = () => {
       },
     },
     onSubmit: async ({ value }) => {
-      try {
-        await forgotPasswordService({ email: value.email });
-        toast.success("If the email exists, you will receive a link to reset your password.");
-      } catch (err: any) {
-        toast.error(err.message || "Error sending the email.");
-      }
+      await forgotPasswordService({ email: value.email });
     },
   });
 

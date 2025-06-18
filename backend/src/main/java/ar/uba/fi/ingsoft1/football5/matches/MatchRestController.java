@@ -41,8 +41,7 @@ public class MatchRestController {
     @ApiResponse(responseCode = "200", description = "Invitation link retrieved successfully")
     @ApiResponse(responseCode = "404", description = "Match not found")
     public String getInvitationLink(@PathVariable Long matchId) throws ItemNotFoundException {
-        String token = matchService.getMatchInvitationLink(matchId);
-        return "http://localhost:30003/invite/" + token; // TODO: Replace with actual URL generation logic
+        return matchService.getMatchInvitationLink(matchId);
     }
 
     @PostMapping(path = "/create", consumes = "application/json", produces = "application/json")

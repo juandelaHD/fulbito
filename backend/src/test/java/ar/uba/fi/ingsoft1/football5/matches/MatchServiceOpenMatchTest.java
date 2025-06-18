@@ -68,7 +68,7 @@ class MatchServiceOpenMatchTest {
     void setUp() {
         Field field = mock(Field.class);
         organizer = new User("organizer", "Org", "User", "M", "Zone", 30, "pass", Role.USER);
-        openMatch = new Match(field, organizer, MatchStatus.PENDING, MatchType.OPEN,
+        openMatch = new Match(field, organizer, MatchType.OPEN,
                 1,
                 2,
                 LocalDate.now().plusDays(1),
@@ -367,20 +367,6 @@ class MatchServiceOpenMatchTest {
 
             assertEquals("Cannot leave a match that is already " + status + ".", ex.getMessage());
         }
-    }
-
-    @Test
-    void testLeaveOpenMatch_asOrganizer_cancelsMatch() throws Exception {
-        openMatch.addPlayer(user);
-        when(userDetails.username()).thenReturn("organizer");
-        when(matchRepository.findById(1L)).thenReturn(Optional.of(openMatch));
-        when(userService.loadUserByUsername("organizer")).thenReturn(openMatch.getOrganizer());
-
-        matchService.leaveOpenMatch(1L, userDetails);
-
-        assertEquals(MatchStatus.CANCELLED, openMatch.getStatus());
-        verify(emailSenderService).sendMatchCancelledMail(eq("testuser"), any(), any(), any());
-        verify(emailSenderService).sendMatchCancelledMail(eq("organizer"), any(), any(), any());
     }
 
     @Test

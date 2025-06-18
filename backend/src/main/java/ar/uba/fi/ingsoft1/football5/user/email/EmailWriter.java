@@ -6,11 +6,11 @@ public class EmailWriter {
 
     protected String getSubject() {
         return "";
-    };
+    }
 
     protected String getTextContent() {
         return "";
-    };
+    }
 
     public void writeMessage(SimpleMailMessage message) {
         message.setSubject(this.getSubject());

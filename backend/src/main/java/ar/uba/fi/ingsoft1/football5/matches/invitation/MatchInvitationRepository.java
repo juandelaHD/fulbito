@@ -6,5 +6,4 @@ import java.util.Optional;
 
 public interface MatchInvitationRepository extends JpaRepository<MatchInvitation, Long> {
     Optional<MatchInvitation> findByToken(String token);
-    Optional<MatchInvitation> findByMatchId(Long matchId);
 }

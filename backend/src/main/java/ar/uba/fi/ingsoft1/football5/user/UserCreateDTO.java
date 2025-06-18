@@ -7,7 +7,7 @@ import jakarta.validation.constraints.NotNull;
 
 import java.util.function.Function;
 
-@Schema(description = "Data Transfer Object used when creating a new user account.")
+@Schema(description = "DTO used when creating a new user account.")
 public record UserCreateDTO(
         @NotBlank(message = "First name is required")
         @Schema(description = "User's first name", example = "Pepe")
@@ -42,7 +42,7 @@ public record UserCreateDTO(
         @Schema(description = "Role assigned to the user within the system", example = "USER")
         Role role,
 
-        @Schema(description = "Token de invitación si el usuario fue invitado")
+        @Schema(description = "Optional invitation token for account creation")
         String invitationToken
 
 ) implements UserCredentials {

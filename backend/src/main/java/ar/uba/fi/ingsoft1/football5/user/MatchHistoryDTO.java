@@ -46,7 +46,6 @@ public record MatchHistoryDTO(
         @Schema(description = "List of teams that participated")
         List<TeamDTO> teams
 
-
 ) {
     public MatchHistoryDTO(Match match) {
         this (
@@ -58,7 +57,7 @@ public record MatchHistoryDTO(
                 match.getEndTime(),
                 match.getField().getName(),
                 match.getField().getLocation(),
-                match.getResult() != null ? match.getResult().toString() : null,
+                match.getResult() != null ? match.getResult() : null,
                 match.getPlayers().stream().map(UserDTO::new).toList(),
                 java.util.stream.Stream.of(match.getHomeTeam(), match.getAwayTeam())
                         .filter(java.util.Objects::nonNull)
