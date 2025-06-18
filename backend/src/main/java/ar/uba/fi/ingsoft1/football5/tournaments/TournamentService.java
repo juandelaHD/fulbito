@@ -186,7 +186,14 @@ public class TournamentService {
         if(tournament.getStatus().equals(TournamentStatus.IN_PROGRESS) || tournament.getStatus().equals(TournamentStatus.FINISHED)){
             throw new IllegalArgumentException("A tournament in progress or already finished cannot be deleted");
         }
-        //TODO: enviar a los capitanes y al organizador mail con que se cancelo el torneo
+
+        emailSenderService.sendTournamentCancelledOrganizerMail(tournament.getOrganizer().getUsername(),tournament.getStartDate(),
+                                                                tournament.getEndDate(), tournament.getName());
+        for (Team team: tournament.getRegisteredTeams()){
+            emailSenderService.sendTeamCaptainTournamentCanceled(team.getCaptain().getUsername(),tournament.getStartDate(),
+                                                                tournament.getEndDate(), tournament.getName());
+        }
+
         tournament.clearTeams();
 
         tournament.setStatus(TournamentStatus.CANCELLED);
