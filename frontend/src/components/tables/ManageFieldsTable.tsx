@@ -61,49 +61,47 @@ export function ManageFieldsTable() {
       id: "actions",
       header: "Actions",
       cell: ({ row }) => (
-          <div className="flex space-x-2">
-            <button
-                onClick={() => setEditingField(row.original)}
-                className="text-sm bg-blue-600 text-white px-2 py-1 rounded hover:bg-blue-700"
-            >
-              Edit
-            </button>
-            <button
-              onClick={() => handleSchedulesClick(row.original)}
-              className="text-sm bg-red-600 text-white px-2 py-1 rounded hover:bg-red-700"
-            >
-              Schedules
-            </button>
-            <button
-                onClick={() => setFieldToDelete(row.original)}
-                className="text-sm bg-red-600 text-white px-2 py-1 rounded hover:bg-red-700"
-            >
-              Delete
-            </button>
-          </div>
+        <div className="flex justify-center items-center space-x-2">
+          <button
+            onClick={() => setEditingField(row.original)}
+            className="text-sm bg-blue-600 text-white px-2 py-1 rounded hover:bg-blue-700"
+          >
+            Edit
+          </button>
+          <button
+            onClick={() => handleSchedulesClick(row.original)}
+            className="text-sm bg-red-600 text-white px-2 py-1 rounded hover:bg-red-700"
+          >
+            Schedules
+          </button>
+          <button
+            onClick={() => setFieldToDelete(row.original)}
+            className="text-sm bg-red-600 text-white px-2 py-1 rounded hover:bg-red-700"
+          >
+            Delete
+          </button>
+        </div>
       ),
     },
     {
       id: "image",
       header: "Image",
-      cell: ({row}) => {
+      cell: ({ row }) => {
         const imageEndpoint = row.original.imageUrl;
         const imageUrl = useImageById(imageEndpoint);
 
         return (
-            <div
-                className="w-[120px] h-[100px] overflow-hidden rounded bg-black/10 flex items-center justify-center"
-            >
-              {imageUrl ? (
-                  <img
-                      src={imageUrl}
-                      alt={row.original.name}
-                      className="w-full h-full object-cover block"
-                  />
-              ) : (
-                  <span className="text-xs">🖼️</span>
-              )}
-            </div>
+          <div className="w-[120px] h-[100px] overflow-hidden rounded bg-black/10 flex items-center justify-center mx-auto">
+            {imageUrl ? (
+              <img
+                src={imageUrl}
+                alt={row.original.name}
+                className="w-full h-full object-cover block"
+              />
+            ) : (
+              <span className="text-xs">🖼️</span>
+            )}
+          </div>
         );
       },
     }

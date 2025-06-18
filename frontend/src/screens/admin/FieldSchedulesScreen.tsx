@@ -37,7 +37,7 @@ export const FieldSchedulesScreen = () => {
     }
   };
 
-  const handleSlotAction = async (slot: ScheduleSlot, newStatus: "AVAILABLE" | "BLOCK") => {
+  const handleSlotAction = async (slot: ScheduleSlot, newStatus: "AVAILABLE" | "BLOCKED") => {
     if (!fieldId || !token) return;
     try {
       await updateScheduleSlotStatusService(fieldId, slot.id, newStatus, token);
@@ -71,14 +71,17 @@ export const FieldSchedulesScreen = () => {
           <h1 className="text-2xl font-bold">
             Schedules Slots for {fieldName}
           </h1>
+          <p className="text-gray-600 text-center max-w-md">
+            Here you can view, create, and manage the schedule slots for this field. Use the date picker to see available slots for a specific day.
+          </p>
           <button
             className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
             onClick={() => setShowCreateModal(true)}
           >
             Create schedules
           </button>
-          <div className="w-full max-w-xs">
-            <label className="block mb-1 font-medium text-center">Date</label>
+          <div className="w-full max-w-xs flex flex-col items-center mt-6">
+            <label className="block mb-1 font-medium text-center">Pick a date</label>
             <DatePicker
               selected={selectedDate}
               onChange={handleDateChange}

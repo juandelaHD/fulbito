@@ -4,7 +4,7 @@ import { ScheduleSlot } from "@/services/FieldServices";
 
 type SchedulesSlotsTableProps = {
   schedules: ScheduleSlot[];
-  onAction?: (slot: ScheduleSlot, newStatus: "AVAILABLE" | "BLOCK") => void;
+  onAction?: (slot: ScheduleSlot, newStatus: "AVAILABLE" | "BLOCKED") => void;
   onDelete?: (slot: ScheduleSlot) => void;
 };
 

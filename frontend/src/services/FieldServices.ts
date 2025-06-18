@@ -144,7 +144,7 @@ export async function getFieldSchedulesService(fieldId: number, date: string, to
   });
   if (!res.ok) throw new Error("Error fetching schedules");
   const slots: ScheduleSlot[] = await res.json();
-  return slots.filter(slot => slot.status === "AVAILABLE")
+  return slots
 }
 
 export type CreateFieldScheduleRequest = {
@@ -178,7 +178,7 @@ export async function createFieldScheduleService(
 export async function updateScheduleSlotStatusService(
   fieldId: number,
   scheduleId: number,
-  status: "AVAILABLE" | "BLOCK",
+  status: "AVAILABLE" | "BLOCKED",
   token: string
 ) {
   const res = await fetch(

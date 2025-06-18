@@ -50,16 +50,16 @@ export function CreateScheduleSlotsModal({ isOpen, onClose, fieldId }: Props) {
     e.preventDefault();
     const parsed = CreateFieldScheduleRequestSchema.safeParse(form);
     if (!parsed.success) {
-      toast.error("Datos inválidos. Revisa el formulario.");
+      toast.error("Invalid form data. Check your inputs.");
       return;
     }
     setLoading(true);
     try {
       await createFieldScheduleService(fieldId, parsed.data, token);
-      toast.success("Schedule creado correctamente");
+      toast.success("Schedule created successfully!");
       onClose();
     } catch {
-      toast.error("Error al crear el schedule");
+      toast.error("Error creating schedule. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -74,21 +74,28 @@ export function CreateScheduleSlotsModal({ isOpen, onClose, fieldId }: Props) {
       style={{
         overlay: {
           backgroundColor: "rgba(0,0,0,0.4)",
+          backdropFilter: "blur(6px)",
           zIndex: 1000,
         },
         content: {
-          background: "#fff",
-          color: "#222",
-          maxWidth: "400px",
-          margin: "auto",
+          backgroundColor: "#0f1e11",
+          color: "#f0f0f0",
+          maxWidth: "fit-content",
+          width: "fit-content",
+          maxHeight: "fit-content",
           borderRadius: "12px",
           padding: "24px",
-          border: "1px solid #ccc",
+          border: "1px solid #3a4d39",
+          position: "fixed",
+          transform: "translate(-50%, -50%)",
+          top: "50%",
+          left: "50%",
+          margin: 0,
         },
       }}
     >
       <div className="flex justify-between items-center mb-4">
-        <h2 className="text-xl font-bold">Crear Schedule</h2>
+        <h2 className="text-xl font-bold">Crear a new schedule!</h2>
         <button
           onClick={onClose}
           className="text-black hover:text-red-500 transition"
@@ -99,7 +106,7 @@ export function CreateScheduleSlotsModal({ isOpen, onClose, fieldId }: Props) {
       </div>
       <form onSubmit={handleSubmit} className="space-y-3">
         <div>
-          <label className="block font-medium">Fecha inicio</label>
+          <label className="block font-medium">Start date</label>
           <input
             type="date"
             name="startDate"
@@ -110,7 +117,7 @@ export function CreateScheduleSlotsModal({ isOpen, onClose, fieldId }: Props) {
           />
         </div>
         <div>
-          <label className="block font-medium">Fecha fin</label>
+          <label className="block font-medium">End date</label>
           <input
             type="date"
             name="endDate"
@@ -121,7 +128,7 @@ export function CreateScheduleSlotsModal({ isOpen, onClose, fieldId }: Props) {
           />
         </div>
         <div>
-          <label className="block font-medium">Hora apertura</label>
+          <label className="block font-medium">Opening time</label>
           <input
             type="time"
             name="openingTime"
@@ -132,7 +139,7 @@ export function CreateScheduleSlotsModal({ isOpen, onClose, fieldId }: Props) {
           />
         </div>
         <div>
-          <label className="block font-medium">Hora cierre</label>
+          <label className="block font-medium">Closing time</label>
           <input
             type="time"
             name="closingTime"
@@ -143,7 +150,7 @@ export function CreateScheduleSlotsModal({ isOpen, onClose, fieldId }: Props) {
           />
         </div>
         <div>
-          <label className="block font-medium">Duración slot (minutos)</label>
+          <label className="block font-medium">Slot duration (minutes)</label>
           <input
             type="number"
             name="slotDurationMinutes"
@@ -155,7 +162,7 @@ export function CreateScheduleSlotsModal({ isOpen, onClose, fieldId }: Props) {
           />
         </div>
         <div>
-          <label className="block font-medium">Duración break (minutos)</label>
+          <label className="block font-medium">Break duration (minutes)</label>
           <input
             type="number"
             name="breakDurationMinutes"
@@ -167,7 +174,7 @@ export function CreateScheduleSlotsModal({ isOpen, onClose, fieldId }: Props) {
           />
         </div>
         <div>
-          <label className="block font-medium">Días de la semana</label>
+          <label className="block font-medium">Days of the week</label>
           <div className="flex flex-wrap gap-2">
             {daysOfWeekList.map(day => (
               <label key={day} className="flex items-center gap-1">
@@ -181,21 +188,21 @@ export function CreateScheduleSlotsModal({ isOpen, onClose, fieldId }: Props) {
             ))}
           </div>
         </div>
-        <div className="flex justify-end gap-2 mt-4">
+        <div className="flex justify-center gap-4 mt-4">
           <button
             type="button"
             onClick={onClose}
             className="px-4 py-2 rounded bg-gray-300 hover:bg-gray-400"
             disabled={loading}
           >
-            Cancelar
+            Cancel
           </button>
           <button
             type="submit"
             className="px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-700"
             disabled={loading}
           >
-            {loading ? "Creando..." : "Crear"}
+            {loading ? "Creating..." : "Create"}
           </button>
         </div>
       </form>

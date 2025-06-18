@@ -74,7 +74,6 @@ public class ScheduleService {
         Field field = fieldService.loadFieldById(fieldId);
         List<Schedule> schedules = scheduleRepository.findByFieldAndDate(field, date);
         return schedules.stream()
-                .filter(s -> s.getStatus() == ScheduleStatus.AVAILABLE)
                 .map(s -> new ScheduleDTO(
                         s.getId(),
                         s.getDate(),
