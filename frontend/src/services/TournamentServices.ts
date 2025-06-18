@@ -155,12 +155,11 @@ export function useUpdateTournament(tournamentId: number) {
         body: JSON.stringify(req),
       });
 
-      const json = await response.json();
-
       if (!response.ok) {
         await handleErrorResponse(response, "updating tournament");
       }
 
+      const json = await response.json(); // <-- ahora es seguro leerlo
       toast.success("Tournament updated successfully", { duration: 5000 });
       return UpdateTournamentResponseSchema.parse(json);
     },
