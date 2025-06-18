@@ -120,8 +120,9 @@ public class TeamService {
                 .orElseThrow(() -> new ItemNotFoundException(TEAM_ITEM, id));
 
         validateIsCaptain(team, username);
-        validateUniqueName(teamCreate);
-
+        if (!teamCreate.name().equalsIgnoreCase(team.getName())){
+            validateUniqueName(teamCreate);
+        }
         team.setName(teamCreate.name());
 
         if (teamCreate.mainColor() != null) {

@@ -57,29 +57,6 @@ public class TournamentService {
         return tournamentRepository.save(tournament);
     }
 
-    public List<TournamentResponseDTO> getTournamentsFiltered(String organizerUsername, Boolean openForRegistration) {
-        Specification<Tournament> spec = Specification.where(null);
-
-        if (organizerUsername != null && !organizerUsername.isEmpty()) {
-            spec = spec.and((root, query, cb) ->
-                cb.equal(root.join("organizer").get("username"), organizerUsername)
-            );
-        }
-
-        if (Boolean.TRUE.equals(openForRegistration)) {
-            spec = spec.and((root, query, cb) ->
-                cb.equal(root.get("status"), TournamentStatus.OPEN_FOR_REGISTRATION)
-            );
-        }
-
-        List<Tournament> tournaments;
-        tournaments = tournamentRepository.findAll(spec);
-
-        return tournaments.stream()
-                .map(TournamentResponseDTO::new)
-                .collect(Collectors.toList());
-    }
-
     public TournamentResponseDTO updateTournament(Long tournamentId, TournamentCreateDTO dto, JwtUserDetails currentUser) throws ItemNotFoundException{
         Tournament tournament = tournamentRepository.findById(tournamentId)
             .orElseThrow(() -> new ItemNotFoundException("Tournament not found", tournamentId));
@@ -163,7 +140,7 @@ public class TournamentService {
                 throw new IllegalStateException("A player in this team is already registered in another team in the tournament");
             }
         }
-
+ 
         tournament.getRegisteredTeams().add(team);
 
         emailSenderService.sendTeamCaptainTournamentMail(team.getCaptain().getUsername(),tournament.getStartDate(),tournament.getEndDate(),
@@ -224,6 +201,39 @@ public class TournamentService {
                                                                     tournament.getEndDate(), tournament.getName());
         tournament.getRegisteredTeams().remove(team);
         tournamentRepository.save(tournament);
+    }
+
+    public List<TournamentResponseDTO> getTournamentsFiltered(String organizerUsername, Boolean openForRegistration) {
+        Specification<Tournament> spec = Specification.where(null);
+
+        if (organizerUsername != null && !organizerUsername.isEmpty()) {
+            spec = spec.and((root, query, cb) ->
+                cb.equal(root.join("organizer").get("username"), organizerUsername)
+            );
+        }
+
+        if (Boolean.TRUE.equals(openForRegistration)) {
+            spec = spec.and((root, query, cb) ->
+                cb.equal(root.get("status"), TournamentStatus.OPEN_FOR_REGISTRATION)
+            );
+        }
+
+        List<Tournament> tournaments;
+        tournaments = tournamentRepository.findAll(spec);
+
+        return tournaments.stream()
+                .map(TournamentResponseDTO::new)
+                .collect(Collectors.toList());
+    }
+
+    public List<TournamentResponseDTO> getTournamentsOrganized(JwtUserDetails currentUser){
+        return tournamentRepository.findAllByOrganizerUsername(currentUser.username()).stream()
+                .map(TournamentResponseDTO::new).toList();
+    }
+
+    public List<TournamentResponseDTO> getTournamentsOrganizedBy(String currentUser){
+        return tournamentRepository.findAllByOrganizerUsername(currentUser).stream()
+                .map(TournamentResponseDTO::new).toList();
     }
 }
 
