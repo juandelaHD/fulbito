@@ -12,6 +12,20 @@ type Props = {
   onClickTournament?: (t: TournamentForTable) => void
 }
 
+const formatLabelMap: Record<string, string> = {
+  SINGLE_ELIMINATION: "Direct Elimination",
+  GROUP_STAGE_WITH_ELIMINATION: "Group Stage + Elimination",
+  ROUND_ROBIN: "League",
+}
+
+const statusLabelMap: Record<string, string> = {
+  OPEN_FOR_REGISTRATION: "Open for Registration",
+  IN_PROGRESS: "In Progress",
+  FINISHED: "Finished",
+  CANCELLED: "Cancelled",
+}
+
+
 export const TournamentTable = ({ data, onClickTournament }: Props) => {
   const showActions = data.some((t) => t.onRegister)
 
@@ -42,8 +56,12 @@ export const TournamentTable = ({ data, onClickTournament }: Props) => {
                 {tournament.name}
               </td>
               <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-700">{tournament.startDate}</td>
-              <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-700">{tournament.format}</td>
-              <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-700">{tournament.status}</td>
+              <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-700">
+                {formatLabelMap[tournament.format] ?? tournament.format}
+              </td>
+              <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-700">
+                {statusLabelMap[tournament.status] ?? tournament.status}
+              </td>
               {showActions && (
                 <td className="px-4 py-3 whitespace-nowrap text-sm">
                   {tournament.onRegister && (
