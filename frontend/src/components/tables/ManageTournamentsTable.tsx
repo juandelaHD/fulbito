@@ -6,6 +6,19 @@ import { EditTournamentModal } from "@/components/modals/EditTournamentModal"
 import { useMemo, useState } from "react"
 import { OwnedTournament } from "@/models/GetOwnedTournaments"
 
+const formatLabels = {
+  SINGLE_ELIMINATION: "Direct Elimination",
+  GROUP_STAGE_WITH_ELIMINATION: "Group + Elimination",
+  ROUND_ROBIN: "League",
+}
+
+const statusLabels = {
+  OPEN_FOR_REGISTRATION: "Open",
+  IN_PROGRESS: "In Progress",
+  FINISHED: "Finished",
+  CANCELLED: "Cancelled",
+}
+
 export function ManageTournamentsTable() {
   const { data, isLoading, isError, refetch } = useGetOwnedTournaments()
   const { mutateAsync: deleteTournament } = useDeleteTournament()
@@ -14,8 +27,16 @@ export function ManageTournamentsTable() {
 
   const columns: ColumnDef<OwnedTournament>[] = useMemo(() => [
     { accessorKey: "name", header: "Name" },
-    { accessorKey: "format", header: "Format" },
-    { accessorKey: "status", header: "Status" },
+    {
+      accessorKey: "format",
+      header: "Format",
+      cell: ({ row }) => formatLabels[row.original.format],
+    },
+    {
+      accessorKey: "status",
+      header: "Status",
+      cell: ({ row }) => statusLabels[row.original.status],
+    },
     { accessorKey: "startDate", header: "Start Date" },
     { accessorKey: "endDate", header: "End Date" },
     { accessorKey: "maxTeams", header: "Max Teams" },
