@@ -140,7 +140,7 @@ public class TournamentService {
                 throw new IllegalStateException("A player in this team is already registered in another team in the tournament");
             }
         }
-
+ 
         tournament.getRegisteredTeams().add(team);
 
         emailSenderService.sendTeamCaptainTournamentMail(team.getCaptain().getUsername(),tournament.getStartDate(),tournament.getEndDate(),

@@ -109,7 +109,7 @@ public class TournamentRestController {
     public ResponseEntity<?> deleteTournament(
         @PathVariable Long tournamentId,
         @RequestParam boolean confirm,
-        @AuthenticationPrincipal JwtUserDetails userDetails) throws ItemNotFoundException{
+        @AuthenticationPrincipal JwtUserDetails userDetails) throws ItemNotFoundException, IllegalStateException{
             tournamentService.deleteTournament(tournamentId, userDetails, confirm);
             return ResponseEntity.ok("Tournament successfully deleted");
         }

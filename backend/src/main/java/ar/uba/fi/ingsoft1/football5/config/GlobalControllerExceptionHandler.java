@@ -240,4 +240,25 @@ public class GlobalControllerExceptionHandler {
         );
         return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
     }
+
+    @ExceptionHandler(IllegalStateException.class)
+        @ApiResponse(
+                responseCode = "409",
+                description = "Conflict - Business logic violation",
+                content = @Content(
+                        mediaType = "application/json",
+                        schema = @Schema(
+                                example = "{ \"status\": 409, \"error\": \"Conflict\", \"message\": \"The team is already registered in this tournament\", \"path\": \"<actual_path_here>\" }"
+                        )
+                )
+        )
+        public ResponseEntity<ErrorResponse> handleIllegalStateException(IllegalStateException ex, HttpServletRequest request) {
+        ErrorResponse response = new ErrorResponse(
+                HttpStatus.CONFLICT.value(),
+                "Conflict",
+                ex.getMessage(),
+                request.getRequestURI()
+        );
+        return new ResponseEntity<>(response, HttpStatus.CONFLICT);
+        }
 }
