@@ -99,4 +99,20 @@ public class TournamentRestController {
             tournamentService.deleteTournament(tournamentId, userDetails, confirm);
             return ResponseEntity.ok("Tournament successfully deleted");
         }
+
+    @PostMapping("/{tournamentId}/unregister")
+    @Operation(summary = "Unregister a team of a tournament")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Team successfully unregistered"),
+        @ApiResponse(responseCode = "400", description = "Invalid team or tournament"),
+        @ApiResponse(responseCode = "404", description = "Tournament or team not found"),
+        @ApiResponse(responseCode = "409", description = "Team is not registered in the tournament")
+    })
+    public ResponseEntity<?> unregisterTeamToTournament(
+        @PathVariable Long tournamentId,
+        @RequestParam Long teamId,
+        @AuthenticationPrincipal JwtUserDetails userDetails) throws ItemNotFoundException {
+            tournamentService.unregisterTeam(tournamentId,teamId, userDetails);
+            return ResponseEntity.ok("Team successfully unregistered");
+        }
 }

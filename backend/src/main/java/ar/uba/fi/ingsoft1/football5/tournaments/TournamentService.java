@@ -7,7 +7,7 @@ import ar.uba.fi.ingsoft1.football5.teams.Team;
 import ar.uba.fi.ingsoft1.football5.teams.TeamRepository;
 import ar.uba.fi.ingsoft1.football5.user.User;
 import ar.uba.fi.ingsoft1.football5.user.UserRepository;
-
+import ar.uba.fi.ingsoft1.football5.user.email.EmailSenderService;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 
@@ -28,11 +28,13 @@ public class TournamentService {
     private final TournamentRepository tournamentRepository;
     private final UserRepository userRepository;
     private final TeamRepository teamRepository;
+    private final EmailSenderService emailSenderService;
 
-    public TournamentService(TournamentRepository repository, UserRepository userRepository, TeamRepository teamRepository) {
+    public TournamentService(TournamentRepository repository, UserRepository userRepository, TeamRepository teamRepository, EmailSenderService emailSenderService) {
         this.tournamentRepository = repository;
         this.userRepository = userRepository;
         this.teamRepository = teamRepository;
+        this.emailSenderService = emailSenderService;
     }
 
     public Tournament createTournament(TournamentCreateDTO dto, JwtUserDetails currentUser) {
@@ -49,6 +51,9 @@ public class TournamentService {
         Tournament tournament = new Tournament(dto.getName(),organizer, dto.getStartDate(), dto.getEndDate(), dto.getFormat(), 
                                                 dto.getMaxTeams(), dto.getRules(), dto.getPrizes(), dto.getRegistrationFee());
 
+        emailSenderService.sendTournamentOrganizerMail(tournament.getOrganizer().getUsername(),tournament.getStartDate(),
+                                                        tournament.getEndDate(), tournament.getName());         
+                                                                                               
         return tournamentRepository.save(tournament);
     }
 
@@ -111,8 +116,16 @@ public class TournamentService {
         tournament.setRules(dto.getRules());
         tournament.setPrizes(dto.getPrizes());
         tournament.setRegistrationFee(dto.getRegistrationFee());
+        
 
         tournamentRepository.save(tournament);
+
+        emailSenderService.sendTournamentUpdatedOrganizerMail(tournament.getOrganizer().getUsername(), tournament);    
+        
+        for (Team team: tournament.getRegisteredTeams()){
+                emailSenderService.sendTeamCaptainTournamentUpdated(team.getCaptain().getUsername(),tournament.getStartDate(),
+                                                                    tournament.getEndDate(), tournament.getName());
+        }
 
         return new TournamentResponseDTO(tournament);
     }
@@ -152,7 +165,9 @@ public class TournamentService {
         }
 
         tournament.getRegisteredTeams().add(team);
-        //TODO: enviar mensaje de registro al capitan
+
+        emailSenderService.sendTeamCaptainTournamentMail(team.getCaptain().getUsername(),tournament.getStartDate(),tournament.getEndDate(),
+                                                        tournament.getOrganizer().getUsername(), tournament.getName());
         tournamentRepository.save(tournament);
     }
     
@@ -171,12 +186,44 @@ public class TournamentService {
         if(tournament.getStatus().equals(TournamentStatus.IN_PROGRESS) || tournament.getStatus().equals(TournamentStatus.FINISHED)){
             throw new IllegalArgumentException("A tournament in progress or already finished cannot be deleted");
         }
-        //TODO: enviar a los capitanes y al organizador mail con que se cancelo el torneo
+
+        emailSenderService.sendTournamentCancelledOrganizerMail(tournament.getOrganizer().getUsername(),tournament.getStartDate(),
+                                                                tournament.getEndDate(), tournament.getName());
+        for (Team team: tournament.getRegisteredTeams()){
+            emailSenderService.sendTeamCaptainTournamentCanceled(team.getCaptain().getUsername(),tournament.getStartDate(),
+                                                                tournament.getEndDate(), tournament.getName());
+        }
+
         tournament.clearTeams();
 
         tournament.setStatus(TournamentStatus.CANCELLED);
         tournamentRepository.save(tournament);
+    }
 
+    public void unregisterTeam(Long tournamentId, Long teamId, JwtUserDetails currentUser) throws ItemNotFoundException {
+        Tournament tournament = tournamentRepository.findById(tournamentId)
+            .orElseThrow(() -> new ItemNotFoundException("Tournament not found", tournamentId));
+
+        if (!tournament.getStatus().equals(TournamentStatus.OPEN_FOR_REGISTRATION)) {
+            throw new IllegalStateException("Cannot unregister team. Tournament is not accepting registration changes (current status: "
+                                            + tournament.getStatus() + ").");
+        }
+
+        Team team = teamRepository.findById(teamId)
+            .orElseThrow(() -> new ItemNotFoundException("Team not found", teamId));
+
+        if (!team.getCaptain().getUsername().equals(currentUser.username())) {
+            throw new UnauthorizedException("Team unregistration can only be performed by the team captain", null);
+        }
+
+        if (!tournament.getRegisteredTeams().contains(team)) {
+            throw new IllegalStateException("The team is not registered in this tournament");
+        }
+
+        emailSenderService.sendTeamCaptainUnregisterTournamentMail(team.getCaptain().getUsername(), tournament.getStartDate(),
+                                                                    tournament.getEndDate(), tournament.getName());
+        tournament.getRegisteredTeams().remove(team);
+        tournamentRepository.save(tournament);
     }
 }
 

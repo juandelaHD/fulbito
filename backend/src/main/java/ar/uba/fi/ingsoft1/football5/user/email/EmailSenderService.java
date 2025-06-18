@@ -6,6 +6,8 @@ import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
+import ar.uba.fi.ingsoft1.football5.tournaments.Tournament;
+
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
@@ -52,8 +54,28 @@ public class EmailSenderService {
     }
 
     @Async
+    public void sendTeamCaptainTournamentMail(String recipientEmail, LocalDate start, LocalDate end, String OrganizerUsername, String tournamentName) {
+        this.sendMail(recipientEmail, new TeamCaptainTournamentRegisterMailWriter(start, end, OrganizerUsername, tournamentName));
+    }
+
+    @Async
     public void sendTeamAssignmentMail(String recipientEmail, String teamName, LocalDate date, LocalDateTime start, LocalDateTime end) {
         this.sendMail(recipientEmail, new TeamAssignmentMailWriter(teamName, date, start, end));
+    }
+
+    @Async
+    public void sendTeamCaptainTournamentUpdated(String recipientEmail, LocalDate start, LocalDate end, String tournamentName){
+        this.sendMail(recipientEmail, new TeamCaptainTournamentUpdatedMailWritter(start,end,tournamentName));
+    }
+
+    @Async
+    public void sendTeamCaptainTournamentCanceled(String recipientEmail, LocalDate start, LocalDate end, String tournamentName){
+        this.sendMail(recipientEmail, new TeamCaptainTournamentCanceledMailWritter(start,end,tournamentName));
+    }
+
+    @Async
+    public void sendTeamCaptainUnregisterTournamentMail(String recipientEmail, LocalDate start, LocalDate end, String tournamentName){
+        this.sendMail(recipientEmail, new TeamCapitanUnregisterTournament(start, end, tournamentName));
     }
 
     @Async
@@ -75,6 +97,22 @@ public class EmailSenderService {
     public void sendMatchCancelledMail(String recipientEmail, LocalDate date, LocalDateTime start, LocalDateTime end) {
         this.sendMail(recipientEmail, new MatchCancelledMailWriter(date, start, end));
     }
+
+    @Async
+    public void sendTournamentOrganizerMail(String recipientEmail, LocalDate start, LocalDate end, String tournamentName){
+        this.sendMail(recipientEmail, new TournamentCreatedMailWriter(start, end, recipientEmail, tournamentName));
+    }
+
+    @Async
+    public void sendTournamentUpdatedOrganizerMail(String recipientEmail,Tournament tournament){
+        this.sendMail(recipientEmail, new TournamentUpdatedMailWritter(tournament));
+    }
+
+    @Async
+    public void sendTournamentCancelledOrganizerMail(String recipientEmail, LocalDate start, LocalDate end, String tournamentName){
+        this.sendMail(recipientEmail, new TournamentCancelledMailWritter(recipientEmail, start, end, tournamentName));
+    }
+
 
     private void sendMail(String recipientEmailAddress, EmailWriter mailType) {
         SimpleMailMessage message = new SimpleMailMessage();
