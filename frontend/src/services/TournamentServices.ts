@@ -43,7 +43,7 @@ export function useCreateTournament() {
 }
 
 export async function createTournamentService(req: CreateTournamentRequest, token: string) {
-  const response = await fetch(`${BASE_API_URL}/tournaments`, {
+  const response = await fetch(`${BASE_API_URL}/tournaments/create`, {
     method: "POST",
     headers: {
       Authorization: `Bearer ${token}`,

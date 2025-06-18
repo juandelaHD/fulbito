@@ -3,6 +3,7 @@ import { toast } from "react-hot-toast"
 import { CommonLayout } from "@/components/CommonLayout/CommonLayout"
 import { AddTournamentModal } from "@/components/modals/AddTournamentModal"
 import { useGetAvailableTournaments } from "@/services/TournamentServices"
+import { useCreateTournament } from "@/services/TournamentServices"
 import { TournamentFiltersContainer } from "@/components/filters/TournamentFilters"
 import {
   TournamentTable,
@@ -17,6 +18,7 @@ export const TournamentsScreen = () => {
   })
 
   const [showAddModal, setShowAddModal] = useState(false)
+  const { mutateAsync: createTournament } = useCreateTournament()
 
   const {
     data: fetchedTournaments,
@@ -89,9 +91,10 @@ export const TournamentsScreen = () => {
       <AddTournamentModal
         isOpen={showAddModal}
         onClose={() => setShowAddModal(false)}
-        onSubmit={async () => {
-          setShowAddModal(false)
+        onSubmit={async (data) => {
+          await createTournament(data)
           toast.success("Tournament created!")
+          setShowAddModal(false)
           await refetch()
         }}
       />

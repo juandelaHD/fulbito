@@ -5,6 +5,7 @@ import {
   TournamentFormatEnum,
 } from "@/models/GetAvailableTournaments"
 import styles from "./AddTournamentModal.module.css"
+import toast from "react-hot-toast"
 
 const schema = z.object({
   name: z.string().min(1, "Tournament name is required"),
@@ -54,7 +55,7 @@ export const AddTournamentModal = ({ isOpen, onClose, onSubmit }: Props) => {
       onClose()
     } catch (err) {
       console.error(err)
-      setError("An unexpected error occurred.")
+      toast.error("Failed to create tournament")
     } finally {
       setSubmitting(false)
     }
