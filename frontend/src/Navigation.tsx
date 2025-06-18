@@ -24,6 +24,7 @@ import UserProfileScreen from "@/screens/UserProfileScreen";
 import SearchUsersScreen from "@/screens/SearchUsersScreen";
 import MyMatchesScreen from "@/screens/user/MyMatchesScreen.tsx";
 import MyReservationsScreen from "@/screens/user/MyReservationsScreen.tsx";
+import { TeamEditScreen } from "./screens/user/TeamEditScreen.tsx";
 
 export const Navigation = () => {
   const [tokenState] = useToken();
@@ -70,6 +71,7 @@ export const Navigation = () => {
           <Route path="/teams/create">
             <TeamCreateScreen />
           </Route>
+          <Route path="/teams/edit/:id" component={TeamEditScreen}/>
           <Route path="/teams">
             <TeamsScreen />
           </Route>

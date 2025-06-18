@@ -168,6 +168,28 @@ public class TeamRestController {
         TeamDTO updated = teamService.updateTeam(id, dto, userDetails.username(), image);
         return ResponseEntity.ok(updated);
     }
+    
+    @GetMapping(path = "/{id}",produces = MediaType.APPLICATION_JSON_VALUE)
+	@Operation(
+			summary = "Get team data",
+			description = "Get team data by team id.",
+			responses = {
+					@ApiResponse(
+							responseCode = "200",
+							description = "Get team data by team id",
+							content = @Content(schema = @Schema(implementation = TeamDTO.class))
+					)
+			}
+	)
+	public TeamDTO getTeamById(
+		@Parameter(description = "Team ID", required = true) @PathVariable @Positive Long id,
+        @AuthenticationPrincipal JwtUserDetails userDetails
+	) throws ItemNotFoundException {
+		return teamService.getTeamById(id);
+	}
+
+	
+
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @Operation(
