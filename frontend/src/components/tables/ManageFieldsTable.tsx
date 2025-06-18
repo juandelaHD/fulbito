@@ -47,7 +47,7 @@ export function ManageFieldsTable() {
   };
 
   const handleSchedulesClick = (field: Field) => {
-    navigate(`/schedules/${field.id}`);
+    navigate(`/fields/${field.id}/schedules`);
   }
 
   const columns: ColumnDef<Field>[] = useMemo(() => [
@@ -67,6 +67,12 @@ export function ManageFieldsTable() {
                 className="text-sm bg-blue-600 text-white px-2 py-1 rounded hover:bg-blue-700"
             >
               Edit
+            </button>
+            <button
+              onClick={() => handleSchedulesClick(row.original)}
+              className="text-sm bg-red-600 text-white px-2 py-1 rounded hover:bg-red-700"
+            >
+              Schedules
             </button>
             <button
                 onClick={() => setFieldToDelete(row.original)}
