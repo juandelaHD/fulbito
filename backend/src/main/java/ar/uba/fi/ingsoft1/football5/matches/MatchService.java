@@ -527,14 +527,14 @@ public class MatchService {
         match.clearPlayers();
         match.clearTeams();
 
+        matchRepository.save(match);
+
         scheduleService.markAsAvailable(
                 field,
                 match.getDate(),
                 match.getStartTime().toLocalTime(),
                 match.getEndTime().toLocalTime()
         );
-
-        matchRepository.save(match);
 
         // Notificar al organizador
         emailSenderService.sendMatchCancelledMail(
@@ -565,7 +565,7 @@ public class MatchService {
             if (day == null) {
                 matches = matchRepository.findByFieldIdAndStatus(fieldId, matchStatus, pageable);
             } else {
-                matches = matchRepository.findByFieldAndStatusAndDate(fieldId, matchStatus, day, pageable);
+                matches = matchRepository.findByFieldIdAndStatusAndDate(fieldId, matchStatus, day, pageable);
             }
         }
         return matches.map(MatchDTO::new);

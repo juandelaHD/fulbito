@@ -1,4 +1,5 @@
 import Modal from "react-modal";
+import { useImageById } from "@/services/ImageServices.ts";
 
 interface Organizer {
   firstName: string;
@@ -17,7 +18,7 @@ interface Props {
 }
 
 export function OrganizerProfileModal({ isOpen, onClose, user }: Props) {
-  const userAvatarURL = user.avatarUrl;
+  const userAvatarURL= useImageById(user.avatarUrl);
 
   return (
     <Modal

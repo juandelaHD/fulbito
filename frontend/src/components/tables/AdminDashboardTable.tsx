@@ -9,9 +9,10 @@ type Props = {
   matches: RawMatchDTO[];
   columns: ColumnDef<RawMatchDTO, any>[];
   onSetResult?: (match: RawMatchDTO) => void;
+  refetch?: () => void;
 };
 
-export function AdminDashboardTable({ matches, columns, onSetResult }: Props) {
+export function AdminDashboardTable({ matches, columns, onSetResult, refetch }: Props) {
   const startMatch = useStartMatch();
   const finishMatch = useFinishMatch();
   const confirmMatch = useConfirmMatch();
@@ -43,7 +44,7 @@ export function AdminDashboardTable({ matches, columns, onSetResult }: Props) {
       const match = row.original;
       if (match.status === "PENDING") {
         return (
-          <div className="flex gap-2">
+          <div className="flex gap-2 justify-center">
             <button
               className="px-2 py-1 bg-blue-600 text-white rounded"
               disabled={loadingId === match.id}
@@ -51,6 +52,7 @@ export function AdminDashboardTable({ matches, columns, onSetResult }: Props) {
                 setLoadingId(match.id);
                 await confirmMatch.mutateAsync(match.id);
                 setLoadingId(null);
+                refetch?.();
               }}
             >
               CONFIRM
@@ -62,6 +64,7 @@ export function AdminDashboardTable({ matches, columns, onSetResult }: Props) {
                 setLoadingId(match.id);
                 await cancelMatch.mutateAsync(match.id);
                 setLoadingId(null);
+                refetch?.();
               }}
             >
               CANCEL
@@ -71,42 +74,50 @@ export function AdminDashboardTable({ matches, columns, onSetResult }: Props) {
       }
       if (match.status === "SCHEDULED") {
         return (
-          <button
-            className="px-2 py-1 bg-blue-600 text-white rounded"
-            disabled={loadingId === match.id}
-            onClick={async () => {
-              setLoadingId(match.id);
-              await startMatch.mutateAsync(match.id);
-              setLoadingId(null);
-            }}
-          >
-            START
-          </button>
+          <div className="flex justify-center">
+            <button
+              className="px-2 py-1 bg-blue-600 text-white rounded"
+              disabled={loadingId === match.id}
+              onClick={async () => {
+                setLoadingId(match.id);
+                await startMatch.mutateAsync(match.id);
+                setLoadingId(null);
+                refetch?.();
+              }}
+            >
+              START
+            </button>
+          </div>
         );
       }
       if (match.status === "IN_PROGRESS") {
         return (
-          <button
-            className="px-2 py-1 bg-green-600 text-white rounded"
-            disabled={loadingId === match.id}
-            onClick={async () => {
-              setLoadingId(match.id);
-              await finishMatch.mutateAsync(match.id);
-              setLoadingId(null);
-            }}
-          >
-            FINISH
-          </button>
+          <div className="flex justify-center">
+            <button
+              className="px-2 py-1 bg-green-600 text-white rounded"
+              disabled={loadingId === match.id}
+              onClick={async () => {
+                setLoadingId(match.id);
+                await finishMatch.mutateAsync(match.id);
+                setLoadingId(null);
+                refetch?.();
+              }}
+            >
+              FINISH
+            </button>
+          </div>
         );
       }
       if (match.status === "FINISHED") {
         return (
-          <button
-            className="px-2 py-1 bg-yellow-600 text-white rounded"
-            onClick={() => onSetResult && onSetResult(match)}
-          >
-            Set Result
-          </button>
+          <div className="flex justify-center">
+            <button
+              className="px-2 py-1 bg-yellow-600 text-white rounded"
+              onClick={() => onSetResult && onSetResult(match)}
+            >
+              Set Result
+            </button>
+          </div>
         );
       }
       return null;

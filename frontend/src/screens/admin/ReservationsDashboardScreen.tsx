@@ -26,22 +26,22 @@ export const ReservationsDashboardScreen = () => {
   const [searchParams, setSearchParams] = useState<{ status?: string; date?: string }>({ status: "SCHEDULED" });
   // Para la tabla de pendientes
   // Tabla de pendientes (paginada)
-  const { data: pendingMatches, isFetching: isFetchingPending } = useGetMatchesByField(
+  const { data: pendingMatches, isFetching: isFetchingPending, refetch: refetchPending } = useGetMatchesByField(
     fieldId,
     "PENDING",
     undefined,
     pendingPage,
     size
-  ) as { data: Page<RawMatchDTO> | undefined, isFetching: boolean };
+  ) as { data: Page<RawMatchDTO> | undefined, isFetching: boolean, refetch: () => void  };
 
   // Para la tabla filtrada
-  const { data: filteredMatches, isFetching: isFetchingFiltered } = useGetMatchesByField(
+  const { data: filteredMatches, isFetching: isFetchingFiltered, refetch: refetchFiltered } = useGetMatchesByField(
     fieldId,
     searchParams.status,
     searchParams.date,
     filteredPage,
     size
-  ) as { data: Page<RawMatchDTO> | undefined, isFetching: boolean };
+  ) as { data: Page<RawMatchDTO> | undefined, isFetching: boolean, refetch: () => void  };
 
   // Columnas base
   const columns: ColumnDef<RawMatchDTO, any>[] = [
@@ -80,7 +80,7 @@ export const ReservationsDashboardScreen = () => {
         <section className="mb-10">
           <h2 className="text-xl font-semibold mb-2 text-center">Pending Reservations</h2>
           <AdminDashboardTable matches={pendingMatches?.content ?? []} columns={columns}
-                               onSetResult={handleSetResult} />
+                               onSetResult={handleSetResult} refetch={refetchPending} />
           <div className="flex justify-center items-center gap-4 mt-4">
             <button
               className="px-2 py-1 bg-gray-600 text-white rounded"
@@ -138,7 +138,6 @@ export const ReservationsDashboardScreen = () => {
                   <option value="">All</option>
                   <option value="ACCEPTED">Accepted</option>
                   <option value="SCHEDULED">Scheduled</option>
-                  <option value="CONFIRMED">Confirmed</option>
                   <option value="IN_PROGRESS">In Progress</option>
                   <option value="FINISHED">Finished</option>
                 </select>
@@ -156,7 +155,7 @@ export const ReservationsDashboardScreen = () => {
             </button>
           </div>
           <AdminDashboardTable matches={filteredMatches?.content ?? []} columns={columns}
-                               onSetResult={handleSetResult} />
+                               onSetResult={handleSetResult} refetch={refetchFiltered} />
           <div className="flex justify-center items-center gap-4 mt-4">
             <button
               className="px-2 py-1 bg-gray-600 text-white rounded"
