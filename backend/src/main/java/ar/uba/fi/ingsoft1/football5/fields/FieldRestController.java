@@ -262,6 +262,16 @@ class FieldRestController {
         scheduleService.deleteSchedule(fieldId, scheduleId, userDetails);
     }
 
+    // ─────────── Estadísticas de ocupación ───────────
+    @ApiResponse(responseCode = "200", description = "Estadísticas obtenidas correctamente")
+    @ApiResponse(responseCode = "404", description = "Cancha no encontrada", content = @Content)
+    public ResponseEntity<FieldStatsDTO> getFieldStats(
+            @PathVariable("id") @Parameter(description = "ID de la cancha") Long fieldId
+    ) throws ItemNotFoundException {
+        FieldStatsDTO stats = fieldService.getFieldStats(fieldId);
+        return ResponseEntity.ok(stats);
+    }
+
     @GetMapping("{fieldId}/images")
     @Operation(summary = "Get the images saved for a field")
     public ResponseEntity<List<FieldImageDTO>> getFieldImages(@PathVariable Long fieldId) throws ItemNotFoundException{
