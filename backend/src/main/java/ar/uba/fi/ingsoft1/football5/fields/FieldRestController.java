@@ -9,27 +9,37 @@ import ar.uba.fi.ingsoft1.football5.fields.reviews.ReviewService;
 import ar.uba.fi.ingsoft1.football5.fields.schedules.ScheduleCreateDTO;
 import ar.uba.fi.ingsoft1.football5.fields.schedules.ScheduleDTO;
 import ar.uba.fi.ingsoft1.football5.fields.schedules.ScheduleService;
+import ar.uba.fi.ingsoft1.football5.images.FieldImage;
+import ar.uba.fi.ingsoft1.football5.images.FieldImageDTO;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Positive;
+
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.server.ResponseStatusException;
+import org.springframework.http.MediaType;
 
 import java.io.IOException;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/fields")
@@ -247,6 +257,51 @@ class FieldRestController {
         scheduleService.deleteSchedule(fieldId, scheduleId, userDetails);
     }
 
+    @GetMapping("{fieldId}/images")
+    @Operation(summary = "Get the images saved for a field")
+    public ResponseEntity<List<FieldImageDTO>> getFieldImages(@PathVariable Long fieldId) throws ItemNotFoundException{
+        List<FieldImage> images = fieldService.getfFieldImagesByFieldId(fieldId);
+        if (images.isEmpty()){
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Images not found for the field "+ fieldId);
+        }
+        List<FieldImageDTO> imgDTO = images.stream().map(img -> new FieldImageDTO(img.getId(), img.getData())).collect(Collectors.toList());
+        return ResponseEntity.ok(imgDTO);
+    }
+
+    @PostMapping(value = "/{fieldId}/images", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @ResponseStatus(HttpStatus.OK)
+    @Operation(
+        summary = "Upload a field image",
+        description = "Allows the field owner to upload a field's image.",
+        responses = {
+            @ApiResponse(responseCode = "200", description = "Image uploaded successfully"),
+            @ApiResponse(responseCode = "404", description = "Field not found"),
+            @ApiResponse(responseCode = "400", description = "Not the field or invalid file")
+        }
+    )
+    public void uploadFieldImg(
+        @Parameter(description = "Field ID", required = true) @PathVariable @Positive Long fieldId,
+        @Parameter(
+            description = "Image file", 
+            required = true, 
+            content = @Content(
+                mediaType = MediaType.APPLICATION_OCTET_STREAM_VALUE,
+                schema = @Schema(type = "string", format = "binary")
+            )
+        ) @RequestParam("file") MultipartFile file,
+        @AuthenticationPrincipal JwtUserDetails userDetails
+    ) throws IOException, ItemNotFoundException {
+        fieldService.addImageToField(fieldId, file, userDetails);     
+    }
+
+    @DeleteMapping("/{fieldId}/images/{imageId}")
+    @Operation(summary = "Delete an image from a field")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteFieldImage(
+        @PathVariable Long fieldId,
+        @PathVariable Long imageId,
+        @AuthenticationPrincipal JwtUserDetails userDetails
+    ) throws ItemNotFoundException {
+        fieldService.deleteImageFromField(fieldId, imageId, userDetails);
+    }
 }
-
-
