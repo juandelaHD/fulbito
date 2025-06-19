@@ -15,22 +15,29 @@ export const CommonLayout = ({ children }: React.PropsWithChildren<{}>) => {
     };
 
     return (
-        <div className={styles.mainLayout}>
-            {!hideNav && (
-                <nav className={styles.navbar}>
-                    <div className={styles.navLinks}>
-                        {tokenState.state === "LOGGED_OUT" ? (
-                            <div className={styles.navLinksRight}>
-                                <LoggedOutLinks />
-                            </div>
-                        ) : (
-                            <LoggedInLinks role={tokenState.role} logOut={logOut} />
-                        )}
-                    </div>
-                </nav>
-            )}
-            <div className={styles.body}>{children}</div>
-        </div>
+    <div className={styles.mainLayout}>
+        {!hideNav && (
+        <>
+            <nav className={styles.navbar}>
+            <div className={styles.navLinks}>
+                {tokenState.state === "LOGGED_OUT" ? (
+                <div className={styles.navLinksRight}>
+                    <LoggedOutLinks />
+                </div>
+                ) : (
+                <LoggedInLinks role={tokenState.role} logOut={logOut} />
+                )}
+            </div>
+            </nav>
+
+            <div className={styles.floatingLogo} onClick={() => navigate("/")}>
+            <img src="/img/logo_3-no-background.webp" alt="Go to Home Page" />
+            </div>
+        </>
+        )}
+
+        <div className={styles.body}>{children}</div>
+    </div>
     );
 };
 
@@ -69,13 +76,16 @@ const LoggedInLinks = ({ role, logOut }: LoggedInLinksProps) => (
             {role === "USER" && (
                 <>
                     <Link className={styles.navLink} href="/fields">
-                        View Fields
+                        Fields
                     </Link>
                     <Link className={styles.navLink} href="/matches">
                         Matches
                     </Link>
                     <Link className={styles.navLink} href="/tournaments">
                         Tournaments
+                    </Link>
+                    <Link className={styles.navLink} href="/teams">
+                        Teams
                     </Link>
                 </>
             )}
