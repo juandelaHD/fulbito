@@ -10,6 +10,7 @@ import ar.uba.fi.ingsoft1.football5.fields.schedules.ScheduleCreateDTO;
 import ar.uba.fi.ingsoft1.football5.fields.schedules.ScheduleDTO;
 import ar.uba.fi.ingsoft1.football5.fields.schedules.ScheduleService;
 import ar.uba.fi.ingsoft1.football5.images.FieldImage;
+import ar.uba.fi.ingsoft1.football5.images.FieldImageDTO;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.swagger.v3.oas.annotations.Operation;
@@ -33,7 +34,9 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.io.IOException;
 import java.time.LocalDate;
+import java.util.Base64;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/fields")
@@ -252,12 +255,13 @@ class FieldRestController {
     }
 
     @GetMapping("{fieldId}/images")
-    public ResponseEntity<List<FieldImage>> getFieldImages(@PathVariable Long fieldId) throws ItemNotFoundException{
+    public ResponseEntity<List<FieldImageDTO>> getFieldImages(@PathVariable Long fieldId) throws ItemNotFoundException{
         List<FieldImage> images = fieldService.getfFieldImagesByFieldId(fieldId);
         if (images.isEmpty()){
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Images not found for the field "+ fieldId);
         }
-        return ResponseEntity.ok(images);
+        List<FieldImageDTO> imgDTO = images.stream().map(img -> new FieldImageDTO(img.getId(), img.getData())).collect(Collectors.toList());
+        return ResponseEntity.ok(imgDTO);
     }
 
 }
