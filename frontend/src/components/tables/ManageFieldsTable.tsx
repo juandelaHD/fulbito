@@ -50,6 +50,10 @@ export function ManageFieldsTable() {
     navigate(`/fields/${field.id}/schedules/${field.name}`);
   }
 
+  const handleReservationsClick = (field: Field) => {
+    navigate(`/fields/${field.id}/reservations/${field.name}`);
+  }
+
   const columns: ColumnDef<Field>[] = useMemo(() => [
     { accessorKey: "name", header: "Name" },
     { accessorKey: "grassType", header: "Grass Type" },
@@ -73,6 +77,12 @@ export function ManageFieldsTable() {
             className="text-sm bg-red-600 text-white px-2 py-1 rounded hover:bg-red-700"
           >
             Schedules
+          </button>
+          <button
+            onClick={() => handleReservationsClick(row.original)}
+            className="text-sm bg-red-600 text-white px-2 py-1 rounded hover:bg-red-700"
+          >
+            Reservations
           </button>
           <button
             onClick={() => setFieldToDelete(row.original)}

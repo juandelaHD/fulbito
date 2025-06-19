@@ -129,7 +129,9 @@ public class FieldService {
             LocalDateTime startTime,
             LocalDateTime endTime) throws ItemNotFoundException {
 
-        List<Match> matches = matchRepository.findConflictingMatches(fieldId, date, startTime, endTime);
+        List<Match> matches = matchRepository.findConflictingMatches(
+                fieldId, date, startTime, endTime, List.of(MatchStatus.CANCELLED, MatchStatus.FINISHED)
+        );
 
         Field field = fieldRepository.findById(fieldId)
                 .orElseThrow(() -> new ItemNotFoundException(FIELD_ITEM, fieldId));

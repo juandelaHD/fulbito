@@ -27,6 +27,7 @@ import MyMatchesScreen from "@/screens/user/MyMatchesScreen.tsx";
 import MyReservationsScreen from "@/screens/user/MyReservationsScreen.tsx";
 import { TeamEditScreen } from "./screens/user/TeamEditScreen.tsx";
 import { FieldSchedulesScreen } from "@/screens/admin/FieldSchedulesScreen.tsx";
+import { ReservationsDashboardScreen } from "@/screens/admin/ReservationsDashboardScreen.tsx";
 
 export const Navigation = () => {
   const [tokenState] = useToken();
@@ -45,6 +46,9 @@ export const Navigation = () => {
           </Route>
           <Route path="/fields/:id/schedules/:name">
             <FieldSchedulesScreen />
+          </Route >
+          <Route path="/fields/:id/reservations/:name">
+            <ReservationsDashboardScreen />
           </Route >
           <Route path="/fields/create">
             <CreateFieldScreen />
