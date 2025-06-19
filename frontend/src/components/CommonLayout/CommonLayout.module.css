@@ -52,3 +52,23 @@
   flex: 1;
   padding: 2rem;
 }
+
+.floatingLogo {
+  position: absolute;
+  top: 0.5rem;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 20;
+  cursor: pointer;
+  padding: 0.25rem;
+}
+
+.floatingLogo img {
+  height: 2.25rem;
+  width: auto;
+  transition: transform 0.2s ease;
+}
+
+.floatingLogo:hover img {
+  transform: scale(1.1);
+}
