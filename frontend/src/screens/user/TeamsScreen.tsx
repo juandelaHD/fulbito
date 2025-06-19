@@ -2,6 +2,7 @@ import { useRef, useState } from "react";
 import { useGetMyTeams } from "@/services/TeamServices.ts";
 import { TeamsTable } from "@/components/tables/TeamsTable.tsx";
 import { useLocation } from "wouter";
+import { CommonLayout } from "@/components/CommonLayout/CommonLayout"
 
 export const TeamsScreen = () => {
   // Deshabilita el fetch automático
@@ -33,6 +34,7 @@ export const TeamsScreen = () => {
   };
 
   return (
+    <CommonLayout>
       <section>
         <div className="flex flex-col items-center gap-2 mb-4">
           <h2 className="text-2xl font-semibold text-center">Teams</h2>
@@ -65,5 +67,6 @@ export const TeamsScreen = () => {
           Refresh
         </button>
       </section>
+    </CommonLayout>
   );
 };

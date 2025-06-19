@@ -30,7 +30,6 @@ export const CommonLayout = ({ children }: React.PropsWithChildren<{}>) => {
             </div>
             </nav>
 
-            {/* BOTÓN FLOTANTE CENTRAL */}
             <div className={styles.floatingLogo} onClick={() => navigate("/")}>
             <img src="/img/logo_3.webp" alt="Go to Home" />
             </div>
@@ -77,13 +76,16 @@ const LoggedInLinks = ({ role, logOut }: LoggedInLinksProps) => (
             {role === "USER" && (
                 <>
                     <Link className={styles.navLink} href="/fields">
-                        View Fields
+                        Fields
                     </Link>
                     <Link className={styles.navLink} href="/matches">
                         Matches
                     </Link>
                     <Link className={styles.navLink} href="/tournaments">
                         Tournaments
+                    </Link>
+                    <Link className={styles.navLink} href="/teams">
+                        Teams
                     </Link>
                 </>
             )}
