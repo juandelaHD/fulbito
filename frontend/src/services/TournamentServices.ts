@@ -52,11 +52,10 @@ export function useCreateTournament() {
         body: JSON.stringify(req),
       });
 
-      const json = await response.json();
-
       if (!response.ok) {
         await handleErrorResponse(response, "creating tournament");
       }
+      const json = await response.json();
 
       toast.success("Tournament created successfully", { duration: 5000 });
       return CreateTournamentResponseSchema.parse(json);
@@ -85,11 +84,11 @@ export function useGetAvailableTournaments(filters: GetAvailableTournamentsReque
         },
       });
 
-      const json = await response.json();
       if (!response.ok) {
         await handleErrorResponse(response, "fetching tournaments");
       }
-
+      
+      const json = await response.json();
       const parsed = GetAvailableTournamentsResponseSchema.parse(json);
 
       if (parsed.length === 0) {
@@ -120,10 +119,10 @@ export function useGetOwnedTournaments() {
         },
       });
 
-      const json = await response.json();
       if (!response.ok) {
         await handleErrorResponse(response, "fetching your tournaments");
       }
+      const json = await response.json(); 
 
       if (json.length === 0) {
         toast("You haven't created any tournaments yet", {

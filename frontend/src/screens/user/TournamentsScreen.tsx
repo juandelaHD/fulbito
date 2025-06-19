@@ -1,5 +1,4 @@
 import { useState } from "react"
-import { toast } from "react-hot-toast"
 import { CommonLayout } from "@/components/CommonLayout/CommonLayout"
 import { AddTournamentModal } from "@/components/modals/AddTournamentModal"
 import { useGetAvailableTournaments } from "@/services/TournamentServices"
@@ -90,7 +89,6 @@ export const TournamentsScreen = () => {
         onClose={() => setShowAddModal(false)}
         onSubmit={async (data) => {
           await createTournament(data)
-          toast.success("Tournament created!")
           setShowAddModal(false)
           await refetch()
         }}
