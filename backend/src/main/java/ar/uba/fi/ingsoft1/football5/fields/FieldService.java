@@ -5,6 +5,7 @@ import ar.uba.fi.ingsoft1.football5.config.security.JwtUserDetails;
 import ar.uba.fi.ingsoft1.football5.fields.filters.FieldFiltersDTO;
 import ar.uba.fi.ingsoft1.football5.fields.filters.SpecificationService;
 import ar.uba.fi.ingsoft1.football5.fields.schedules.ScheduleStatus;
+import ar.uba.fi.ingsoft1.football5.images.FieldImage;
 import ar.uba.fi.ingsoft1.football5.images.ImageService;
 import ar.uba.fi.ingsoft1.football5.matches.Match;
 import ar.uba.fi.ingsoft1.football5.matches.MatchRepository;
@@ -215,5 +216,39 @@ public class FieldService {
                         Match::getStartTime,
                         match -> Math.max(0, match.getMaxPlayers() - match.getPlayers().size())));
         return new FieldDTO(field, matches);
+    }
+
+    public Field loadFieldByIdWithImages(Long fieldId) throws ItemNotFoundException {
+        return fieldRepository.findByIdWithImages(fieldId)
+            .orElseThrow(() -> new ItemNotFoundException(FIELD_ITEM, fieldId));
+    }
+
+    public List<FieldImage> getfFieldImagesByFieldId(Long fieldId) throws ItemNotFoundException {
+        Field field = loadFieldByIdWithImages(fieldId); 
+        return field.getImages();
+    }
+
+    public void addImageToField(Long fieldId, MultipartFile file, JwtUserDetails owner) throws ItemNotFoundException, IOException{
+        Field field = loadFieldById(fieldId);
+        if (!field.getOwner().getUsername().equals(owner.username())) {
+            throw new AccessDeniedException("User not authorized to upload images to this field");
+        }
+        byte[] img = file.getBytes();
+        FieldImage image = new FieldImage(img, field);
+        field.getImages().add(image);
+    }
+
+    public void deleteImageFromField(Long fieldId, Long imageId, JwtUserDetails owner) throws ItemNotFoundException {
+        Field field = loadFieldByIdWithImages(fieldId);
+            
+        if (!field.getOwner().getUsername().equals(owner.username())) {
+            throw new AccessDeniedException("User not authorized to delete images from this field");
+        }
+
+        boolean removed = field.getImages().removeIf(img -> img.getId().equals(imageId));
+
+        if (!removed) {
+            throw new ItemNotFoundException("Image not found: ", imageId);
+        }
     }
 }
