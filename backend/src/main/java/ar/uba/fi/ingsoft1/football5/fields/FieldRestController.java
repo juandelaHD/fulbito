@@ -12,6 +12,8 @@ import ar.uba.fi.ingsoft1.football5.fields.schedules.ScheduleService;
 import ar.uba.fi.ingsoft1.football5.images.FieldImage;
 import ar.uba.fi.ingsoft1.football5.images.FieldImageDTO;
 
+import ar.uba.fi.ingsoft1.football5.matches.MatchDTO;
+import ar.uba.fi.ingsoft1.football5.matches.MatchService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -27,6 +29,7 @@ import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -49,12 +52,14 @@ class FieldRestController {
     private final FieldService fieldService;
     private final ReviewService reviewService;
     private final ScheduleService scheduleService;
+    private final MatchService matchService;
 
     @Autowired
-    FieldRestController(FieldService fieldService, ReviewService reviewService, ScheduleService scheduleService) {
+    FieldRestController(FieldService fieldService, ReviewService reviewService, ScheduleService scheduleService, MatchService matchService) {
         this.fieldService = fieldService;
         this.reviewService = reviewService;
         this.scheduleService = scheduleService;
+        this.matchService = matchService;
     }
 
     @GetMapping(path = "/filters", produces = "application/json")
@@ -267,6 +272,18 @@ class FieldRestController {
         List<FieldImageDTO> imgDTO = images.stream().map(img -> new FieldImageDTO(img.getId(), img.getData())).collect(Collectors.toList());
         return ResponseEntity.ok(imgDTO);
     }
+    @GetMapping("/{id}/matches")
+    @Operation(summary = "Get matches by field ID and status")
+    @PreAuthorize("hasRole('ADMIN')")
+    public Page<MatchDTO> getMatchesByField(
+            @PathVariable("id") Long fieldId,
+            @RequestParam(required = false) String status,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate day,
+            @AuthenticationPrincipal JwtUserDetails userDetails,
+            @Valid @ParameterObject Pageable pageable
+    ) throws ItemNotFoundException, IllegalArgumentException {
+        return matchService.getMatchesByFieldAndStatus(fieldId, status, day, userDetails, pageable);
+    }
 
     @PostMapping(value = "/{fieldId}/images", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @ResponseStatus(HttpStatus.OK)
@@ -282,8 +299,8 @@ class FieldRestController {
     public void uploadFieldImg(
         @Parameter(description = "Field ID", required = true) @PathVariable @Positive Long fieldId,
         @Parameter(
-            description = "Image file", 
-            required = true, 
+            description = "Image file",
+            required = true,
             content = @Content(
                 mediaType = MediaType.APPLICATION_OCTET_STREAM_VALUE,
                 schema = @Schema(type = "string", format = "binary")
@@ -291,7 +308,7 @@ class FieldRestController {
         ) @RequestParam("file") MultipartFile file,
         @AuthenticationPrincipal JwtUserDetails userDetails
     ) throws IOException, ItemNotFoundException {
-        fieldService.addImageToField(fieldId, file, userDetails);     
+        fieldService.addImageToField(fieldId, file, userDetails);
     }
 
     @DeleteMapping("/{fieldId}/images/{imageId}")

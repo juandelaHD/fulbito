@@ -4,7 +4,7 @@ import { BASE_API_URL } from "@/config/app-query-client";
 import { useToken } from "@/services/TokenContext.tsx";
 import { handleErrorResponse } from "@/services/ApiUtils.ts";
 
-export type RawMatchDTO = {
+export type MatchDTO = {
   id: number;
   field: {
     id: number;
@@ -123,7 +123,7 @@ export type RawMatchDTO = {
   result?: string;
 };
 
-export async function getOpenMatchesService(token: string): Promise<RawMatchDTO[]> {
+export async function getOpenMatchesService(token: string): Promise<MatchDTO[]> {
   const response = await fetch(`${BASE_API_URL}/matches/open-available`, {
     method: "GET",
     headers: {
@@ -135,14 +135,14 @@ export async function getOpenMatchesService(token: string): Promise<RawMatchDTO[
   if (!response.ok) {
     await handleErrorResponse(response, "fetching open matches");
   }
-  return (await response.json()) as RawMatchDTO[];
+  return (await response.json()) as MatchDTO[];
 }
 
 export function useGetOpenMatches() {
   const [tokenState] = useToken();
   const token = tokenState.state === "LOGGED_IN" ? tokenState.accessToken : "";
 
-  return useQuery<RawMatchDTO[], Error>({
+  return useQuery<MatchDTO[], Error>({
     queryKey: ["openMatches"],
     queryFn: () => getOpenMatchesService(token),
     enabled: token !== "",
@@ -317,7 +317,7 @@ export function useFormTeams() {
 }
 
 
-export async function getMatchByIdService(matchId: number, token: string): Promise<RawMatchDTO> {
+export async function getMatchByIdService(matchId: number, token: string): Promise<MatchDTO> {
   const response = await fetch(`${BASE_API_URL}/matches/${matchId}`, {
     method: "GET",
     headers: {
@@ -336,7 +336,7 @@ export function useGetMatchById(matchId?: number) {
   const [tokenState] = useToken();
   const token = tokenState.state === "LOGGED_IN" ? tokenState.accessToken : "";
 
-  return useQuery<RawMatchDTO, Error>({
+  return useQuery<MatchDTO, Error>({
     queryKey: ["match", matchId],
     queryFn: () => getMatchByIdService(matchId!, token),
     enabled: !!token && !!matchId,
@@ -372,4 +372,90 @@ export function useCancelMatch() {
   });
 }
 
+export async function startMatchService(matchId: number, token: string): Promise<void> {
+  const response = await fetch(`${BASE_API_URL}/matches/${matchId}/start`, {
+    method: "PUT",
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+    },
+  });
 
+  if (!response.ok) {
+    await handleErrorResponse(response, "starting match");
+  }
+}
+
+export function useStartMatch() {
+  const [tokenState] = useToken();
+  const token = tokenState.state === "LOGGED_IN" ? tokenState.accessToken : "";
+
+  return useMutation({
+    mutationFn: (matchId: number) => startMatchService(matchId, token),
+    onSuccess: () => {
+      toast.success("Match started!");
+    },
+    onError: () => {
+      toast.error("Error starting match. Please try again.");
+    },
+  });
+}
+
+export async function finishMatchService(matchId: number, token: string): Promise<void> {
+  const response = await fetch(`${BASE_API_URL}/matches/${matchId}/finish`, {
+    method: "PUT",
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+    },
+  });
+
+  if (!response.ok) {
+    await handleErrorResponse(response, "finishing match");
+  }
+}
+
+export function useFinishMatch() {
+  const [tokenState] = useToken();
+  const token = tokenState.state === "LOGGED_IN" ? tokenState.accessToken : "";
+
+  return useMutation({
+    mutationFn: (matchId: number) => finishMatchService(matchId, token),
+    onSuccess: () => {
+      toast.success("Match finished successfully!");
+    },
+    onError: () => {
+      toast.error("Error finishing match. Please try again.");
+    },
+  });
+}
+
+// Confirma un partido (solo admin de cancha)
+export async function confirmMatchService(matchId: number, token: string): Promise<void> {
+  const response = await fetch(`${BASE_API_URL}/matches/${matchId}/confirm`, {
+    method: "PUT",
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+    },
+  });
+
+  if (!response.ok) {
+    await handleErrorResponse(response, "confirming match");
+  }
+}
+
+export function useConfirmMatch() {
+  const [tokenState] = useToken();
+  const token = tokenState.state === "LOGGED_IN" ? tokenState.accessToken : "";
+
+  return useMutation({
+    mutationFn: (matchId: number) => confirmMatchService(matchId, token),
+    onSuccess: () => {
+      toast.success("Reservation confirmed!");
+    },
+    onError: () => {
+      toast.error("Error confirming reservation. Please try again.");
+    },
+  });
+}

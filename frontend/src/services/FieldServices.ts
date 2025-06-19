@@ -6,6 +6,7 @@ import {useToken} from "@/services/TokenContext.tsx";
 import {handleErrorResponse} from "@/services/ApiUtils.ts";
 import {GetFieldsRequest, GetFieldsResponse, GetFieldsResponseSchema} from "@/models/GetFields.ts";
 import { useEffect, useState } from "react";
+import { RawMatchDTO } from "@/services/UserServices.ts";
 
 export function useCreateField() {
     const [tokenState] = useToken();
@@ -291,4 +292,59 @@ export function useUpdateField() {
             }
         },
     });
+}
+
+export type Page<T> = {
+  content: T[];
+  totalElements: number;
+  totalPages: number;
+  number: number; // página actual (0-based)
+  size: number;
+};
+
+export async function getMatchesByFieldService(
+  fieldId: number,
+  token: string,
+  status?: string,
+  day?: string,
+  page: number = 0,
+  size: number = 10
+): Promise<Page<RawMatchDTO>> {
+  const params = new URLSearchParams();
+  if (status) params.append("status", status);
+  if (day) params.append("day", day);
+  params.append("page", page.toString());
+  params.append("size", size.toString());
+
+  const url = `${BASE_API_URL}/fields/${fieldId}/matches?${params.toString()}`;
+
+  const response = await fetch(url, {
+    method: "GET",
+    headers: {
+      Authorization: `Bearer ${token}`,
+      Accept: "application/json",
+    },
+  });
+
+  if (!response.ok) {
+    await handleErrorResponse(response, "fetching matches by field");
+  }
+  return await response.json();
+}
+
+export function useGetMatchesByField(
+  fieldId?: number,
+  status?: string,
+  day?: string,
+  page: number = 0,
+  size: number = 10
+) {
+  const [tokenState] = useToken();
+  const token = tokenState.state === "LOGGED_IN" ? tokenState.accessToken : "";
+
+  return useQuery<Page<RawMatchDTO>, Error>({
+    queryKey: ["fieldMatches", fieldId, status, day, page, size],
+    queryFn: () => getMatchesByFieldService(fieldId!, token, status, day, page, size),
+    enabled: !!token && !!fieldId,
+  });
 }
