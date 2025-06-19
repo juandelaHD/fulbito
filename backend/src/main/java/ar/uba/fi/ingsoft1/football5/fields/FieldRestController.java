@@ -17,11 +17,12 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Positive;
 
-import org.eclipse.angus.mail.handlers.multipart_mixed;
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -33,6 +34,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
+import org.springframework.http.MediaType;
 
 import java.io.IOException;
 import java.time.LocalDate;
@@ -266,14 +268,29 @@ class FieldRestController {
         return ResponseEntity.ok(imgDTO);
     }
 
-    @PostMapping("/{fieldId}/images")
-    @Operation(summary = "Añadir una imagen a un field")
-    public ResponseEntity<?> uploadFieldImg(
-        @PathVariable Long fieldId,
-        @RequestParam("file") MultipartFile file) throws ItemNotFoundException, IOException {
-            fieldService.addImageToField(fieldId, file);
-            return ResponseEntity.ok("Image succesfully added to field");       
+    @PostMapping(value = "/{fieldId}/images", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @ResponseStatus(HttpStatus.OK)
+    @Operation(
+        summary = "Upload a field image",
+        description = "Allows the field owner to upload a field's image.",
+        responses = {
+            @ApiResponse(responseCode = "200", description = "Image uploaded successfully"),
+            @ApiResponse(responseCode = "404", description = "Field not found"),
+            @ApiResponse(responseCode = "400", description = "Not the field or invalid file")
         }
+    )
+    public void uploadFieldImg(
+        @Parameter(description = "Field ID", required = true) @PathVariable @Positive Long fieldId,
+        @Parameter(
+            description = "Image file", 
+            required = true, 
+            content = @Content(
+                mediaType = MediaType.APPLICATION_OCTET_STREAM_VALUE,
+                schema = @Schema(type = "string", format = "binary")
+            )
+        ) @RequestParam("file") MultipartFile file,
+        @AuthenticationPrincipal JwtUserDetails userDetails
+    ) throws IOException, ItemNotFoundException {
+        fieldService.addImageToField(fieldId, file);     
+    }
 }
-
-

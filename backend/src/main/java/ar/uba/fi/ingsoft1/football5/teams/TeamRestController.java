@@ -7,6 +7,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.media.SchemaProperty;
 import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -220,18 +221,10 @@ public class TeamRestController {
 
     @PostMapping(value = "/{teamId}/image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @ResponseStatus(HttpStatus.OK)
-    @Operation(
-            summary = "Upload or replace team image",
-            description = "Allows the captain to upload or replace the team's image. Use multipart/form-data with a 'file' field.",
-            requestBody = @RequestBody(
-                    required = true,
-                    description = "Image file to upload",
-                    content = @Content(
-                            mediaType = MediaType.MULTIPART_FORM_DATA_VALUE,
-                            schema = @Schema(type = "string", format = "binary")
-                    )
-            ),
-            responses = {
+        @Operation(
+                summary = "Upload or replace team image",
+                description = "Allows the captain to upload or replace the team's image. Use multipart/form-data with a 'file' field.",
+                responses = {
                     @ApiResponse(
                             responseCode = "200",
                             description = "Image uploaded successfully"
@@ -249,9 +242,12 @@ public class TeamRestController {
             }
     )
     public void uploadTeamImage(
-            @Parameter(description = "Team ID", required = true) @PathVariable @Positive Long teamId,
-            @Parameter(description = "Image file", required = true) @RequestParam("file") MultipartFile file,
-            @AuthenticationPrincipal JwtUserDetails userDetails
+        @Parameter(description = "Team ID", required = true) @PathVariable @Positive Long teamId,
+        @Parameter(description = "Image file", required = true, content = @Content(
+                mediaType = MediaType.APPLICATION_OCTET_STREAM_VALUE,
+                schema = @Schema(type = "string", format = "binary")
+        )) @RequestParam("file") MultipartFile file,
+        @AuthenticationPrincipal JwtUserDetails userDetails
     ) throws IOException, ItemNotFoundException {
         teamService.uploadTeamImage(teamId, file, userDetails.username());
     }
