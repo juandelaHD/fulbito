@@ -11,7 +11,7 @@ export const AdminHomePage = () => {
         <h1 className={styles.adminTitle}>Welcome back, Field Admin!</h1>
 
         <img
-          src="/img/logo_2-no-background.webp"
+          src="/img/logo_3-no-background.webp"
           alt="Balonini Logo"
           className={styles.logo}
         />

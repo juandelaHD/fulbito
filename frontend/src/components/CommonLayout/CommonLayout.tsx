@@ -31,7 +31,7 @@ export const CommonLayout = ({ children }: React.PropsWithChildren<{}>) => {
             </nav>
 
             <div className={styles.floatingLogo} onClick={() => navigate("/")}>
-            <img src="/img/logo_3.webp" alt="Go to Home" />
+            <img src="/img/logo_3-no-background.webp" alt="Go to Home Page" />
             </div>
         </>
         )}
