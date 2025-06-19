@@ -68,3 +68,12 @@
 .optionButton:hover {
   background-color: #16a34a;
 }
+
+.logo {
+  margin-bottom: 2.5rem;
+  display: block;
+  min-width: 4rem;
+  min-height: 4rem;
+  max-width: 15rem;
+  max-height: 15rem;
+}
