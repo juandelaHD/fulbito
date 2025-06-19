@@ -19,7 +19,7 @@ type FieldsTableProps = {
   onReserve: (field: Field) => void;
   onViewReviews: (field: Field) => void;
   onViewMatchNeeds: (field: Field) => void;
-  onViewDetails: (field: Field) => void; // ✅ nuevo prop
+  onViewDetails: (field: Field) => void;
 };
 
 export function FieldsTable({
@@ -27,7 +27,7 @@ export function FieldsTable({
   onReserve,
   onViewReviews,
   onViewMatchNeeds,
-  onViewDetails, // ✅ lo recibimos
+  onViewDetails,
 }: FieldsTableProps) {
   const columns: ColumnDef<Field>[] = [
     { accessorKey: "name", header: "Name" },
@@ -79,7 +79,7 @@ export function FieldsTable({
             View Matches
           </button>
         ) : (
-          "[Use 'Has Open Match' Filter]"
+          "No Open Matches Yet!"
         );
       },
     },
@@ -90,7 +90,7 @@ export function FieldsTable({
         <button
           onClick={(e) => {
             e.stopPropagation();
-            onViewDetails(row.original); // ✅ usamos prop real
+            onViewDetails(row.original);
           }}
           className="text-sm text-white bg-gray-600 px-2 py-1 rounded hover:bg-gray-700"
         >

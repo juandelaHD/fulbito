@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { toast } from "react-hot-toast";
 import { CommonLayout } from "@/components/CommonLayout/CommonLayout.tsx";
 import { FieldsTable } from "@/components/tables/FieldsTable.tsx";
 import { FieldsFilters, FieldsFiltersContainer } from "@/components/filters/FieldsFilters.tsx";
@@ -9,6 +8,7 @@ import { ReviewsModal } from "@/components/modals/ReviewsModal.tsx";
 import { ViewFieldMatchesModal } from "@/components/modals/ViewFieldMatches.tsx";
 import { FieldDetailsModal } from "@/components/modals/FieldDetailsModal.tsx";
 import type { Field as FieldForTable } from "@/components/tables/FieldsTable.tsx";
+import { useLocation } from "wouter";
 
 export const FieldsScreen = () => {
   const [hasSearched, setHasSearched] = useState(false);
@@ -26,6 +26,7 @@ export const FieldsScreen = () => {
   const [openReviewsFor, setOpenReviewsFor] = useState<FieldForTable | null>(null);
   const [selectedFieldForDetails, setSelectedFieldForDetails] = useState<FieldForTable | null>(null);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
+  const [, navigate] = useLocation();
 
   const {
     data: fetchedFields,
@@ -98,7 +99,7 @@ export const FieldsScreen = () => {
         />
 
         {hasSearched && isError && (
-          <p className="text-sm text-red-500 mt-4">❌ Error loading fields. Please try again.</p>
+          <p className="text-sm text-red-500 mt-4">Error loading fields. Please try again.</p>
         )}
 
         {hasSearched && isFetching && (
@@ -108,9 +109,7 @@ export const FieldsScreen = () => {
         {hasSearched && !isFetching && !isError && rowsForTable.length > 0 && (
           <FieldsTable
             data={rowsForTable}
-            onReserve={(f) =>
-              toast.error(`⚠️ Reservations are not yet implemented for: ${f}`)
-            }
+            onReserve={() => navigate("/matches/create/open")}
             onViewReviews={(field) => setOpenReviewsFor(field)}
             onViewMatchNeeds={(field) => setOpenMatchNeedsFor(field)}
             onViewDetails={handleOpenDetails}

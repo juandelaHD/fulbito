@@ -74,7 +74,7 @@ export const FieldDetailsModal = ({ isOpen, onClose, field }: Props) => {
           ✖
         </button>
 
-        <h2 className={styles.modalTitle}>🏟️ {field.name}</h2>
+        <h2 className={styles.modalTitle}>🏟️ {field.name.toUpperCase()}</h2>
 
         <div className={styles.detailsGrid}>
           <div><strong>Address:</strong> {field.address}</div>
