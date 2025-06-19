@@ -22,13 +22,13 @@ export default function SearchUsersScreen() {
     <CommonLayout>
     <div style={{ padding: "2rem", color: "white" }}>
       <h1 style={{ fontSize: "2rem", fontWeight: "bold", color: "#00ff84", marginBottom: "1rem" }}>
-        Buscar Jugador
+        Search User
       </h1>
 
       <div style={{ marginBottom: "1rem", display: "flex", gap: "0.5rem" }}>
         <input
           type="text"
-          placeholder="Username"
+          placeholder="Enter mail..."
           value={username}
           onChange={(e) => setUsername(e.target.value)}
           style={{ padding: "0.5rem", flex: 1, borderRadius: "0.25rem", border: "1px solid #ccc" }}
@@ -38,9 +38,9 @@ export default function SearchUsersScreen() {
         </button>
       </div>
 
-      {isFetching && <p>Buscando...</p>}
+      {isFetching && <p>Searching...</p>}
 
-      {isError && <p style={{ color: "red" }}>Usuario no encontrado.</p>}
+      {isError && <p style={{ color: "red" }}>User not found.</p>}
 
       {user && (
         <div style={{ marginTop: "1rem", padding: "1rem", border: "1px solid #0f0", borderRadius: "0.5rem", backgroundColor: "#111" }}>
@@ -55,8 +55,8 @@ export default function SearchUsersScreen() {
                 {user.firstName} {user.lastName}
               </h2>
               <p>@{user.username}</p>
-              <p>Edad: {user.age} | Género: {user.gender}</p>
-              <p>Zona: {user.zone}</p>
+              <p>Age: {user.age} | Gender: {user.gender}</p>
+              <p>Zone: {user.zone}</p>
             </div>
           </div>
         </div>

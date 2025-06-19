@@ -1,28 +1,49 @@
-import { CommonLayout } from "@/components/CommonLayout/CommonLayout.tsx";
-import { useLocation } from "wouter";
+import { CommonLayout } from "@/components/CommonLayout/CommonLayout"
+import { useLocation } from "wouter"
+import styles from "./AdminHomePage.module.css"
 
 export const AdminHomePage = () => {
-  const [, navigate] = useLocation();
+  const [, navigate] = useLocation()
 
   return (
-     <CommonLayout>
-        <section className="p-6">
-            <h1 className="text-2xl font-bold mb-4 text-center">Admin Panel</h1>
-            <div className="grid grid-cols-2 gap-12 justify-items-center">
-                <button
-                    onClick={() => navigate("/fields/create")}
-                    className="w-50 h-50 text-xl font-bold text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition mb-2"
-                >
-                    Create Field
-                </button>
-                <button
-                    onClick={() => navigate("/fields/management")}
-                    className="w-50 h-50 text-xl font-bold text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition mb-2"
-                >
-                    Manage Fields
-                </button>
-            </div>
-        </section>
-     </CommonLayout>
-  );
-};
+    <CommonLayout>
+      <section className={styles.pageContainer}>
+        <h1 className={styles.adminTitle}>Welcome back, Field Admin!</h1>
+
+        <img
+          src="/img/logo_3-no-background.webp"
+          alt="Balonini Logo"
+          className={styles.logo}
+        />
+
+        <div className={styles.optionsGrid}>
+          <div className={styles.optionCard}>
+            <div className={styles.optionTitle}>Create Field</div>
+            <p className={styles.optionDescription}>
+              Set up a new football field to allow players to reserve and match.
+            </p>
+            <button
+              className={styles.optionButton}
+              onClick={() => navigate("/fields/create")}
+            >
+              Go to Create
+            </button>
+          </div>
+
+          <div className={styles.optionCard}>
+            <div className={styles.optionTitle}>Manage Fields</div>
+            <p className={styles.optionDescription}>
+              View, edit, or remove existing fields and manage reservations.
+            </p>
+            <button
+              className={styles.optionButton}
+              onClick={() => navigate("/fields/management")}
+            >
+              Go to Management
+            </button>
+          </div>
+        </div>
+      </section>
+    </CommonLayout>
+  )
+}
