@@ -24,25 +24,8 @@ type FieldsTableProps = {
 export function FieldsTable({ data, onReserve , onViewReviews, onViewMatchNeeds }: FieldsTableProps) {
   const columns: ColumnDef<Field>[] = [
     { accessorKey: "name", header: "Name" },
-    { accessorKey: "grassType", header: "Grass Type" },
-    { accessorKey: "lighting", header: "Lighting" },
     { accessorKey: "zone", header: "Zone" },
     { accessorKey: "address", header: "Address" },
-    {
-      id: "actions",
-      header: "Actions",
-      cell: ({ row }) => (
-        <button
-          onClick={(e) => {
-            e.stopPropagation()
-            onReserve(row.original)
-          }}
-          className="text-sm text-white bg-green-600 px-2 py-1 rounded hover:bg-green-700"
-        >
-          Make a Reservation
-        </button>
-      ),
-    },
     {
       id: "reviews",
       header: "Reviews",
@@ -57,6 +40,39 @@ export function FieldsTable({ data, onReserve , onViewReviews, onViewMatchNeeds 
           Reviews
         </button>
       ),
+    },
+    {
+      id: "reserve",
+      header: "Reserve",
+      cell: ({ row }) => (
+        <button
+          onClick={(e) => {
+            e.stopPropagation()
+            onReserve(row.original)
+          }}
+          className="text-sm text-white bg-green-600 px-2 py-1 rounded hover:bg-green-700"
+        >
+          Make Reservation
+        </button>
+      ),
+    },
+        {
+      id: "matchNeeds",
+      header: "Open Matches",
+      cell: ({row}) => {
+        const matchMap = row.original.matchesWithMissingPlayers;
+        return matchMap && Object.keys(matchMap).length > 0 ? (
+            <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onViewMatchNeeds(row.original);
+                }}
+                className="text-sm text-white bg-yellow-600 px-2 py-1 rounded hover:bg-yellow-700"
+            >
+              View Matches
+            </button>
+        ) : "[Use 'Has Open Match' Filter]";
+      }
     },
     {
       id: "image",
@@ -79,24 +95,6 @@ export function FieldsTable({ data, onReserve , onViewReviews, onViewMatchNeeds 
           </div>
         )
       },
-    },
-    {
-      id: "matchNeeds",
-      header: "Open Matches",
-      cell: ({row}) => {
-        const matchMap = row.original.matchesWithMissingPlayers;
-        return matchMap && Object.keys(matchMap).length > 0 ? (
-            <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onViewMatchNeeds(row.original);
-                }}
-                className="text-sm text-white bg-yellow-600 px-2 py-1 rounded hover:bg-yellow-700"
-            >
-              View Matches
-            </button>
-        ) : "[Use 'Has Open Match' Filter]";
-      }
     }
   ]
 
