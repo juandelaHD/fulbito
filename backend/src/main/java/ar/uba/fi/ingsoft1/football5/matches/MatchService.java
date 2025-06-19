@@ -3,6 +3,8 @@ package ar.uba.fi.ingsoft1.football5.matches;
 import ar.uba.fi.ingsoft1.football5.common.exception.ItemNotFoundException;
 import ar.uba.fi.ingsoft1.football5.common.exception.UserNotFoundException;
 import ar.uba.fi.ingsoft1.football5.config.security.JwtUserDetails;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import ar.uba.fi.ingsoft1.football5.fields.Field;
 import ar.uba.fi.ingsoft1.football5.fields.FieldService;
 import ar.uba.fi.ingsoft1.football5.fields.schedules.ScheduleService;
@@ -543,5 +545,29 @@ public class MatchService {
         );
 
         return new MatchDTO(match);
+    }
+
+    public Page<MatchDTO> getMatchesByFieldAndStatus(Long fieldId, String status, LocalDate day, JwtUserDetails userDetails, Pageable pageable) throws ItemNotFoundException {
+        fieldService.isFieldAdmin(fieldId, userDetails); // Valida que sea admin
+        Page<Match> matches;
+
+        if (status == null && day == null) {
+            matches = matchRepository.findByFieldId(fieldId, pageable);
+        } else if (status == null) {
+            matches = matchRepository.findByFieldIdAndDate(fieldId, day, pageable);
+        } else {
+            MatchStatus matchStatus;
+            try {
+                matchStatus = MatchStatus.valueOf(status.toUpperCase());
+            } catch (IllegalArgumentException e) {
+                throw new IllegalArgumentException("Invalid match status: " + status);
+            }
+            if (day == null) {
+                matches = matchRepository.findByFieldIdAndStatus(fieldId, matchStatus, pageable);
+            } else {
+                matches = matchRepository.findByFieldAndStatusAndDate(fieldId, matchStatus, day, pageable);
+            }
+        }
+        return matches.map(MatchDTO::new);
     }
 }
