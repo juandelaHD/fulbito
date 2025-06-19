@@ -24,6 +24,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Base64;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -219,5 +220,12 @@ public class FieldService {
     public List<FieldImage> getfFieldImagesByFieldId(Long fieldId) throws ItemNotFoundException{
         Field field = loadFieldById(fieldId);
         return field.getImages();
+    }
+
+    public void addImageToField(Long fieldId, MultipartFile file) throws ItemNotFoundException, IOException{
+        Field field = loadFieldById(fieldId);
+        byte[] img = file.getBytes();
+        FieldImage image = new FieldImage(img, field);
+        field.getImages().add(image);
     }
 }

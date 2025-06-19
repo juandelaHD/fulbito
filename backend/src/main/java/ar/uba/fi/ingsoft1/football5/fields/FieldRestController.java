@@ -20,6 +20,8 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+
+import org.eclipse.angus.mail.handlers.multipart_mixed;
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -34,7 +36,6 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.io.IOException;
 import java.time.LocalDate;
-import java.util.Base64;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -255,6 +256,7 @@ class FieldRestController {
     }
 
     @GetMapping("{fieldId}/images")
+    @Operation(summary = "Obtener las imagenes que se guardaron de una cancha")
     public ResponseEntity<List<FieldImageDTO>> getFieldImages(@PathVariable Long fieldId) throws ItemNotFoundException{
         List<FieldImage> images = fieldService.getfFieldImagesByFieldId(fieldId);
         if (images.isEmpty()){
@@ -264,6 +266,14 @@ class FieldRestController {
         return ResponseEntity.ok(imgDTO);
     }
 
+    @PostMapping("/{fieldId}/images")
+    @Operation(summary = "Añadir una imagen a un field")
+    public ResponseEntity<?> uploadFieldImg(
+        @PathVariable Long fieldId,
+        @RequestParam("file") MultipartFile file) throws ItemNotFoundException, IOException {
+            fieldService.addImageToField(fieldId, file);
+            return ResponseEntity.ok("Image succesfully added to field");       
+        }
 }
 
 
