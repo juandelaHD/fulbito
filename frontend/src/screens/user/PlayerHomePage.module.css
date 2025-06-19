@@ -1,0 +1,62 @@
+.pageContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.optionsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 2rem;
+  max-width: 900px;
+  width: 100%;
+  margin-bottom: 3rem;
+}
+
+.optionCard {
+  background-color: #1a2d1d;
+  border: 1px solid #2e4d2e;
+  border-radius: 12px;
+  padding: 1.5rem;
+  color: #e5ffe5;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+  transition: transform 0.2s ease;
+}
+
+.optionCard:hover {
+  transform: translateY(-4px);
+}
+
+.optionTitle {
+  font-size: 1.25rem;
+  font-weight: bold;
+  margin-bottom: 0.5rem;
+  color: #86efac;
+}
+
+.optionDescription {
+  font-size: 0.95rem;
+  margin-bottom: 1rem;
+  color: #d1fae5;
+}
+
+.optionButton {
+  width: 100%;
+  padding: 0.75rem;
+  font-size: 1rem;
+  font-weight: bold;
+  background-color: #22c55e;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.optionButton:hover {
+  background-color: #16a34a;
+}
