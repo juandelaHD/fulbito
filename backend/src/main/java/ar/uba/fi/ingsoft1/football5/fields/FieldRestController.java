@@ -251,7 +251,7 @@ class FieldRestController {
     }
 
     @DeleteMapping(path = "/{fieldId}/schedules/{scheduleId}", produces = "application/json")
-    @Operation(summary = "Eliminar un schedule de una cancha")
+    @Operation(summary = "Delete a schedule by ID")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @PreAuthorize("hasRole('ADMIN')")
     public void deleteSchedule(
@@ -263,10 +263,12 @@ class FieldRestController {
     }
 
     // ─────────── Estadísticas de ocupación ───────────
-    @ApiResponse(responseCode = "200", description = "Estadísticas obtenidas correctamente")
-    @ApiResponse(responseCode = "404", description = "Cancha no encontrada", content = @Content)
+    // fields/{id}/stats
+    @GetMapping("{fieldId}/stats")
+    @ApiResponse(responseCode = "200", description = "Stats retrieved successfully")
+    @ApiResponse(responseCode = "404", description = "Field not found", content = @Content)
     public ResponseEntity<FieldStatsDTO> getFieldStats(
-            @PathVariable("id") @Parameter(description = "ID de la cancha") Long fieldId
+            @PathVariable("fieldId") @Parameter(description = "ID de la cancha") Long fieldId
     ) throws ItemNotFoundException {
         FieldStatsDTO stats = fieldService.getFieldStats(fieldId);
         return ResponseEntity.ok(stats);
