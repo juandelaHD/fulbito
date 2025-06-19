@@ -79,7 +79,7 @@ export function FieldsTable({
             View Matches
           </button>
         ) : (
-          "No Open Matches Yet!"
+          "No Matches Yet!"
         );
       },
     },
