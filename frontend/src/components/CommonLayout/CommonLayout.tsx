@@ -15,22 +15,30 @@ export const CommonLayout = ({ children }: React.PropsWithChildren<{}>) => {
     };
 
     return (
-        <div className={styles.mainLayout}>
-            {!hideNav && (
-                <nav className={styles.navbar}>
-                    <div className={styles.navLinks}>
-                        {tokenState.state === "LOGGED_OUT" ? (
-                            <div className={styles.navLinksRight}>
-                                <LoggedOutLinks />
-                            </div>
-                        ) : (
-                            <LoggedInLinks role={tokenState.role} logOut={logOut} />
-                        )}
-                    </div>
-                </nav>
-            )}
-            <div className={styles.body}>{children}</div>
-        </div>
+    <div className={styles.mainLayout}>
+        {!hideNav && (
+        <>
+            <nav className={styles.navbar}>
+            <div className={styles.navLinks}>
+                {tokenState.state === "LOGGED_OUT" ? (
+                <div className={styles.navLinksRight}>
+                    <LoggedOutLinks />
+                </div>
+                ) : (
+                <LoggedInLinks role={tokenState.role} logOut={logOut} />
+                )}
+            </div>
+            </nav>
+
+            {/* BOTÓN FLOTANTE CENTRAL */}
+            <div className={styles.floatingLogo} onClick={() => navigate("/")}>
+            <img src="/img/logo_3.webp" alt="Go to Home" />
+            </div>
+        </>
+        )}
+
+        <div className={styles.body}>{children}</div>
+    </div>
     );
 };
 
