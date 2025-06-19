@@ -226,10 +226,27 @@ public class FieldService {
         return field.getImages();
     }
 
-    public void addImageToField(Long fieldId, MultipartFile file) throws ItemNotFoundException, IOException{
+    public void addImageToField(Long fieldId, MultipartFile file, JwtUserDetails owner) throws ItemNotFoundException, IOException{
         Field field = loadFieldById(fieldId);
+        if (!field.getOwner().getUsername().equals(owner.username())) {
+            throw new AccessDeniedException("User not authorized to upload images to this field");
+        }
         byte[] img = file.getBytes();
         FieldImage image = new FieldImage(img, field);
         field.getImages().add(image);
+    }
+
+    public void deleteImageFromField(Long fieldId, Long imageId, JwtUserDetails owner) throws ItemNotFoundException {
+        Field field = loadFieldByIdWithImages(fieldId);
+            
+        if (!field.getOwner().getUsername().equals(owner.username())) {
+            throw new AccessDeniedException("User not authorized to delete images from this field");
+        }
+
+        boolean removed = field.getImages().removeIf(img -> img.getId().equals(imageId));
+
+        if (!removed) {
+            throw new ItemNotFoundException("Image not found: ", imageId);
+        }
     }
 }

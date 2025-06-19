@@ -258,7 +258,7 @@ class FieldRestController {
     }
 
     @GetMapping("{fieldId}/images")
-    @Operation(summary = "Obtener las imagenes que se guardaron de una cancha")
+    @Operation(summary = "Get the images saved for a field")
     public ResponseEntity<List<FieldImageDTO>> getFieldImages(@PathVariable Long fieldId) throws ItemNotFoundException{
         List<FieldImage> images = fieldService.getfFieldImagesByFieldId(fieldId);
         if (images.isEmpty()){
@@ -291,6 +291,17 @@ class FieldRestController {
         ) @RequestParam("file") MultipartFile file,
         @AuthenticationPrincipal JwtUserDetails userDetails
     ) throws IOException, ItemNotFoundException {
-        fieldService.addImageToField(fieldId, file);     
+        fieldService.addImageToField(fieldId, file, userDetails);     
+    }
+
+    @DeleteMapping("/{fieldId}/images/{imageId}")
+    @Operation(summary = "Delete an image from a field")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteFieldImage(
+        @PathVariable Long fieldId,
+        @PathVariable Long imageId,
+        @AuthenticationPrincipal JwtUserDetails userDetails
+    ) throws ItemNotFoundException {
+        fieldService.deleteImageFromField(fieldId, imageId, userDetails);
     }
 }
