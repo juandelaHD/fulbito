@@ -1,6 +1,7 @@
 import { CommonLayout } from "@/components/CommonLayout/CommonLayout.tsx";
 import { useState } from "react";
 import { useGetMatchesByField } from "@/services/FieldServices";
+import { useChangeMatchResult } from "@/services/MatchesServices";
 import { AdminDashboardTable } from "@/components/tables/AdminDashboardTable";
 import { RawMatchDTO } from "@/services/UserServices.ts";
 import { ColumnDef } from "@tanstack/react-table";
@@ -43,6 +44,21 @@ export const ReservationsDashboardScreen = () => {
     size
   ) as { data: Page<RawMatchDTO> | undefined, isFetching: boolean, refetch: () => void  };
 
+  // Estado para el modal
+  const [isModalOpen, setModalOpen] = useState(false);
+  const [selectedMatch, setSelectedMatch] = useState<RawMatchDTO | null>(null);
+  const [homeScore, setHomeScore] = useState(0);
+  const [awayScore, setAwayScore] = useState(0);
+  const { mutate: changeResult, isLoading: isSubmitting } = useChangeMatchResult();
+
+  // Abre el modal y resetea los scores
+  function openResultModal(match: RawMatchDTO) {
+    setSelectedMatch(match);
+    setHomeScore(0);
+    setAwayScore(0);
+    setModalOpen(true);
+  }
+
   // Columnas base
   const columns: ColumnDef<RawMatchDTO, any>[] = [
     { accessorKey: "date", header: "Date" },
@@ -63,7 +79,18 @@ export const ReservationsDashboardScreen = () => {
 
   // TODO: Change the result of a finished match
   const handleSetResult = (match: RawMatchDTO) => {
-    alert(`Set result for match ${match.id}`);
+    if (!selectedMatch) return;
+    const resultString = `${homeScore}-${awayScore}`;
+    changeResult(selectedMatch.id, {
+      onSuccess() {
+        toast.success(`Resultado ${resultString} guardado.`);
+        setModalOpen(false);
+        // Opcionalmente: refetch de datos
+      },
+      onError() {
+        toast.error("No se pudo guardar el resultado.");
+      },
+    });
   };
 
   return (
@@ -185,6 +212,57 @@ export const ReservationsDashboardScreen = () => {
           </div>
         </section>
       </div>
+      <Modal
+        isOpen={isModalOpen}
+        onRequestClose={() => setModalOpen(false)}
+        contentLabel="Set Match Result"
+        overlayClassName="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
+        className="bg-white rounded-lg p-6 max-w-lg mx-auto relative"
+      >
+        <h2 className="text-xl font-bold mb-4">Ingresar Resultado</h2>
+        <div className="flex gap-6 mb-4 justify-center">
+          <div className="flex flex-col items-center">
+            <label className="mb-1 font-medium">
+              {selectedMatch?.homeTeam?.name ?? "Home"}
+            </label>
+            <input
+              type="number"
+              min={0}
+              className="w-20 text-center border rounded p-1"
+              value={homeScore}
+              onChange={e => setHomeScore(Number(e.target.value))}
+            />
+          </div>
+          <div className="flex flex-col items-center">
+            <label className="mb-1 font-medium">
+              {selectedMatch?.awayTeam?.name ?? "Away"}
+            </label>
+            <input
+              type="number"
+              min={0}
+              className="w-20 text-center border rounded p-1"
+              value={awayScore}
+              onChange={e => setAwayScore(Number(e.target.value))}
+            />
+          </div>
+        </div>
+        <div className="flex justify-end gap-2">
+          <button
+            className="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400"
+            onClick={() => setModalOpen(false)}
+            disabled={isSubmitting}
+          >
+            Cancelar
+          </button>
+          <button
+            className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+            onClick={handleSetResult}
+            disabled={isSubmitting}
+          >
+            {isSubmitting ? "Enviando…" : "Aceptar"}
+          </button>
+        </div>
+      </Modal>
     </CommonLayout>
   );
 }

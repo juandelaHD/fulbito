@@ -587,6 +587,6 @@ public class MatchService {
         match.setStatus(MatchStatus.FINISHED);
 
         Match matchSaved = matchRepository.save(match);
-        return new MatchDTO(match);
+        return new MatchDTO(matchSaved);
     }
 }
