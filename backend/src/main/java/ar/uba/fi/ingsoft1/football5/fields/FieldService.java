@@ -4,6 +4,7 @@ import ar.uba.fi.ingsoft1.football5.common.exception.ItemNotFoundException;
 import ar.uba.fi.ingsoft1.football5.config.security.JwtUserDetails;
 import ar.uba.fi.ingsoft1.football5.fields.filters.FieldFiltersDTO;
 import ar.uba.fi.ingsoft1.football5.fields.filters.SpecificationService;
+import ar.uba.fi.ingsoft1.football5.fields.schedules.Schedule;
 import ar.uba.fi.ingsoft1.football5.fields.schedules.ScheduleStatus;
 import ar.uba.fi.ingsoft1.football5.images.FieldImage;
 import ar.uba.fi.ingsoft1.football5.images.ImageService;
@@ -20,6 +21,8 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
+import ar.uba.fi.ingsoft1.football5.fields.schedules.ScheduleRepository;
+
 
 import java.io.IOException;
 import java.time.LocalDate;
@@ -27,6 +30,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import java.time.Duration;
 
 @Service
 @Transactional
@@ -34,14 +38,17 @@ public class FieldService {
 
     private static final String FIELD_ITEM = "field";
     private final FieldRepository fieldRepository;
+    private final ScheduleRepository   scheduleRepository;
     private final MatchRepository matchRepository;
     private final ImageService imageService;
     private final UserService userService;
     private final SpecificationService<Field, FieldFiltersDTO> specificationService;
 
-    FieldService(FieldRepository fieldRepository, MatchRepository matchRepository, ImageService imageService,
+    FieldService(FieldRepository fieldRepository, ScheduleRepository scheduleRepository,
+                 MatchRepository matchRepository, ImageService imageService,
                  UserService userService, SpecificationService<Field, FieldFiltersDTO> specificationService) {
         this.fieldRepository = fieldRepository;
+        this.scheduleRepository = scheduleRepository;
         this.matchRepository = matchRepository;
         this.imageService = imageService;
         this.userService = userService;
@@ -251,4 +258,75 @@ public class FieldService {
             throw new ItemNotFoundException("Image not found: ", imageId);
         }
     }
+
+    /// Agregadas funciones de FieldStatsDTO
+    public FieldStatsDTO getFieldStats(Long fieldId) throws ItemNotFoundException {
+        Field field = loadFieldById(fieldId);
+        LocalDate today    = LocalDate.now();
+        LocalDate weekAgo  = today.minusWeeks(1);
+        LocalDate monthAgo = today.minusMonths(1);
+
+        // -- 1) Horas disponibles (sumar duración de SCHEDULES)
+        List<Schedule> allSchedules = scheduleRepository
+            .findByField(field, Pageable.unpaged())
+            .getContent();
+
+        double availableWeekHours = allSchedules.stream()
+            .filter(s -> !s.getDate().isBefore(weekAgo))
+            .mapToDouble(s -> hoursBetween(
+                s.getDate().atTime(s.getStartTime()),
+                s.getDate().atTime(s.getEndTime())
+            ))
+            .sum();
+
+        double availableMonthHours = allSchedules.stream()
+            .filter(s -> !s.getDate().isBefore(monthAgo))
+            .mapToDouble(s -> hoursBetween(
+                s.getDate().atTime(s.getStartTime()),
+                s.getDate().atTime(s.getEndTime())
+            ))
+            .sum();            
+
+        // -- 2) Horas reservadas (sumar duración de MATCHES aceptados/scheduled)
+        List<Match> weekMatches  = matchRepository.findByFieldIdAndStartTimeBetween(
+                                        fieldId,
+                                        weekAgo .atStartOfDay(),
+                                        today   .atTime(23, 59, 59)
+                                );
+        List<Match> monthMatches = matchRepository.findByFieldIdAndStartTimeBetween(
+                                        fieldId,
+                                        monthAgo.atStartOfDay(),
+                                        today   .atTime(23, 59, 59)
+                                );
+
+        double reservedWeekHours  = weekMatches.stream()
+            .mapToDouble(m -> hoursBetween(m.getStartTime(), m.getEndTime()))
+            .sum();
+        double reservedMonthHours = monthMatches.stream()
+            .mapToDouble(m -> hoursBetween(m.getStartTime(), m.getEndTime()))
+            .sum();
+
+        // -- 3) Porcentajes
+        double weeklyPct  = availableWeekHours  > 0
+                          ? reservedWeekHours  / availableWeekHours  * 100 : 0;
+        double monthlyPct = availableMonthHours > 0
+                          ? reservedMonthHours / availableMonthHours * 100 : 0;
+
+        return new FieldStatsDTO(
+            round(weeklyPct),
+            round(monthlyPct),
+            round(reservedMonthHours),
+            round(availableMonthHours)
+        );
+    }
+
+    private double hoursBetween(LocalDateTime start, LocalDateTime end) {
+        return Duration.between(start, end).toHours();
+    }
+
+    private double round(double value) {
+        return Math.round(value * 10.0) / 10.0;  // un decimal
+    }
+
+
 }

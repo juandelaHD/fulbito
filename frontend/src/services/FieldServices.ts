@@ -348,3 +348,39 @@ export function useGetMatchesByField(
     enabled: !!token && !!fieldId,
   });
 }
+
+
+// ─────────── Estadísticas de ocupación ───────────
+
+export interface FieldStatsDTO {
+  weeklyPercentage: number;
+  monthlyPercentage: number;
+  reservedHours: number;
+  availableHours: number;
+}
+
+export function useGetFieldStats(fieldId?: number) {
+  const [tokenState] = useToken();
+  const token = tokenState.state === "LOGGED_IN" ? tokenState.accessToken : "";
+
+  return useQuery<FieldStatsDTO, Error>({
+    queryKey: ["fieldStats", fieldId],
+    queryFn: async () => {
+      if (!fieldId) throw new Error("Field ID is required");
+      const res = await fetch(`${BASE_API_URL}/fields/${fieldId}/stats`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          Accept: "application/json",
+        },
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.message || "Error fetching field stats");
+      }
+      return (await res.json()) as FieldStatsDTO;
+    },
+    enabled: Boolean(fieldId),
+    staleTime: 1000 * 60 * 5,
+  });
+}
+
