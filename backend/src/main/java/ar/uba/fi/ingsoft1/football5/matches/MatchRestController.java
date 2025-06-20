@@ -145,6 +145,20 @@ public class MatchRestController {
         return matchService.finishMatch(matchId, userDetails);
     }
 
+    @PutMapping("/{matchId}/result")
+    @Operation(
+            summary = "Change match result (field admin only))",
+            description = "Allows the field admin to change the result of a finished match."
+    )
+    @PreAuthorize("hasRole('ADMIN')")
+    public MatchDTO changeResult(
+            @PathVariable Long matchId,
+            @RequestBody String result,
+            @AuthenticationPrincipal JwtUserDetails userDetails
+    ) throws ItemNotFoundException, IllegalArgumentException {
+        return matchService.changeResult(matchId, result, userDetails);
+    }
+
     @DeleteMapping("/{matchId}/leave-open")
     @Operation(
             summary = "Leave an open match",

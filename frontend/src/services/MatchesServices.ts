@@ -430,6 +430,35 @@ export function useFinishMatch() {
   });
 }
 
+export async function changeResultService(matchId: number, token: string): Promise<void> {
+  const response = await fetch(`${BASE_API_URL}/matches/${matchId}/result`, {
+    method: "PUT",
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+    },
+  });
+
+  if (!response.ok) {
+    await handleErrorResponse(response, "match result");
+  }
+}
+
+export function useChangeMatchResult() {
+  const [tokenState] = useToken();
+  const token = tokenState.state === "LOGGED_IN" ? tokenState.accessToken : "";
+
+  return useMutation({
+    mutationFn: (matchId: number) => changeResultService(matchId, token),
+    onSuccess: () => {
+      toast.success("Match result modified successfully!");
+    },
+    onError: () => {
+      toast.error("Error changing match result. Please try again.");
+    },
+  });
+}
+
 // Confirma un partido (solo admin de cancha)
 export async function confirmMatchService(matchId: number, token: string): Promise<void> {
   const response = await fetch(`${BASE_API_URL}/matches/${matchId}/confirm`, {

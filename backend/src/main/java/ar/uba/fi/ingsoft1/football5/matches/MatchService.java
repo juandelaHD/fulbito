@@ -570,4 +570,23 @@ public class MatchService {
         }
         return matches.map(MatchDTO::new);
     }
+
+    public MatchDTO changeResult(Long matchId, String result, JwtUserDetails userDetails)
+            throws ItemNotFoundException, IllegalArgumentException {
+        // Validar formato "x-y"
+        if (!result.matches("\\d+-\\d+")) {
+            throw new IllegalArgumentException("Format is incorrect. Expected format is 'x-y' where x and y are integers.");
+        }
+
+        // Buscar el partido
+        Match match = matchRepository.findById(matchId)
+                .orElseThrow(() -> new ItemNotFoundException("Match", matchId));
+
+        // Actualizar el resultado
+        match.setResult(result);
+        match.setStatus(MatchStatus.FINISHED);
+
+        Match matchSaved = matchRepository.save(match);
+        return new MatchDTO(match);
+    }
 }
