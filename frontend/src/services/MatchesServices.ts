@@ -430,13 +430,18 @@ export function useFinishMatch() {
   });
 }
 
-export async function changeResultService(matchId: number, token: string): Promise<void> {
+export async function changeResultService(
+  matchId: number,
+  result: string,
+  token: string
+): Promise<void> {
   const response = await fetch(`${BASE_API_URL}/matches/${matchId}/result`, {
     method: "PUT",
     headers: {
       Authorization: `Bearer ${token}`,
       "Content-Type": "application/json",
     },
+    body: JSON.stringify({ result }), // Envía el resultado en el body
   });
 
   if (!response.ok) {
@@ -449,7 +454,9 @@ export function useChangeMatchResult() {
   const token = tokenState.state === "LOGGED_IN" ? tokenState.accessToken : "";
 
   return useMutation({
-    mutationFn: (matchId: number) => changeResultService(matchId, token),
+    // Ahora espera un objeto con matchId y result
+    mutationFn: ({ matchId, result }: { matchId: number; result: string }) =>
+      changeResultService(matchId, result, token),
     onSuccess: () => {
       toast.success("Match result modified successfully!");
     },

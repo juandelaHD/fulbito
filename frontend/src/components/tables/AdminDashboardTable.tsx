@@ -6,7 +6,6 @@ import {
   useFinishMatch,
   useCancelMatch,
   useConfirmMatch,
-  useChangeMatchResult
 } from "@/services/MatchesServices";
 import { useState } from "react";
 import { OrganizerProfileModal } from "@/components/modals/ProfileModal.tsx";
@@ -23,7 +22,6 @@ export function AdminDashboardTable({ matches, columns, onSetResult, refetch }: 
   const finishMatch = useFinishMatch();
   const confirmMatch = useConfirmMatch();
   const cancelMatch = useCancelMatch();
-  const changeMatchResult = useChangeMatchResult();
   const [loadingId, setLoadingId] = useState<number | null>(null);
   const [selectedOrganizer, setSelectedOrganizer] = useState<RawMatchDTO["organizer"] | null>(null);
   // Modifica la columna de organizer para que sea clickeable
@@ -46,7 +44,7 @@ export function AdminDashboardTable({ matches, columns, onSetResult, refetch }: 
   // Columna de acciones
   const actionColumn: ColumnDef<RawMatchDTO, any> = {
     id: "actions",
-    header: "Acciones",
+    header: "Actions",
     cell: ({ row }) => {
       const match = row.original;
       if (match.status === "PENDING") {

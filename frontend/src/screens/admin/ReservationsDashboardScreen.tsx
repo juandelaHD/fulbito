@@ -7,8 +7,9 @@ import { RawMatchDTO } from "@/services/UserServices.ts";
 import { ColumnDef } from "@tanstack/react-table";
 import "react-datepicker/dist/react-datepicker.css";
 import DatePicker from "react-datepicker";
+import { toast } from "react-hot-toast";
 import type { Page } from "@/services/FieldServices";
-
+import { SetResultModal } from "@/components/modals/SetResultModal";
 
 export const ReservationsDashboardScreen = () => {
   // Extrae /fields/:id/matches/:name de la URL
@@ -49,15 +50,7 @@ export const ReservationsDashboardScreen = () => {
   const [selectedMatch, setSelectedMatch] = useState<RawMatchDTO | null>(null);
   const [homeScore, setHomeScore] = useState(0);
   const [awayScore, setAwayScore] = useState(0);
-  const { mutate: changeResult, isLoading: isSubmitting } = useChangeMatchResult();
-
-  // Abre el modal y resetea los scores
-  function openResultModal(match: RawMatchDTO) {
-    setSelectedMatch(match);
-    setHomeScore(0);
-    setAwayScore(0);
-    setModalOpen(true);
-  }
+  const changeResult = useChangeMatchResult();
 
   // Columnas base
   const columns: ColumnDef<RawMatchDTO, any>[] = [
@@ -77,22 +70,35 @@ export const ReservationsDashboardScreen = () => {
     { accessorKey: "status", header: "Status" },
   ];
 
-  // TODO: Change the result of a finished match
   const handleSetResult = (match: RawMatchDTO) => {
-    if (!selectedMatch) return;
-    const resultString = `${homeScore}-${awayScore}`;
-    changeResult(selectedMatch.id, {
-      onSuccess() {
-        toast.success(`Resultado ${resultString} guardado.`);
-        setModalOpen(false);
-        // Opcionalmente: refetch de datos
-      },
-      onError() {
-        toast.error("No se pudo guardar el resultado.");
-      },
-    });
+    setSelectedMatch(match);
+    // Opcional: inicializa los scores si ya hay resultado guardado
+    if (match.result) {
+      const [home, away] = match.result.split("-").map(Number);
+      setHomeScore(home);
+      setAwayScore(away);
+    } else {
+      setHomeScore(0);
+      setAwayScore(0);
+    }
+    setModalOpen(true);
   };
 
+  const handleSubmitResult = async () => {
+    console.log("Submitting result for match:", selectedMatch);
+    if (!selectedMatch) return;
+    try {
+      await changeResult.mutateAsync({
+        matchId: selectedMatch.id,
+        result: `${homeScore}-${awayScore}`,
+      });
+      setModalOpen(false);
+      refetchPending();
+      refetchFiltered();
+    } catch (e) {
+      toast.error("Error while updating match result");
+    }
+  };
   return (
     <CommonLayout>
       <div className="p-6 text-white">
@@ -183,6 +189,18 @@ export const ReservationsDashboardScreen = () => {
           </div>
           <AdminDashboardTable matches={filteredMatches?.content ?? []} columns={columns}
                                onSetResult={handleSetResult} refetch={refetchFiltered} />
+          <SetResultModal
+            isOpen={isModalOpen}
+            onClose={() => setModalOpen(false)}
+            homeTeam={selectedMatch?.homeTeam}
+            awayTeam={selectedMatch?.awayTeam}
+            homeScore={homeScore}
+            awayScore={awayScore}
+            onChangeHomeScore={setHomeScore}
+            onChangeAwayScore={setAwayScore}
+            onSubmit={handleSubmitResult}
+            isSubmitting={false /* o tu estado de loading */}
+          />
           <div className="flex justify-center items-center gap-4 mt-4">
             <button
               className="px-2 py-1 bg-gray-600 text-white rounded"
@@ -212,57 +230,6 @@ export const ReservationsDashboardScreen = () => {
           </div>
         </section>
       </div>
-      <Modal
-        isOpen={isModalOpen}
-        onRequestClose={() => setModalOpen(false)}
-        contentLabel="Set Match Result"
-        overlayClassName="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
-        className="bg-white rounded-lg p-6 max-w-lg mx-auto relative"
-      >
-        <h2 className="text-xl font-bold mb-4">Ingresar Resultado</h2>
-        <div className="flex gap-6 mb-4 justify-center">
-          <div className="flex flex-col items-center">
-            <label className="mb-1 font-medium">
-              {selectedMatch?.homeTeam?.name ?? "Home"}
-            </label>
-            <input
-              type="number"
-              min={0}
-              className="w-20 text-center border rounded p-1"
-              value={homeScore}
-              onChange={e => setHomeScore(Number(e.target.value))}
-            />
-          </div>
-          <div className="flex flex-col items-center">
-            <label className="mb-1 font-medium">
-              {selectedMatch?.awayTeam?.name ?? "Away"}
-            </label>
-            <input
-              type="number"
-              min={0}
-              className="w-20 text-center border rounded p-1"
-              value={awayScore}
-              onChange={e => setAwayScore(Number(e.target.value))}
-            />
-          </div>
-        </div>
-        <div className="flex justify-end gap-2">
-          <button
-            className="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400"
-            onClick={() => setModalOpen(false)}
-            disabled={isSubmitting}
-          >
-            Cancelar
-          </button>
-          <button
-            className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-            onClick={handleSetResult}
-            disabled={isSubmitting}
-          >
-            {isSubmitting ? "Enviando…" : "Aceptar"}
-          </button>
-        </div>
-      </Modal>
     </CommonLayout>
   );
 }
