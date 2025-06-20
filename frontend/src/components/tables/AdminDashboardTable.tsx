@@ -1,7 +1,13 @@
 import { ColumnDef } from "@tanstack/react-table";
 import { Table } from "@/components/tables/Table";
 import { RawMatchDTO } from "@/services/UserServices.ts";
-import { useStartMatch, useFinishMatch, useCancelMatch, useConfirmMatch } from "@/services/MatchesServices";
+import {
+  useStartMatch,
+  useFinishMatch,
+  useCancelMatch,
+  useConfirmMatch,
+  useChangeMatchResult
+} from "@/services/MatchesServices";
 import { useState } from "react";
 import { OrganizerProfileModal } from "@/components/modals/ProfileModal.tsx";
 
@@ -17,6 +23,7 @@ export function AdminDashboardTable({ matches, columns, onSetResult, refetch }: 
   const finishMatch = useFinishMatch();
   const confirmMatch = useConfirmMatch();
   const cancelMatch = useCancelMatch();
+  const changeMatchResult = useChangeMatchResult();
   const [loadingId, setLoadingId] = useState<number | null>(null);
   const [selectedOrganizer, setSelectedOrganizer] = useState<RawMatchDTO["organizer"] | null>(null);
   // Modifica la columna de organizer para que sea clickeable
