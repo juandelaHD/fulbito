@@ -1,0 +1,74 @@
+.mainLayout {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background-color: #0f1e11;
+  color: #f0f0f0;
+}
+
+.navbar {
+  width: 100%;
+  min-width: 100vw;
+  left: 0;
+  right: 0;
+  top: 0;
+  position: relative; /* O usa fixed si quieres que siempre esté arriba */
+  background-color: #1c2b1a;
+  box-shadow: 0 4px 6px rgba(0, 255, 136, 0.1);
+  z-index: 10;
+  margin: 0;
+  padding: 0.5rem 2rem;
+  box-sizing: border-box;
+}
+
+.navLinks {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  color: #00ff88;
+  text-decoration: none;
+  font-weight: 500;
+  font-size: 1rem;
+  transition: color 0.3s;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.navLinksLeft,
+.navLinksRight {
+  display: flex;
+  gap: 1.5rem;
+  align-items: center;
+}
+
+.navLink:hover {
+  color: #1be17e;
+}
+
+.body {
+  flex: 1;
+  padding: 2rem;
+}
+
+.floatingLogo {
+  position: absolute;
+  top: 0.5rem;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 20;
+  cursor: pointer;
+  padding: 0.25rem;
+}
+
+.floatingLogo img {
+  height: 2.25rem;
+  width: auto;
+  transition: transform 0.2s ease;
+}
+
+.floatingLogo:hover img {
+  transform: scale(1.1);
+}
