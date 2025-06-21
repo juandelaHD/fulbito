@@ -1,15 +1,12 @@
 import { CommonLayout } from "@/components/CommonLayout/CommonLayout.tsx";
 import { useState } from "react";
 import { useGetMatchesByField } from "@/services/FieldServices";
-import { useChangeMatchResult } from "@/services/MatchesServices";
 import { AdminDashboardTable } from "@/components/tables/AdminDashboardTable";
 import { RawMatchDTO } from "@/services/UserServices.ts";
 import { ColumnDef } from "@tanstack/react-table";
 import "react-datepicker/dist/react-datepicker.css";
 import DatePicker from "react-datepicker";
-import { toast } from "react-hot-toast";
 import type { Page } from "@/services/FieldServices";
-import { SetResultModal } from "@/components/modals/SetResultModal";
 
 export const ReservationsDashboardScreen = () => {
   // Extrae /fields/:id/matches/:name de la URL
@@ -45,13 +42,6 @@ export const ReservationsDashboardScreen = () => {
     size
   ) as { data: Page<RawMatchDTO> | undefined, isFetching: boolean, refetch: () => void  };
 
-  // Estado para el modal
-  const [isModalOpen, setModalOpen] = useState(false);
-  const [selectedMatch, setSelectedMatch] = useState<RawMatchDTO | null>(null);
-  const [homeScore, setHomeScore] = useState(0);
-  const [awayScore, setAwayScore] = useState(0);
-  const changeResult = useChangeMatchResult();
-
   // Columnas base
   const columns: ColumnDef<RawMatchDTO, any>[] = [
     { accessorKey: "date", header: "Date" },
@@ -70,35 +60,6 @@ export const ReservationsDashboardScreen = () => {
     { accessorKey: "status", header: "Status" },
   ];
 
-  const handleSetResult = (match: RawMatchDTO) => {
-    setSelectedMatch(match);
-    // Opcional: inicializa los scores si ya hay resultado guardado
-    if (match.result) {
-      const [home, away] = match.result.split("-").map(Number);
-      setHomeScore(home);
-      setAwayScore(away);
-    } else {
-      setHomeScore(0);
-      setAwayScore(0);
-    }
-    setModalOpen(true);
-  };
-
-  const handleSubmitResult = async () => {
-    console.log("Submitting result for match:", selectedMatch);
-    if (!selectedMatch) return;
-    try {
-      await changeResult.mutateAsync({
-        matchId: selectedMatch.id,
-        result: `${homeScore}-${awayScore}`,
-      });
-      setModalOpen(false);
-      refetchPending();
-      refetchFiltered();
-    } catch (e) {
-      toast.error("Error while updating match result");
-    }
-  };
   return (
     <CommonLayout>
       <div className="p-6 text-white">
@@ -113,7 +74,7 @@ export const ReservationsDashboardScreen = () => {
         <section className="mb-10">
           <h2 className="text-xl font-semibold mb-2 text-center">Pending Reservations</h2>
           <AdminDashboardTable matches={pendingMatches?.content ?? []} columns={columns}
-                               onSetResult={handleSetResult} refetch={refetchPending} />
+                               refetch={refetchPending} />
           <div className="flex justify-center items-center gap-4 mt-4">
             <button
               className="px-2 py-1 bg-gray-600 text-white rounded"
@@ -188,19 +149,7 @@ export const ReservationsDashboardScreen = () => {
             </button>
           </div>
           <AdminDashboardTable matches={filteredMatches?.content ?? []} columns={columns}
-                               onSetResult={handleSetResult} refetch={refetchFiltered} />
-          <SetResultModal
-            isOpen={isModalOpen}
-            onClose={() => setModalOpen(false)}
-            homeTeam={selectedMatch?.homeTeam}
-            awayTeam={selectedMatch?.awayTeam}
-            homeScore={homeScore}
-            awayScore={awayScore}
-            onChangeHomeScore={setHomeScore}
-            onChangeAwayScore={setAwayScore}
-            onSubmit={handleSubmitResult}
-            isSubmitting={false /* o tu estado de loading */}
-          />
+                               refetch={refetchFiltered} />
           <div className="flex justify-center items-center gap-4 mt-4">
             <button
               className="px-2 py-1 bg-gray-600 text-white rounded"

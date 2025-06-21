@@ -439,9 +439,9 @@ export async function changeResultService(
     method: "PUT",
     headers: {
       Authorization: `Bearer ${token}`,
-      "Content-Type": "application/json",
+      "Content-Type": "text/plain",
     },
-    body: JSON.stringify({ result }), // Envía el resultado en el body
+    body: result,
   });
 
   if (!response.ok) {

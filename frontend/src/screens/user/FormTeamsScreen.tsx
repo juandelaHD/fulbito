@@ -70,7 +70,7 @@ export const FormTeamsScreen = () => {
       if (!result.success) return;
 
       if (!value.strategy) {
-        toast.error("Por favor, selecciona una estrategia.");
+        toast.error("Please select a strategy for forming teams.", { duration: 3000 });
         return;
       }
 
@@ -87,22 +87,22 @@ export const FormTeamsScreen = () => {
   return (
     <CommonLayout>
       <section>
-      <h1 className="text-center text-2xl font-semibold mb-4">Formar Equipos</h1>
+      <h1 className="text-center text-2xl font-semibold mb-4">Form teams</h1>
       <p className="text-center text-gray-600 mb-6">
-        Selecciona la estrategia para formar los equipos del partido: {match?.id || "Partido Desconocido"}.
+        Select a strategy and assign players to teams for the match!
       </p>
       <formData.AppForm>
         <formData.FormContainer extraError={null} className="space-y-4" submitLabel="Form Team" >
           <formData.AppField name="strategy">
             {(field) => (
               <field.SelectField
-                label="Estrategia"
-                options={[{ label: "Selecciona una estrategia", value: "" }, ...STRATEGIES]}
+                label="Strategy"
+                options={[{ label: "Select a strategy", value: "" }, ...STRATEGIES]}
               />
             )}
           </formData.AppField>
           <div className="space-y-4">
-            <h2 className="text-lg font-semibold">Jugadores no asignados</h2>
+            <h2 className="text-lg font-semibold">Players not assigned</h2>
             <ul className="list-disc pl-6">
               {match?.players.map((player) => (
                 <li key={player.id} className="text-gray-700">
@@ -115,7 +115,7 @@ export const FormTeamsScreen = () => {
           <formData.AppField name="teamA">
             {(field) => (
               <field.TextField
-                label="Equipo A (IDs de jugadores separados por comas)"
+                label="Team A (IDs separated by commas)"
                 value={field.state.value}
                 onChange={e => field.setValue(e.target.value)}
               />
@@ -124,7 +124,7 @@ export const FormTeamsScreen = () => {
           <formData.AppField name="teamB">
             {(field) => (
               <field.TextField
-                label="Equipo B (IDs de jugadores separados por comas)"
+                label="Team B (IDs separated by commas)"
                 value={field.state.value}
                 onChange={e => field.setValue(e.target.value)}
               />
