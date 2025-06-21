@@ -7,6 +7,7 @@ import { ColumnDef } from "@tanstack/react-table";
 import "react-datepicker/dist/react-datepicker.css";
 import DatePicker from "react-datepicker";
 import type { Page } from "@/services/FieldServices";
+import { useGetFieldStats } from "@/services/FieldServices";
 
 export const ReservationsDashboardScreen = () => {
   // Extrae /fields/:id/matches/:name de la URL
@@ -18,6 +19,10 @@ export const ReservationsDashboardScreen = () => {
   const [pendingPage, setPendingPage] = useState(0);
   const [filteredPage, setFilteredPage] = useState(0);
   const [size, setSize] = useState(10);
+
+  // Estadisticas de la cancha
+  const { data: stats, isLoading: isLoadingStats } = useGetFieldStats(fieldId);
+
 
   // Filtros
   const [status, setStatus] = useState<string | undefined>("SCHEDULED");
@@ -179,6 +184,29 @@ export const ReservationsDashboardScreen = () => {
           </div>
         </section>
       </div>
+
+      <hr className="my-8 border-gray-700" />
+
+      {/* Field Stats */}
+      <section className="mb-10">
+        <h2 className="text-xl font-semibold mb-2 text-center">Field Stats</h2>
+      {isLoadingStats ? (
+        <p className="text-gray-400">Cargando estadísticas…</p>
+      ) : stats ? (
+        <div className="inline-block text-left space-y-2 text-green-200">
+          <p>🔸 Ocupación semanal: <strong>{stats.weeklyPercentage}%</strong></p>
+          <p>🔸 Ocupación mensual: <strong>{stats.monthlyPercentage}%</strong></p>
+          <p>
+            🔸 Horas reservadas vs disponibles:{" "}
+            <strong>{stats.reservedHours}h / {stats.availableHours}h</strong>
+          </p>
+        </div>
+      ) : (
+        <p className="text-red-400">No hay estadísticas disponibles.</p>
+      )}
+      </section>
+
+
     </CommonLayout>
   );
 }
