@@ -259,64 +259,119 @@ public class FieldService {
         }
     }
 
-    /// Agregadas funciones de FieldStatsDTO
+    
     public FieldStatsDTO getFieldStats(Long fieldId) throws ItemNotFoundException {
         Field field = loadFieldById(fieldId);
-        LocalDate today    = LocalDate.now();
-        LocalDate weekAgo  = today.minusWeeks(1);
-        LocalDate monthAgo = today.minusMonths(1);
 
-        // -- 1) Horas disponibles (sumar duración de SCHEDULES)
+        LocalDate today       = LocalDate.now();
+        LocalDate pastWeekAgo = today.minusWeeks(1);
+        LocalDate pastMonthAgo= today.minusMonths(1);
+        LocalDate futureWeekEnd= today.plusWeeks(1);
+        LocalDate futureMonthEnd = today.plusMonths(1);
+
+        // Traer todos los schedules sin paginar
         List<Schedule> allSchedules = scheduleRepository
             .findByField(field, Pageable.unpaged())
             .getContent();
 
-        double availableWeekHours = allSchedules.stream()
-            .filter(s -> !s.getDate().isBefore(weekAgo))
+        // --- 1) Disponibilidad de HORAS PASADAS ---
+        double pastAvailableWeekHours = allSchedules.stream()
+            .filter(s -> !s.getDate().isBefore(pastWeekAgo) && !s.getDate().isAfter(today))
             .mapToDouble(s -> hoursBetween(
                 s.getDate().atTime(s.getStartTime()),
                 s.getDate().atTime(s.getEndTime())
             ))
             .sum();
 
-        double availableMonthHours = allSchedules.stream()
-            .filter(s -> !s.getDate().isBefore(monthAgo))
+        double pastAvailableMonthHours = allSchedules.stream()
+            .filter(s -> !s.getDate().isBefore(pastMonthAgo) && !s.getDate().isAfter(today))
             .mapToDouble(s -> hoursBetween(
                 s.getDate().atTime(s.getStartTime()),
                 s.getDate().atTime(s.getEndTime())
             ))
-            .sum();            
-
-        // -- 2) Horas reservadas (sumar duración de MATCHES aceptados/scheduled)
-        List<Match> weekMatches  = matchRepository.findByFieldIdAndStartTimeBetween(
-                                        fieldId,
-                                        weekAgo .atStartOfDay(),
-                                        today   .atTime(23, 59, 59)
-                                );
-        List<Match> monthMatches = matchRepository.findByFieldIdAndStartTimeBetween(
-                                        fieldId,
-                                        monthAgo.atStartOfDay(),
-                                        today   .atTime(23, 59, 59)
-                                );
-
-        double reservedWeekHours  = weekMatches.stream()
-            .mapToDouble(m -> hoursBetween(m.getStartTime(), m.getEndTime()))
-            .sum();
-        double reservedMonthHours = monthMatches.stream()
-            .mapToDouble(m -> hoursBetween(m.getStartTime(), m.getEndTime()))
             .sum();
 
-        // -- 3) Porcentajes
-        double weeklyPct  = availableWeekHours  > 0
-                          ? reservedWeekHours  / availableWeekHours  * 100 : 0;
-        double monthlyPct = availableMonthHours > 0
-                          ? reservedMonthHours / availableMonthHours * 100 : 0;
+        // --- 2) Reservas en PASADO ---
+        List<Match> pastWeekMatches = matchRepository.findByFieldIdAndStartTimeBetween(
+            fieldId,
+            pastWeekAgo.atStartOfDay(),
+            today.atTime(23,59,59)
+        );
+        List<Match> pastMonthMatches = matchRepository.findByFieldIdAndStartTimeBetween(
+            fieldId,
+            pastMonthAgo.atStartOfDay(),
+            today.atTime(23,59,59)
+        );
 
+        double pastReservedWeekHours = pastWeekMatches.stream()
+            .mapToDouble(m -> hoursBetween(m.getStartTime(), m.getEndTime()))
+            .sum();
+        double pastReservedMonthHours = pastMonthMatches.stream()
+            .mapToDouble(m -> hoursBetween(m.getStartTime(), m.getEndTime()))
+            .sum();
+
+        // --- 3) Porcentajes PASADOS ---
+        double pastWeeklyPct  = pastAvailableWeekHours  > 0
+                            ? pastReservedWeekHours  / pastAvailableWeekHours  * 100
+                            : 0;
+        double pastMonthlyPct = pastAvailableMonthHours > 0
+                            ? pastReservedMonthHours / pastAvailableMonthHours * 100
+                            : 0;
+
+        // --- 4) Disponibilidad de HORAS FUTURAS ---
+        double futureAvailableWeekHours = allSchedules.stream()
+            .filter(s -> !s.getDate().isBefore(today) && !s.getDate().isAfter(futureWeekEnd))
+            .mapToDouble(s -> hoursBetween(
+                s.getDate().atTime(s.getStartTime()),
+                s.getDate().atTime(s.getEndTime())
+            ))
+            .sum();
+
+        double futureAvailableMonthHours = allSchedules.stream()
+            .filter(s -> !s.getDate().isBefore(today) && !s.getDate().isAfter(futureMonthEnd))
+            .mapToDouble(s -> hoursBetween(
+                s.getDate().atTime(s.getStartTime()),
+                s.getDate().atTime(s.getEndTime())
+            ))
+            .sum();
+
+        // --- 5) Reservas en FUTURO ---
+        List<Match> futureWeekMatches = matchRepository.findByFieldIdAndStartTimeBetween(
+            fieldId,
+            today.atStartOfDay(),
+            futureWeekEnd.atTime(23,59,59)
+        );
+        List<Match> futureMonthMatches = matchRepository.findByFieldIdAndStartTimeBetween(
+            fieldId,
+            today.atStartOfDay(),
+            futureMonthEnd.atTime(23,59,59)
+        );
+
+        double futureReservedWeekHours = futureWeekMatches.stream()
+            .mapToDouble(m -> hoursBetween(m.getStartTime(), m.getEndTime()))
+            .sum();
+        double futureReservedMonthHours = futureMonthMatches.stream()
+            .mapToDouble(m -> hoursBetween(m.getStartTime(), m.getEndTime()))
+            .sum();
+
+        // --- 6) Porcentajes FUTUROS ---
+        double futureWeeklyPct  = futureAvailableWeekHours  > 0
+                                ? futureReservedWeekHours  / futureAvailableWeekHours  * 100
+                                : 0;
+        double futureMonthlyPct = futureAvailableMonthHours > 0
+                                ? futureReservedMonthHours / futureAvailableMonthHours * 100
+                                : 0;
+
+        // Construir el DTO con las 8 métricas
         return new FieldStatsDTO(
-            round(weeklyPct),
-            round(monthlyPct),
-            round(reservedMonthHours),
-            round(availableMonthHours)
+            pastWeeklyPct,
+            pastMonthlyPct,
+            pastReservedWeekHours,
+            pastAvailableWeekHours,
+            futureWeeklyPct,
+            futureMonthlyPct,
+            futureReservedWeekHours,
+            futureAvailableWeekHours
         );
     }
 
@@ -324,9 +379,6 @@ public class FieldService {
         return Duration.between(start, end).toHours();
     }
 
-    private double round(double value) {
-        return Math.round(value * 10.0) / 10.0;  // un decimal
-    }
 
 
 }

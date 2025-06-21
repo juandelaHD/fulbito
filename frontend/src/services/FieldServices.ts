@@ -352,11 +352,21 @@ export function useGetMatchesByField(
 
 // ─────────── Estadísticas de ocupación ───────────
 
+/**
+ * Estadísticas de ocupación PASADAS y FUTURAS para la cancha.
+ */
 export interface FieldStatsDTO {
-  weeklyPercentage: number;
-  monthlyPercentage: number;
-  reservedHours: number;
-  availableHours: number;
+  // PASADO
+  pastWeeklyPct: number;       // % de horas reservadas en la última semana
+  pastMonthlyPct: number;      // % de horas reservadas en el último mes
+  pastReservedHours: number;   // total de horas reservadas en la última semana
+  pastAvailableHours: number;  // total de horas disponibles en la última semana
+
+  // FUTURO
+  futureWeeklyPct: number;       // % de horas ya reservadas en la próxima semana
+  futureMonthlyPct: number;      // % de horas ya reservadas en el próximo mes
+  futureReservedHours: number;   // total de horas reservadas en la próxima semana
+  futureAvailableHours: number;  // total de horas disponibles en la próxima semana
 }
 
 export function useGetFieldStats(fieldId?: number) {

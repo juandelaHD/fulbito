@@ -190,20 +190,30 @@ export const ReservationsDashboardScreen = () => {
       {/* Field Stats */}
       <section className="mb-10">
         <h2 className="text-xl font-semibold mb-2 text-center">Field Stats</h2>
-      {isLoadingStats ? (
-        <p className="text-gray-400">Loading statistics...</p>
-      ) : stats ? (
-        <div className="inline-block text-left space-y-2 text-green-200">
-          <p>🔸 Weekly occupancy: <strong>{stats.weeklyPercentage}%</strong></p>
-          <p>🔸 Monthly occupancy: <strong>{stats.monthlyPercentage}%</strong></p>
-          <p>
-            🔸 Reserved vs available hours:{" "}
-            <strong>{stats.reservedHours}h / {stats.availableHours}h</strong>
-          </p>
-        </div>
-      ) : (
-        <p className="text-red-400">No statistics available for this field.</p>
-      )}
+
+        {isLoadingStats ? (
+          <p className="text-gray-400">Loading statistics...</p>
+        ) : stats ? (
+          <div className="inline-block text-left space-y-2 text-green-200">
+            {/* PASADO */}
+            <p>🔸 Past week occupancy: <strong>{stats.pastWeeklyPct}%</strong></p>
+            <p>🔸 Past month occupancy: <strong>{stats.pastMonthlyPct}%</strong></p>
+            <p>
+              🔸 Past reserved vs available hours:{" "}
+              <strong>{stats.pastReservedHours}h / {stats.pastAvailableHours}h</strong>
+            </p>
+
+            {/* FUTURO */}
+            <p>🔸 Next week occupancy: <strong>{stats.futureWeeklyPct}%</strong></p>
+            <p>🔸 Next month occupancy: <strong>{stats.futureMonthlyPct}%</strong></p>
+            <p>
+              🔸 Upcoming reserved vs available hours:{" "}
+              <strong>{stats.futureReservedHours}h / {stats.futureAvailableHours}h</strong>
+            </p>
+          </div>
+        ) : (
+          <p className="text-red-400">No statistics available for this field.</p>
+        )}
       </section>
 
     </CommonLayout>
