@@ -13,7 +13,6 @@ import { ResetPasswordScreen } from "@/screens/ResetPasswordScreen.tsx";
 import { FieldsManagementScreen } from "@/screens/admin/FieldManagementScreen.tsx";
 import { SignupInvitationScreen } from "@/screens/SignupWithInvitation.tsx";
 import { TeamCreateScreen } from "@/screens/user/TeamCreateScreen.tsx";
-import { TeamsScreen } from "@/screens/user/TeamsScreen.tsx";
 import { MatchHomeScreen } from "@/screens/user/MatchHomeScreen.tsx";
 import { CreateClosedMatchScreen } from "@/screens/user/CreateClosedMatchScreen.tsx";
 import { CreateOpenMatchScreen } from "@/screens/user/CreateOpenMatchScreen.tsx";
@@ -28,6 +27,7 @@ import MyReservationsScreen from "@/screens/user/MyReservationsScreen.tsx";
 import { TeamEditScreen } from "./screens/user/TeamEditScreen.tsx";
 import { FieldSchedulesScreen } from "@/screens/admin/FieldSchedulesScreen.tsx";
 import { ReservationsDashboardScreen } from "@/screens/admin/ReservationsDashboardScreen.tsx";
+import { TeamsHomeScreen } from "@/screens/user/TeamsHomePage.tsx";
 
 export const Navigation = () => {
   const [tokenState] = useToken();
@@ -82,7 +82,7 @@ export const Navigation = () => {
           </Route>
           <Route path="/teams/edit/:id" component={TeamEditScreen}/>
           <Route path="/teams">
-            <TeamsScreen />
+            <TeamsHomeScreen />
           </Route>
           <Route path="/tournaments">
             <TournamentsScreen />

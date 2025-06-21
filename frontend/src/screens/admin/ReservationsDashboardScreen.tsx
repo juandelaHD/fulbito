@@ -9,7 +9,6 @@ import DatePicker from "react-datepicker";
 import type { Page } from "@/services/FieldServices";
 import { useGetFieldStats } from "@/services/FieldServices";
 
-
 export const ReservationsDashboardScreen = () => {
   // Extrae /fields/:id/matches/:name de la URL
   const pathMatch = window.location.pathname.match(/^\/fields\/(\d+)\/reservations\/(.+)$/);
@@ -66,11 +65,6 @@ export const ReservationsDashboardScreen = () => {
     { accessorKey: "status", header: "Status" },
   ];
 
-  // TODO: Change the result of a finished match
-  const handleSetResult = (match: RawMatchDTO) => {
-    alert(`Set result for match ${match.id}`);
-  };
-
   return (
     <CommonLayout>
       <div className="p-6 text-white">
@@ -85,7 +79,7 @@ export const ReservationsDashboardScreen = () => {
         <section className="mb-10">
           <h2 className="text-xl font-semibold mb-2 text-center">Pending Reservations</h2>
           <AdminDashboardTable matches={pendingMatches?.content ?? []} columns={columns}
-                               onSetResult={handleSetResult} refetch={refetchPending} />
+                               refetch={refetchPending} />
           <div className="flex justify-center items-center gap-4 mt-4">
             <button
               className="px-2 py-1 bg-gray-600 text-white rounded"
@@ -160,7 +154,7 @@ export const ReservationsDashboardScreen = () => {
             </button>
           </div>
           <AdminDashboardTable matches={filteredMatches?.content ?? []} columns={columns}
-                               onSetResult={handleSetResult} refetch={refetchFiltered} />
+                               refetch={refetchFiltered} />
           <div className="flex justify-center items-center gap-4 mt-4">
             <button
               className="px-2 py-1 bg-gray-600 text-white rounded"
@@ -197,21 +191,20 @@ export const ReservationsDashboardScreen = () => {
       <section className="mb-10">
         <h2 className="text-xl font-semibold mb-2 text-center">Field Stats</h2>
       {isLoadingStats ? (
-        <p className="text-gray-400">Cargando estadísticas…</p>
+        <p className="text-gray-400">Loading statistics...</p>
       ) : stats ? (
         <div className="inline-block text-left space-y-2 text-green-200">
-          <p>🔸 Ocupación semanal: <strong>{stats.weeklyPercentage}%</strong></p>
-          <p>🔸 Ocupación mensual: <strong>{stats.monthlyPercentage}%</strong></p>
+          <p>🔸 Weekly occupancy: <strong>{stats.weeklyPercentage}%</strong></p>
+          <p>🔸 Monthly occupancy: <strong>{stats.monthlyPercentage}%</strong></p>
           <p>
-            🔸 Horas reservadas vs disponibles:{" "}
+            🔸 Reserved vs available hours:{" "}
             <strong>{stats.reservedHours}h / {stats.availableHours}h</strong>
           </p>
         </div>
       ) : (
-        <p className="text-red-400">No hay estadísticas disponibles.</p>
+        <p className="text-red-400">No statistics available for this field.</p>
       )}
       </section>
-
 
     </CommonLayout>
   );
