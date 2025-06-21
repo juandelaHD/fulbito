@@ -215,10 +215,12 @@ export const CreateMatchScreen = ({ defaultMatchType = "OPEN" }: { defaultMatchT
                       { label: "Select your schedule", value: "" },
                       ...(schedules.length === 0
                               ? [{ label: "No available schedules", value: "" }]
-                              : schedules.map(s => ({
-                                label: `${s.startTime} - ${s.endTime}`,
-                                value: s.id.toString(),
-                              }))
+                              : schedules
+                                  .filter(s => s.status === "AVAILABLE")
+                                  .map(s => ({
+                                      label: `${s.startTime} - ${s.endTime}`,
+                                      value: s.id.toString(),
+                                    }))
                       )
                     ]}
                   />

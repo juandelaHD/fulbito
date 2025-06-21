@@ -17,17 +17,23 @@ export function TeamsModal({ team, onClose, isOpen }: TeamsModalProps) {
       style={{
         overlay: {
           backgroundColor: "rgba(0,0,0,0.4)",
-          zIndex: 1100,
+          backdropFilter: "blur(6px)",
+          zIndex: 1000,
         },
         content: {
-          backgroundColor: "#fff",
-          color: "#222",
-          maxWidth: "400px",
-          margin: "auto",
+          backgroundColor: "#0f1e11",
+          color: "#f0f0f0",
+          maxWidth: "fit-content",
+          width: "fit-content",
+          maxHeight: "fit-content",
           borderRadius: "12px",
           padding: "24px",
-          border: "1px solid #ccc",
-          position: "relative",
+          border: "1px solid #3a4d39",
+          position: "fixed",
+          transform: "translate(-50%, -50%)",
+          top: "50%",
+          left: "50%",
+          margin: 0,
         },
       }}
     >
@@ -79,7 +85,7 @@ export function TeamsModal({ team, onClose, isOpen }: TeamsModalProps) {
             <li key={member.id}>
               <div className="flex items-center gap-2 py-1">
                 <span>{member.firstName} {member.lastName} </span>
-                <span className="text-xs text-gray-500">- ({member.username})</span>
+                <span className="text-xs text-gray-500">({member.username})</span>
               </div>
               {idx < team.members.length - 1 && (
                 <hr className="border-t border-gray-200" />

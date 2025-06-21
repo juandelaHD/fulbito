@@ -32,6 +32,13 @@ public interface MatchRepository extends JpaRepository<Match, Long> {
             @Param("now") LocalDateTime now
     );
 
+
+    List<Match> findByFieldIdAndStartTimeBetween(
+        Long fieldId,
+        LocalDateTime from,
+        LocalDateTime to
+    );
+
     Page<Match> findByFieldId(Long fieldId, Pageable pageable);
     Page<Match> findByFieldIdAndDate(Long fieldId, LocalDate date, Pageable pageable);
     Page<Match> findByFieldIdAndStatus(Long fieldId, MatchStatus status, Pageable pageable);

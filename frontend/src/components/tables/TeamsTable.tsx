@@ -25,13 +25,14 @@ export function TeamsTable({ data }: TeamsTableProps) {
         const imageUrl = useImageById(imageEndpoint);
         return (
           <div
-            className="w-[120px] h-[100px] overflow-hidden rounded bg-black/10 flex items-center justify-center"
+            className="w-[120px] h-[100px] flex items-center justify-center mx-auto"
+            style={{ minWidth: 120, minHeight: 100 }}
           >
             {imageUrl ? (
               <img
                 src={imageUrl}
                 alt={row.original.name}
-                className="w-full h-full object-cover block"
+                className="object-contain max-w-full max-h-full block"
               />
             ) : (
               <span className="text-xs">No logo</span>
