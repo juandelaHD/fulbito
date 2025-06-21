@@ -19,6 +19,7 @@ import ar.uba.fi.ingsoft1.football5.teams.Team;
 import ar.uba.fi.ingsoft1.football5.teams.TeamRepository;
 import ar.uba.fi.ingsoft1.football5.user.email.EmailSenderService;
 import jakarta.transaction.Transactional;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -511,11 +512,12 @@ public class MatchService {
 
         if (match.getStatus() == MatchStatus.CANCELLED || match.getStatus() == MatchStatus.FINISHED)
             throw new IllegalArgumentException("The match is already cancelled or finished.");
+
         Field field = match.getField();
 
-        if (!fieldService.isFieldAdmin(field.getId(), userDetails) &&
+        if (!field.getOwner().getUsername().equalsIgnoreCase(userDetails.username()) &&
                 !match.getOrganizer().getUsername().equals(userDetails.username())) {
-            throw new IllegalArgumentException("Solo el admin de la cancha o el organizador pueden cancelar el partido.");
+            throw new IllegalArgumentException("Only the field admin or the match organizer can cancel a match.");
         }
 
         match.setStatus(MatchStatus.CANCELLED);
