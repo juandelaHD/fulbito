@@ -191,21 +191,20 @@ export const ReservationsDashboardScreen = () => {
       <section className="mb-10">
         <h2 className="text-xl font-semibold mb-2 text-center">Field Stats</h2>
       {isLoadingStats ? (
-        <p className="text-gray-400">Cargando estadísticas…</p>
+        <p className="text-gray-400">Loading statistics...</p>
       ) : stats ? (
         <div className="inline-block text-left space-y-2 text-green-200">
-          <p>🔸 Ocupación semanal: <strong>{stats.weeklyPercentage}%</strong></p>
-          <p>🔸 Ocupación mensual: <strong>{stats.monthlyPercentage}%</strong></p>
+          <p>🔸 Weekly occupancy: <strong>{stats.weeklyPercentage}%</strong></p>
+          <p>🔸 Monthly occupancy: <strong>{stats.monthlyPercentage}%</strong></p>
           <p>
-            🔸 Horas reservadas vs disponibles:{" "}
+            🔸 Reserved vs available hours:{" "}
             <strong>{stats.reservedHours}h / {stats.availableHours}h</strong>
           </p>
         </div>
       ) : (
-        <p className="text-red-400">No hay estadísticas disponibles.</p>
+        <p className="text-red-400">No statistics available for this field.</p>
       )}
       </section>
-
 
     </CommonLayout>
   );
