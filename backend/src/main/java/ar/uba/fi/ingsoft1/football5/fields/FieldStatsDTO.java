@@ -6,64 +6,44 @@ package ar.uba.fi.ingsoft1.football5.fields;
 public record FieldStatsDTO(
     // — Estadísticas PASADAS (desde hace una semana / un mes hasta hoy)
 
-    /** 
-     * Porcentaje de horas reservadas de la cancha en la última semana 
-     * (horas reservadas ÷ horas disponibles * 100). 
-     */
+    /** % de horas reservadas en la última semana */
     double pastWeeklyPct,
-    /** 
-     * Porcentaje de horas reservadas de la cancha en el último mes 
-     * (horas reservadas ÷ horas disponibles * 100). 
-     */
+    /** % de horas reservadas en el último mes */
     double pastMonthlyPct,
-    /** 
-     * Total de horas efectivamente reservadas en la última semana. 
-     */
+    /** Horas reservadas semana pasada */
     double pastReservedHoursWeek,
-    /** 
-     * Total de horas disponibles (slots creados) en la última semana. 
-     */
+    /** Horas disponibles semana pasada */
     double pastAvailableHoursWeek,
-    /** 
-     * Total de horas efectivamente reservadas en el último mes. 
-     */
+    /** Horas reservadas mes pasado */
     double pastReservedHoursMonth,
-    /** 
-     * Total de horas disponibles (slots creados) en el último mes. 
-     */
+    /** Horas disponibles mes pasado */
     double pastAvailableHoursMonth,
+    /** Partidos cancelados en la última semana */
+    long pastCancelledWeek,
+    /** Partidos cancelados en el último mes */
+    long pastCancelledMonth,
 
     // — Estadísticas FUTURAS (desde hoy hasta dentro de una semana / un mes)
 
-    /** 
-     * Porcentaje de horas ya reservadas de la cancha en la próxima semana 
-     * (horas reservadas ÷ horas disponibles * 100). 
-     */
+    /** % de horas ya reservadas en la próxima semana */
     double futureWeeklyPct,
-    /** 
-     * Porcentaje de horas ya reservadas de la cancha en el próximo mes 
-     * (horas reservadas ÷ horas disponibles * 100). 
-     */
+    /** % de horas ya reservadas en el próximo mes */
     double futureMonthlyPct,
-    /** 
-     * Total de horas reservadas (slots ocupados) en la próxima semana. 
-     */
+    /** Horas reservadas próxima semana */
     double futureReservedHoursWeek,
-    /** 
-     * Total de horas disponibles (slots creados) en la próxima semana. 
-     */
+    /** Horas disponibles próxima semana */
     double futureAvailableHoursWeek,
-    /** 
-     * Total de horas reservadas (slots ocupados) en el próximo mes. 
-     */
+    /** Horas reservadas próximo mes */
     double futureReservedHoursMonth,
-    /** 
-     * Total de horas disponibles (slots creados) en el próximo mes. 
-     */
-    double futureAvailableHoursMonth
+    /** Horas disponibles próximo mes */
+    double futureAvailableHoursMonth,
+    /** Partidos cancelados en la próxima semana */
+    long futureCancelledWeek,
+    /** Partidos cancelados en el próximo mes */
+    long futureCancelledMonth
 ) {
     public FieldStatsDTO {
-        // redondeo a 1 decimal para todas las métricas
+        // redondeo a 1 decimal para todas las métricas de porcentaje/horas
         pastWeeklyPct            = Math.round(pastWeeklyPct            * 10) / 10.0;
         pastMonthlyPct           = Math.round(pastMonthlyPct           * 10) / 10.0;
         pastReservedHoursWeek    = Math.round(pastReservedHoursWeek    * 10) / 10.0;
@@ -77,5 +57,6 @@ public record FieldStatsDTO(
         futureAvailableHoursWeek = Math.round(futureAvailableHoursWeek * 10) / 10.0;
         futureReservedHoursMonth = Math.round(futureReservedHoursMonth * 10) / 10.0;
         futureAvailableHoursMonth= Math.round(futureAvailableHoursMonth* 10) / 10.0;
+        // los conteos de partidos quedan como están (long), no redondeamos
     }
 }

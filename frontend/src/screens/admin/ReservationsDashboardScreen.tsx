@@ -21,7 +21,12 @@ export const ReservationsDashboardScreen = () => {
   const [size, setSize] = useState(10);
 
   // Estadisticas de la cancha
-  const { data: stats, isLoading: isLoadingStats } = useGetFieldStats(fieldId);
+  const {
+    data: stats,
+    isLoading: isLoadingStats,
+    refetch: refetchStats
+  } = useGetFieldStats(fieldId);
+
   // Graficos de la cancha 
   const canvasRef = useRef<HTMLCanvasElement>(null);
   useEffect(() => {
@@ -103,7 +108,13 @@ export const ReservationsDashboardScreen = () => {
     },
     { accessorKey: "status", header: "Status" },
   ];
-
+  
+  const refreshAll = () => {
+    refetchPending();
+    refetchFiltered();
+    refetchStats();
+  };
+  
   return (
     <CommonLayout>
       <div className="p-6 text-white">
@@ -118,7 +129,7 @@ export const ReservationsDashboardScreen = () => {
         <section className="mb-10">
           <h2 className="text-xl font-semibold mb-2 text-center">Pending Reservations</h2>
           <AdminDashboardTable matches={pendingMatches?.content ?? []} columns={columns}
-                               refetch={refetchPending} />
+                               refetch={refreshAll} />
           <div className="flex justify-center items-center gap-4 mt-4">
             <button
               className="px-2 py-1 bg-gray-600 text-white rounded"
@@ -193,7 +204,7 @@ export const ReservationsDashboardScreen = () => {
             </button>
           </div>
           <AdminDashboardTable matches={filteredMatches?.content ?? []} columns={columns}
-                               refetch={refetchFiltered} />
+                               refetch={refreshAll} />
           <div className="flex justify-center items-center gap-4 mt-4">
             <button
               className="px-2 py-1 bg-gray-600 text-white rounded"
@@ -235,38 +246,30 @@ export const ReservationsDashboardScreen = () => {
         ) : stats ? (
           <div className="flex flex-col md:flex-row md:space-x-8 items-start justify-center">
             {/* — BLOQUE DE TEXTO */}
-            <div className="inline-block text-left space-y-2 text-green-200 mb-6 md:mb-0">
-              {/* — PASADO */}
-              <p>🔸 Past week occupancy: <strong>{stats.pastWeeklyPct}%</strong></p>
-              <p>🔸 Past month occupancy: <strong>{stats.pastMonthlyPct}%</strong></p>
-              <p>
-                🔸 Past week reserved vs available hours:{" "}
-                <strong>
-                  {stats.pastReservedHoursWeek}h / {stats.pastAvailableHoursWeek}h
-                </strong>
-              </p>
-              <p>
-                🔸 Past month reserved vs available hours:{" "}
-                <strong>
-                  {stats.pastReservedHoursMonth}h / {stats.pastAvailableHoursMonth}h
-                </strong>
-              </p>
+            <div className="inline-block text-left space-y-4 text-green-200 mb-6 md:mb-0">
+              {/* — SEMANA PASADA */}
+              <h3 className="font-semibold underline">Last Week</h3>
+              <p>🔸 Occupancy: <strong>{stats.pastWeeklyPct}%</strong></p>
+              <p>🔸 Reserved vs Available: <strong>{stats.pastReservedHoursWeek}h / {stats.pastAvailableHoursWeek}h</strong></p>
+              <p>🔸 Cancelled Matches: <strong>{stats.pastCancelledWeek}</strong></p>
 
-              {/* — FUTURO */}
-              <p>🔸 Next week occupancy: <strong>{stats.futureWeeklyPct}%</strong></p>
-              <p>🔸 Next month occupancy: <strong>{stats.futureMonthlyPct}%</strong></p>
-              <p>
-                🔸 Next week reserved vs available hours:{" "}
-                <strong>
-                  {stats.futureReservedHoursWeek}h / {stats.futureAvailableHoursWeek}h
-                </strong>
-              </p>
-              <p>
-                🔸 Next month reserved vs available hours:{" "}
-                <strong>
-                  {stats.futureReservedHoursMonth}h / {stats.futureAvailableHoursMonth}h
-                </strong>
-              </p>
+              {/* — MES PASADO */}
+              <h3 className="font-semibold underline mt-4">Last Month</h3>
+              <p>🔸 Occupancy: <strong>{stats.pastMonthlyPct}%</strong></p>
+              <p>🔸 Reserved vs Available: <strong>{stats.pastReservedHoursMonth}h / {stats.pastAvailableHoursMonth}h</strong></p>
+              <p>🔸 Cancelled Matches: <strong>{stats.pastCancelledMonth}</strong></p>
+
+              {/* — PRÓXIMA SEMANA */}
+              <h3 className="font-semibold underline mt-4">Next Week</h3>
+              <p>🔸 Occupancy: <strong>{stats.futureWeeklyPct}%</strong></p>
+              <p>🔸 Reserved vs Available: <strong>{stats.futureReservedHoursWeek}h / {stats.futureAvailableHoursWeek}h</strong></p>
+              <p>🔸 Cancelled Matches: <strong>{stats.futureCancelledWeek}</strong></p>
+
+              {/* — PRÓXIMO MES */}
+              <h3 className="font-semibold underline mt-4">Next Month</h3>
+              <p>🔸 Occupancy: <strong>{stats.futureMonthlyPct}%</strong></p>
+              <p>🔸 Reserved vs Available: <strong>{stats.futureReservedHoursMonth}h / {stats.futureAvailableHoursMonth}h</strong></p>
+              <p>🔸 Cancelled Matches: <strong>{stats.futureCancelledMonth}</strong></p>
             </div>
 
             {/* — BLOQUE DEL CANVAS */}

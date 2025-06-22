@@ -268,113 +268,97 @@ public class FieldService {
         LocalDate futureWeekEnd  = today.plusWeeks(1);
         LocalDate futureMonthEnd = today.plusMonths(1);
 
-        // 0) Cargar todos los schedules
-        List<Schedule> allSchedules = scheduleRepository
-            .findByField(field, Pageable.unpaged())
-            .getContent();
+        // 0) todos los schedules
+        List<Schedule> allSchedules = scheduleRepository.findByField(field, Pageable.unpaged()).getContent();
 
-        // 1) Disponibilidad pasada (semana / mes)
+        // 1) disponibilidad pasada
         double pastAvailableWeekHours = allSchedules.stream()
             .filter(s -> !s.getDate().isBefore(pastWeekStart) && !s.getDate().isAfter(today))
-            .mapToDouble(s -> hoursBetween(
-                s.getDate().atTime(s.getStartTime()),
-                s.getDate().atTime(s.getEndTime())
-            ))
+            .mapToDouble(s -> hoursBetween(s.getDate().atTime(s.getStartTime()), s.getDate().atTime(s.getEndTime())))
             .sum();
-
         double pastAvailableMonthHours = allSchedules.stream()
             .filter(s -> !s.getDate().isBefore(pastMonthStart) && !s.getDate().isAfter(today))
-            .mapToDouble(s -> hoursBetween(
-                s.getDate().atTime(s.getStartTime()),
-                s.getDate().atTime(s.getEndTime())
-            ))
+            .mapToDouble(s -> hoursBetween(s.getDate().atTime(s.getStartTime()), s.getDate().atTime(s.getEndTime())))
             .sum();
 
-        // 2) Reservas pasadas (semana / mes)
-        List<Match> pastWeekMatches  = matchRepository.findByFieldIdAndStartTimeBetween(
-            fieldId,
-            pastWeekStart .atStartOfDay(),
-            today         .atTime(23,59,59)
-        );
-        List<Match> pastMonthMatches = matchRepository.findByFieldIdAndStartTimeBetween(
-            fieldId,
-            pastMonthStart.atStartOfDay(),
-            today         .atTime(23,59,59)
-        );
-
-        double pastReservedWeekHours  = pastWeekMatches.stream()
-            .mapToDouble(m -> hoursBetween(m.getStartTime(), m.getEndTime()))
-            .sum();
-        double pastReservedMonthHours = pastMonthMatches.stream()
+        // 2) reservas PASADAS (ACCEPTED) y canceladas (CANCELLED)
+        List<Match> pastWeekMatchesAll = matchRepository.findByFieldIdAndStartTimeBetween(
+            fieldId, pastWeekStart.atStartOfDay(), today.atTime(23,59,59));
+        long pastCancelledWeek = pastWeekMatchesAll.stream()
+            .filter(m -> m.getStatus() == MatchStatus.CANCELLED).count();
+        double pastReservedWeekHours = pastWeekMatchesAll.stream()
+            .filter(m -> m.getStatus() == MatchStatus.ACCEPTED)
             .mapToDouble(m -> hoursBetween(m.getStartTime(), m.getEndTime()))
             .sum();
 
-        // 3) Porcentajes pasados
+        List<Match> pastMonthMatchesAll = matchRepository.findByFieldIdAndStartTimeBetween(
+            fieldId, pastMonthStart.atStartOfDay(), today.atTime(23,59,59));
+        long pastCancelledMonth = pastMonthMatchesAll.stream()
+            .filter(m -> m.getStatus() == MatchStatus.CANCELLED).count();
+        double pastReservedMonthHours = pastMonthMatchesAll.stream()
+            .filter(m -> m.getStatus() == MatchStatus.ACCEPTED)
+            .mapToDouble(m -> hoursBetween(m.getStartTime(), m.getEndTime()))
+            .sum();
+
+        // 3) porcentajes pasados
         double pastWeeklyPct  = pastAvailableWeekHours  > 0
-                            ? pastReservedWeekHours  / pastAvailableWeekHours  * 100
-                            : 0;
+                            ? pastReservedWeekHours  / pastAvailableWeekHours  * 100 : 0;
         double pastMonthlyPct = pastAvailableMonthHours > 0
-                            ? pastReservedMonthHours / pastAvailableMonthHours * 100
-                            : 0;
+                            ? pastReservedMonthHours / pastAvailableMonthHours * 100 : 0;
 
-        // 4) Disponibilidad futura (semana / mes)
+        // 4) disponibilidad futura
         double futureAvailableWeekHours = allSchedules.stream()
             .filter(s -> !s.getDate().isBefore(today) && !s.getDate().isAfter(futureWeekEnd))
-            .mapToDouble(s -> hoursBetween(
-                s.getDate().atTime(s.getStartTime()),
-                s.getDate().atTime(s.getEndTime())
-            ))
+            .mapToDouble(s -> hoursBetween(s.getDate().atTime(s.getStartTime()), s.getDate().atTime(s.getEndTime())))
             .sum();
-
         double futureAvailableMonthHours = allSchedules.stream()
             .filter(s -> !s.getDate().isBefore(today) && !s.getDate().isAfter(futureMonthEnd))
-            .mapToDouble(s -> hoursBetween(
-                s.getDate().atTime(s.getStartTime()),
-                s.getDate().atTime(s.getEndTime())
-            ))
+            .mapToDouble(s -> hoursBetween(s.getDate().atTime(s.getStartTime()), s.getDate().atTime(s.getEndTime())))
             .sum();
 
-        // 5) Reservas futuras (semana / mes)
-        List<Match> futureWeekMatches  = matchRepository.findByFieldIdAndStartTimeBetween(
-            fieldId,
-            today        .atStartOfDay(),
-            futureWeekEnd.atTime(23,59,59)
-        );
-        List<Match> futureMonthMatches = matchRepository.findByFieldIdAndStartTimeBetween(
-            fieldId,
-            today         .atStartOfDay(),
-            futureMonthEnd.atTime(23,59,59)
-        );
-
-        double futureReservedWeekHours  = futureWeekMatches.stream()
-            .mapToDouble(m -> hoursBetween(m.getStartTime(), m.getEndTime()))
-            .sum();
-        double futureReservedMonthHours = futureMonthMatches.stream()
+        // 5) reservas FUTURAS (ACCEPTED) y canceladas (CANCELLED)
+        List<Match> futureWeekMatchesAll = matchRepository.findByFieldIdAndStartTimeBetween(
+            fieldId, today.atStartOfDay(), futureWeekEnd.atTime(23,59,59));
+        long futureCancelledWeek = futureWeekMatchesAll.stream()
+            .filter(m -> m.getStatus() == MatchStatus.CANCELLED).count();
+        double futureReservedWeekHours = futureWeekMatchesAll.stream()
+            .filter(m -> m.getStatus() == MatchStatus.ACCEPTED)
             .mapToDouble(m -> hoursBetween(m.getStartTime(), m.getEndTime()))
             .sum();
 
-        // 6) Porcentajes futuros
-        double futureWeeklyPct  = futureAvailableWeekHours  > 0
-                                ? futureReservedWeekHours  / futureAvailableWeekHours  * 100
-                                : 0;
-        double futureMonthlyPct = futureAvailableMonthHours > 0
-                                ? futureReservedMonthHours / futureAvailableMonthHours * 100
-                                : 0;
+        List<Match> futureMonthMatchesAll = matchRepository.findByFieldIdAndStartTimeBetween(
+            fieldId, today.atStartOfDay(), futureMonthEnd.atTime(23,59,59));
+        long futureCancelledMonth = futureMonthMatchesAll.stream()
+            .filter(m -> m.getStatus() == MatchStatus.CANCELLED).count();
+        double futureReservedMonthHours = futureMonthMatchesAll.stream()
+            .filter(m -> m.getStatus() == MatchStatus.ACCEPTED)
+            .mapToDouble(m -> hoursBetween(m.getStartTime(), m.getEndTime()))
+            .sum();
 
-        // 7) Devolver los 12 valores al DTO
+        // 6) porcentajes futuros
+        double futureWeeklyPct  = futureAvailableWeekHours   > 0
+                                ? futureReservedWeekHours   / futureAvailableWeekHours   * 100 : 0;
+        double futureMonthlyPct = futureAvailableMonthHours  > 0
+                                ? futureReservedMonthHours  / futureAvailableMonthHours  * 100 : 0;
+
+        // 7) devolver todo al DTO (ahora con 16 valores)
         return new FieldStatsDTO(
-            pastWeeklyPct,            // porcentaje semana pasada
-            pastMonthlyPct,           // porcentaje mes pasado
-            pastReservedWeekHours,    // horas reservadas semana pasada
-            pastAvailableWeekHours,   // horas disponibles semana pasada
-            pastReservedMonthHours,   // horas reservadas mes pasado
-            pastAvailableMonthHours,  // horas disponibles mes pasado
-            futureWeeklyPct,          // porcentaje próxima semana
-            futureMonthlyPct,         // porcentaje próximo mes
-            futureReservedWeekHours,  // horas reservadas próxima semana
-            futureAvailableWeekHours, // horas disponibles próxima semana
-            futureReservedMonthHours, // horas reservadas próximo mes
-            futureAvailableMonthHours // horas disponibles próximo mes
+            pastWeeklyPct,
+            pastMonthlyPct,
+            pastReservedWeekHours,
+            pastAvailableWeekHours,
+            pastReservedMonthHours,
+            pastAvailableMonthHours,
+            pastCancelledWeek,
+            pastCancelledMonth,
+            futureWeeklyPct,
+            futureMonthlyPct,
+            futureReservedWeekHours,
+            futureAvailableWeekHours,
+            futureReservedMonthHours,
+            futureAvailableMonthHours,
+            futureCancelledWeek,
+            futureCancelledMonth
         );
     }
 
