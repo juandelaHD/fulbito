@@ -1,5 +1,5 @@
 import { CommonLayout } from "@/components/CommonLayout/CommonLayout.tsx";
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useGetMatchesByField } from "@/services/FieldServices";
 import { AdminDashboardTable } from "@/components/tables/AdminDashboardTable";
 import { RawMatchDTO } from "@/services/UserServices.ts";
@@ -22,6 +22,45 @@ export const ReservationsDashboardScreen = () => {
 
   // Estadisticas de la cancha
   const { data: stats, isLoading: isLoadingStats } = useGetFieldStats(fieldId);
+  // Graficos de la cancha 
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  useEffect(() => {
+    if (!stats || !canvasRef.current) return;
+    const ctx = canvasRef.current.getContext("2d");
+    if (!ctx) return;
+
+    // Limpiar
+    ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+
+    // Datos a graficar: ocupación pasada vs futura en la semana
+    const labels = ["Past wk", "Next wk"];
+    const values = [stats.pastWeeklyPct, stats.futureWeeklyPct];
+
+    // Configuración básica de barras horizontales
+    const barHeight = 20;
+    const gap = 20;
+    const maxWidth = ctx.canvas.width - 100; // deja margen para etiquetas
+    const maxValue = 100; // escalamos a 100%
+
+    values.forEach((val, i) => {
+      const y = 20 + i * (barHeight + gap);
+      const width = (val / maxValue) * maxWidth;
+
+      // barra
+      ctx.fillStyle = "#06b6d4";
+      ctx.fillRect(80, y, width, barHeight);
+
+      // etiqueta de valor al inicio de barra
+      ctx.fillStyle = "#fff";
+      ctx.font = "14px sans-serif";
+      ctx.fillText(`${val.toFixed(1)}%`, 10, y + barHeight - 4);
+
+      // label al final de barra
+      ctx.fillStyle = "#ccc";
+      ctx.fillText(labels[i], 80 + width + 8, y + barHeight - 4);
+    });
+  }, [stats]);
+
 
 
   // Filtros
@@ -189,27 +228,59 @@ export const ReservationsDashboardScreen = () => {
 
       {/* Field Stats */}
       <section className="mb-10">
-        <h2 className="text-xl font-semibold mb-2 text-center">Field Stats</h2>
+        <h2 className="text-xl font-semibold mb-4 text-center">Field Stats</h2>
 
         {isLoadingStats ? (
           <p className="text-gray-400">Loading statistics...</p>
         ) : stats ? (
-          <div className="inline-block text-left space-y-2 text-green-200">
-            {/* PASADO */}
-            <p>🔸 Past week occupancy: <strong>{stats.pastWeeklyPct}%</strong></p>
-            <p>🔸 Past month occupancy: <strong>{stats.pastMonthlyPct}%</strong></p>
-            <p>
-              🔸 Past reserved vs available hours:{" "}
-              <strong>{stats.pastReservedHours}h / {stats.pastAvailableHours}h</strong>
-            </p>
+          <div className="flex flex-col md:flex-row md:space-x-8 items-start justify-center">
+            {/* — BLOQUE DE TEXTO */}
+            <div className="inline-block text-left space-y-2 text-green-200 mb-6 md:mb-0">
+              {/* — PASADO */}
+              <p>🔸 Past week occupancy: <strong>{stats.pastWeeklyPct}%</strong></p>
+              <p>🔸 Past month occupancy: <strong>{stats.pastMonthlyPct}%</strong></p>
+              <p>
+                🔸 Past week reserved vs available hours:{" "}
+                <strong>
+                  {stats.pastReservedHoursWeek}h / {stats.pastAvailableHoursWeek}h
+                </strong>
+              </p>
+              <p>
+                🔸 Past month reserved vs available hours:{" "}
+                <strong>
+                  {stats.pastReservedHoursMonth}h / {stats.pastAvailableHoursMonth}h
+                </strong>
+              </p>
 
-            {/* FUTURO */}
-            <p>🔸 Next week occupancy: <strong>{stats.futureWeeklyPct}%</strong></p>
-            <p>🔸 Next month occupancy: <strong>{stats.futureMonthlyPct}%</strong></p>
-            <p>
-              🔸 Upcoming reserved vs available hours:{" "}
-              <strong>{stats.futureReservedHours}h / {stats.futureAvailableHours}h</strong>
-            </p>
+              {/* — FUTURO */}
+              <p>🔸 Next week occupancy: <strong>{stats.futureWeeklyPct}%</strong></p>
+              <p>🔸 Next month occupancy: <strong>{stats.futureMonthlyPct}%</strong></p>
+              <p>
+                🔸 Next week reserved vs available hours:{" "}
+                <strong>
+                  {stats.futureReservedHoursWeek}h / {stats.futureAvailableHoursWeek}h
+                </strong>
+              </p>
+              <p>
+                🔸 Next month reserved vs available hours:{" "}
+                <strong>
+                  {stats.futureReservedHoursMonth}h / {stats.futureAvailableHoursMonth}h
+                </strong>
+              </p>
+            </div>
+
+            {/* — BLOQUE DEL CANVAS */}
+            <div className="w-full md:w-1/2 border border-gray-600 bg-black p-2">
+              <canvas
+                ref={canvasRef}
+                width={400}
+                height={120}
+                className="mx-auto block"
+              />
+              <p className="text-center text-sm text-gray-400 mt-2">
+                Weekly occupancy: past vs next
+              </p>
+            </div>
           </div>
         ) : (
           <p className="text-red-400">No statistics available for this field.</p>
