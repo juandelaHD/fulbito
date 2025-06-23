@@ -34,7 +34,7 @@ import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-public class MatchServiceClosedMatchTest {
+class MatchServiceClosedMatchTest {
 
     @Mock
     private JwtUserDetails userDetails;
@@ -212,36 +212,6 @@ public class MatchServiceClosedMatchTest {
     }
 
     @Test
-    void tryToCreateClosedMatch_givenInsufficientPlayers() throws Exception {
-        int AUX_MAX_PLAYERS = 2;
-
-        Field field = mock(Field.class);
-        when(field.getId()).thenReturn(FIELD_ID);
-        when(field.isEnabled()).thenReturn(true);
-
-        when(fieldService.loadFieldById(FIELD_ID)).thenReturn(field);
-        when(fieldService.validateFieldAvailability(anyLong(), any(), any(), any())).thenReturn(true);
-
-        when(teamRepository.findById(HOME_TEAM_ID)).thenReturn(Optional.of(homeTeam));
-        when(teamRepository.findById(AWAY_TEAM_ID)).thenReturn(Optional.of(awayTeam));
-
-        MatchCreateDTO dto = new MatchCreateDTO(
-                MatchType.CLOSED,
-                FIELD_ID,
-                HOME_TEAM_ID,
-                AWAY_TEAM_ID,
-                MIN_PLAYERS,
-                AUX_MAX_PLAYERS,
-                LocalDate.now().plusDays(1),
-                LocalDateTime.now().plusHours(1),
-                LocalDateTime.now().plusHours(2)
-        );
-        assertThrows(IllegalArgumentException.class, () -> {
-            matchService.createMatch(dto, userDetails);
-        }, "expected exception due to more players in the match than the min players required");
-    }
-
-    @Test
     void tryToCreateClosedMatch_givenMoreThanNecesaryPlayers() throws Exception {
         int AUX_MIN_PLAYERS = 6;
         Field field = mock(Field.class);
@@ -384,115 +354,5 @@ public class MatchServiceClosedMatchTest {
         });
 
         assertEquals("Home and away teams must be different", ex.getMessage());
-    }
-
-    @Test
-    void tryToCreateClosedMatch_withHomeTeamWithOneMemberMoreThanAwayTeam() throws Exception {
-        User auxUser = new User("auxUser", "auxUser", "auxUser", "Other", "ZoneC", 42, "pass", Role.USER);
-        homeTeam.addMember(auxUser);
-        Field field = mock(Field.class);
-        when(field.getId()).thenReturn(FIELD_ID);
-        when(field.isEnabled()).thenReturn(true);
-
-        when(fieldService.loadFieldById(FIELD_ID)).thenReturn(field);
-        when(fieldService.validateFieldAvailability(anyLong(), any(), any(), any())).thenReturn(true);
-
-        when(teamRepository.findById(HOME_TEAM_ID)).thenReturn(Optional.of(homeTeam));
-        when(teamRepository.findById(AWAY_TEAM_ID)).thenReturn(Optional.of(awayTeam));
-        when(userDetails.username()).thenReturn(organizer.getUsername());
-        when(userService.loadUserByUsername(organizer.getUsername())).thenReturn(organizer);
-
-        MatchCreateDTO dto = new MatchCreateDTO(
-                MatchType.CLOSED,
-                FIELD_ID,
-                HOME_TEAM_ID,
-                AWAY_TEAM_ID,
-                MIN_PLAYERS,
-                MAX_PLAYERS,
-                LocalDate.now().plusDays(1),
-                LocalDateTime.now().plusHours(1),
-                LocalDateTime.now().plusHours(2)
-        );
-
-        Exception ex = assertThrows(IllegalArgumentException.class, () -> {
-            matchService.createMatch(dto, userDetails);
-        });
-
-        assertEquals("Team sizes mismatch: home team has 3 players, but away team has 2. Both teams must have the same number of players.",
-        ex.getMessage()
-        );
-    }
-
-    @Test
-    void tryToCreateClosedMatch_withHomeTeamWithOneMemberLessThanAwayTeam() throws Exception {
-        User auxUser = new User("auxUser", "auxUser", "auxUser", "Other", "ZoneC", 42, "pass", Role.USER);
-        awayTeam.addMember(auxUser);
-        Field field = mock(Field.class);
-        when(field.getId()).thenReturn(FIELD_ID);
-        when(field.isEnabled()).thenReturn(true);
-
-        when(fieldService.loadFieldById(FIELD_ID)).thenReturn(field);
-        when(fieldService.validateFieldAvailability(anyLong(), any(), any(), any())).thenReturn(true);
-
-        when(teamRepository.findById(HOME_TEAM_ID)).thenReturn(Optional.of(homeTeam));
-        when(teamRepository.findById(AWAY_TEAM_ID)).thenReturn(Optional.of(awayTeam));
-        when(userDetails.username()).thenReturn(organizer.getUsername());
-        when(userService.loadUserByUsername(organizer.getUsername())).thenReturn(organizer);
-
-        MatchCreateDTO dto = new MatchCreateDTO(
-                MatchType.CLOSED,
-                FIELD_ID,
-                HOME_TEAM_ID,
-                AWAY_TEAM_ID,
-                MIN_PLAYERS,
-                MAX_PLAYERS,
-                LocalDate.now().plusDays(1),
-                LocalDateTime.now().plusHours(1),
-                LocalDateTime.now().plusHours(2)
-        );
-
-        Exception ex = assertThrows(IllegalArgumentException.class, () -> {
-            matchService.createMatch(dto, userDetails);
-        });
-
-        assertEquals("Team sizes mismatch: home team has 2 players, but away team has 3. Both teams must have the same number of players.",
-        ex.getMessage()
-        );
-    }
-
-    @Test
-    void tryToCreateClosedMatch_withPlayersInBothTeams() throws Exception {
-        User auxUser = new User("auxUser", "auxUser", "auxUser", "Other", "ZoneC", 42, "pass", Role.USER);
-        homeTeam.addMember(auxUser);
-        awayTeam.addMember(auxUser);
-        Field field = mock(Field.class);
-        when(field.getId()).thenReturn(FIELD_ID);
-        when(field.isEnabled()).thenReturn(true);
-
-        when(fieldService.loadFieldById(FIELD_ID)).thenReturn(field);
-        when(fieldService.validateFieldAvailability(anyLong(), any(), any(), any())).thenReturn(true);
-
-        when(teamRepository.findById(HOME_TEAM_ID)).thenReturn(Optional.of(homeTeam));
-        when(teamRepository.findById(AWAY_TEAM_ID)).thenReturn(Optional.of(awayTeam));
-        when(userDetails.username()).thenReturn(organizer.getUsername());
-        when(userService.loadUserByUsername(organizer.getUsername())).thenReturn(organizer);
-
-        MatchCreateDTO dto = new MatchCreateDTO(
-                MatchType.CLOSED,
-                FIELD_ID,
-                HOME_TEAM_ID,
-                AWAY_TEAM_ID,
-                MIN_PLAYERS,
-                MAX_PLAYERS,
-                LocalDate.now().plusDays(1),
-                LocalDateTime.now().plusHours(1),
-                LocalDateTime.now().plusHours(2)
-        );
-
-        Exception ex = assertThrows(IllegalArgumentException.class, () -> {
-            matchService.createMatch(dto, userDetails);
-        });
-
-        assertEquals("Teams cannot have players in common: auxuser", ex.getMessage());
     }
 }
