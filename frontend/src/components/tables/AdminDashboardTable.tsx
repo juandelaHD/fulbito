@@ -51,7 +51,6 @@ export function AdminDashboardTable({ matches, columns, refetch }: Props) {
         matchId: match.id,
         result: `${home}-${away}`,
       });
-      toast.success("Result updated successfully");
       refetch?.();
     } catch (e) {
       toast.error("Error updating result");

@@ -35,11 +35,9 @@ export const MatchHomeScreen = () => {
   const handleJoin = async (matchId: number) => {
     try {
       await joinMatch(matchId);
-      toast.success("You have joined the match successfully.");
       refetch();
     } catch (err) {
       console.error(err);
-      toast.error("Error while joining the match.");
     }
   };
 

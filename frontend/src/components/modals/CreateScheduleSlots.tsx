@@ -66,13 +66,13 @@ export function CreateScheduleSlotsModal({ isOpen, onClose, fieldId }: Props) {
     }
     setLoading(true);
     try {
-      console.log("AAAAAAA")
       console.log(parsed.data)
       await createFieldScheduleService(fieldId, parsed.data, token);
       toast.success("Schedule created successfully!");
       onClose();
-    } catch {
-      toast.error("Error creating schedule. Please try again.");
+    } catch (err: any) {
+        const msg = err?.message || (typeof err === "string" ? err : "Error creating schedule. Please try again.");
+        console.log(msg)
     } finally {
       setLoading(false);
     }

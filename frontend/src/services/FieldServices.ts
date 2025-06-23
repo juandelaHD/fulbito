@@ -192,7 +192,7 @@ export async function updateScheduleSlotStatusService(
       },
     }
   );
-  if (!res.ok) throw await handleErrorResponse(res, "updating schedule slot status");
+  if (!res.ok) await handleErrorResponse(res, "updating schedule slot status");
   return await res.json();
 }
 
@@ -211,7 +211,7 @@ export async function deleteFieldScheduleService(
       },
     }
   );
-  if (!res.ok) throw await handleErrorResponse(res, "deleting field schedule");
+  if (!res.ok) await handleErrorResponse(res, "deleting field schedule");
 }
 
 export function useGetOwnedFields() {

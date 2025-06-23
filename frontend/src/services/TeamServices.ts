@@ -142,7 +142,8 @@ export function useGetMyTeams(options?: { enabled?: boolean }) {
         throw new Error("Error fetching teams");
       }
 
-      return response.json();
+      const teams = await response.json();
+      return teams.filter((team: any) => !/^team/i.test(team.name));
     },
     enabled: options?.enabled ?? !!token,
   });
@@ -168,7 +169,8 @@ export function useGetTeams() {
         throw new Error("Error fetching teams");
       }
 
-      return response.json();
+      const teams = await response.json();
+      return teams.filter((team: any) => !/^team/i.test(team.name));
     },
     enabled: !!token,
   });
