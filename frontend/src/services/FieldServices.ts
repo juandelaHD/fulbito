@@ -349,14 +349,31 @@ export function useGetMatchesByField(
   });
 }
 
-
 // ─────────── Estadísticas de ocupación ───────────
 
+/**
+ * Estadísticas de ocupación PASADAS y FUTURAS para la cancha.
+ */
 export interface FieldStatsDTO {
-  weeklyPercentage: number;
-  monthlyPercentage: number;
-  reservedHours: number;
-  availableHours: number;
+  // — PASADO (última semana / último mes)
+  pastWeeklyPct: number;            // % de horas reservadas en la última semana
+  pastMonthlyPct: number;           // % de horas reservadas en el último mes
+  pastReservedHoursWeek: number;    // total de horas reservadas en la última semana
+  pastAvailableHoursWeek: number;   // total de horas disponibles en la última semana
+  pastReservedHoursMonth: number;   // total de horas reservadas en el último mes
+  pastAvailableHoursMonth: number;  // total de horas disponibles en el último mes
+  pastCancelledWeek: number;        // total de partidos cancelados en la última semana
+  pastCancelledMonth: number;       // total de partidos cancelados en el último mes
+
+  // — FUTURO (próxima semana / próximo mes)
+  futureWeeklyPct: number;           // % de horas ya reservadas en la próxima semana
+  futureMonthlyPct: number;          // % de horas ya reservadas en el próximo mes
+  futureReservedHoursWeek: number;   // total de horas reservadas en la próxima semana
+  futureAvailableHoursWeek: number;  // total de horas disponibles en la próxima semana
+  futureReservedHoursMonth: number;  // total de horas reservadas en el próximo mes
+  futureAvailableHoursMonth: number; // total de horas disponibles en el próximo mes
+  futureCancelledWeek: number;       // total de partidos cancelados en la próxima semana
+  futureCancelledMonth: number;      // total de partidos cancelados en el próximo mes
 }
 
 export function useGetFieldStats(fieldId?: number) {
@@ -383,4 +400,6 @@ export function useGetFieldStats(fieldId?: number) {
     staleTime: 1000 * 60 * 5,
   });
 }
+
+
 

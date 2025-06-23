@@ -259,64 +259,106 @@ public class FieldService {
         }
     }
 
-    /// Agregadas funciones de FieldStatsDTO
     public FieldStatsDTO getFieldStats(Long fieldId) throws ItemNotFoundException {
         Field field = loadFieldById(fieldId);
-        LocalDate today    = LocalDate.now();
-        LocalDate weekAgo  = today.minusWeeks(1);
-        LocalDate monthAgo = today.minusMonths(1);
 
-        // -- 1) Horas disponibles (sumar duración de SCHEDULES)
-        List<Schedule> allSchedules = scheduleRepository
-            .findByField(field, Pageable.unpaged())
-            .getContent();
+        LocalDate today          = LocalDate.now();
+        LocalDate pastWeekStart  = today.minusWeeks(1);
+        LocalDate pastMonthStart = today.minusMonths(1);
+        LocalDate futureWeekEnd  = today.plusWeeks(1);
+        LocalDate futureMonthEnd = today.plusMonths(1);
 
-        double availableWeekHours = allSchedules.stream()
-            .filter(s -> !s.getDate().isBefore(weekAgo))
-            .mapToDouble(s -> hoursBetween(
-                s.getDate().atTime(s.getStartTime()),
-                s.getDate().atTime(s.getEndTime())
-            ))
+        // 0) todos los schedules
+        List<Schedule> allSchedules = scheduleRepository.findByField(field, Pageable.unpaged()).getContent();
+
+        // 1) disponibilidad pasada
+        double pastAvailableWeekHours = allSchedules.stream()
+            .filter(s -> !s.getDate().isBefore(pastWeekStart) && !s.getDate().isAfter(today))
+            .mapToDouble(s -> hoursBetween(s.getDate().atTime(s.getStartTime()), s.getDate().atTime(s.getEndTime())))
+            .sum();
+        double pastAvailableMonthHours = allSchedules.stream()
+            .filter(s -> !s.getDate().isBefore(pastMonthStart) && !s.getDate().isAfter(today))
+            .mapToDouble(s -> hoursBetween(s.getDate().atTime(s.getStartTime()), s.getDate().atTime(s.getEndTime())))
             .sum();
 
-        double availableMonthHours = allSchedules.stream()
-            .filter(s -> !s.getDate().isBefore(monthAgo))
-            .mapToDouble(s -> hoursBetween(
-                s.getDate().atTime(s.getStartTime()),
-                s.getDate().atTime(s.getEndTime())
-            ))
-            .sum();            
-
-        // -- 2) Horas reservadas (sumar duración de MATCHES aceptados/scheduled)
-        List<Match> weekMatches  = matchRepository.findByFieldIdAndStartTimeBetween(
-                                        fieldId,
-                                        weekAgo .atStartOfDay(),
-                                        today   .atTime(23, 59, 59)
-                                );
-        List<Match> monthMatches = matchRepository.findByFieldIdAndStartTimeBetween(
-                                        fieldId,
-                                        monthAgo.atStartOfDay(),
-                                        today   .atTime(23, 59, 59)
-                                );
-
-        double reservedWeekHours  = weekMatches.stream()
-            .mapToDouble(m -> hoursBetween(m.getStartTime(), m.getEndTime()))
-            .sum();
-        double reservedMonthHours = monthMatches.stream()
+        // 2) reservas PASADAS (ACCEPTED) y canceladas (CANCELLED)
+        List<Match> pastWeekMatchesAll = matchRepository.findByFieldIdAndStartTimeBetween(
+            fieldId, pastWeekStart.atStartOfDay(), today.atTime(23,59,59));
+        long pastCancelledWeek = pastWeekMatchesAll.stream()
+            .filter(m -> m.getStatus() == MatchStatus.CANCELLED).count();
+        double pastReservedWeekHours = pastWeekMatchesAll.stream()
+            .filter(m -> m.getStatus() == MatchStatus.ACCEPTED)
             .mapToDouble(m -> hoursBetween(m.getStartTime(), m.getEndTime()))
             .sum();
 
-        // -- 3) Porcentajes
-        double weeklyPct  = availableWeekHours  > 0
-                          ? reservedWeekHours  / availableWeekHours  * 100 : 0;
-        double monthlyPct = availableMonthHours > 0
-                          ? reservedMonthHours / availableMonthHours * 100 : 0;
+        List<Match> pastMonthMatchesAll = matchRepository.findByFieldIdAndStartTimeBetween(
+            fieldId, pastMonthStart.atStartOfDay(), today.atTime(23,59,59));
+        long pastCancelledMonth = pastMonthMatchesAll.stream()
+            .filter(m -> m.getStatus() == MatchStatus.CANCELLED).count();
+        double pastReservedMonthHours = pastMonthMatchesAll.stream()
+            .filter(m -> m.getStatus() == MatchStatus.ACCEPTED)
+            .mapToDouble(m -> hoursBetween(m.getStartTime(), m.getEndTime()))
+            .sum();
 
+        // 3) porcentajes pasados
+        double pastWeeklyPct  = pastAvailableWeekHours  > 0
+                            ? pastReservedWeekHours  / pastAvailableWeekHours  * 100 : 0;
+        double pastMonthlyPct = pastAvailableMonthHours > 0
+                            ? pastReservedMonthHours / pastAvailableMonthHours * 100 : 0;
+
+        // 4) disponibilidad futura
+        double futureAvailableWeekHours = allSchedules.stream()
+            .filter(s -> !s.getDate().isBefore(today) && !s.getDate().isAfter(futureWeekEnd))
+            .mapToDouble(s -> hoursBetween(s.getDate().atTime(s.getStartTime()), s.getDate().atTime(s.getEndTime())))
+            .sum();
+        double futureAvailableMonthHours = allSchedules.stream()
+            .filter(s -> !s.getDate().isBefore(today) && !s.getDate().isAfter(futureMonthEnd))
+            .mapToDouble(s -> hoursBetween(s.getDate().atTime(s.getStartTime()), s.getDate().atTime(s.getEndTime())))
+            .sum();
+
+        // 5) reservas FUTURAS (ACCEPTED) y canceladas (CANCELLED)
+        List<Match> futureWeekMatchesAll = matchRepository.findByFieldIdAndStartTimeBetween(
+            fieldId, today.atStartOfDay(), futureWeekEnd.atTime(23,59,59));
+        long futureCancelledWeek = futureWeekMatchesAll.stream()
+            .filter(m -> m.getStatus() == MatchStatus.CANCELLED).count();
+        double futureReservedWeekHours = futureWeekMatchesAll.stream()
+            .filter(m -> m.getStatus() == MatchStatus.ACCEPTED)
+            .mapToDouble(m -> hoursBetween(m.getStartTime(), m.getEndTime()))
+            .sum();
+
+        List<Match> futureMonthMatchesAll = matchRepository.findByFieldIdAndStartTimeBetween(
+            fieldId, today.atStartOfDay(), futureMonthEnd.atTime(23,59,59));
+        long futureCancelledMonth = futureMonthMatchesAll.stream()
+            .filter(m -> m.getStatus() == MatchStatus.CANCELLED).count();
+        double futureReservedMonthHours = futureMonthMatchesAll.stream()
+            .filter(m -> m.getStatus() == MatchStatus.ACCEPTED)
+            .mapToDouble(m -> hoursBetween(m.getStartTime(), m.getEndTime()))
+            .sum();
+
+        // 6) porcentajes futuros
+        double futureWeeklyPct  = futureAvailableWeekHours   > 0
+                                ? futureReservedWeekHours   / futureAvailableWeekHours   * 100 : 0;
+        double futureMonthlyPct = futureAvailableMonthHours  > 0
+                                ? futureReservedMonthHours  / futureAvailableMonthHours  * 100 : 0;
+
+        // 7) devolver todo al DTO (ahora con 16 valores)
         return new FieldStatsDTO(
-            round(weeklyPct),
-            round(monthlyPct),
-            round(reservedMonthHours),
-            round(availableMonthHours)
+            pastWeeklyPct,
+            pastMonthlyPct,
+            pastReservedWeekHours,
+            pastAvailableWeekHours,
+            pastReservedMonthHours,
+            pastAvailableMonthHours,
+            pastCancelledWeek,
+            pastCancelledMonth,
+            futureWeeklyPct,
+            futureMonthlyPct,
+            futureReservedWeekHours,
+            futureAvailableWeekHours,
+            futureReservedMonthHours,
+            futureAvailableMonthHours,
+            futureCancelledWeek,
+            futureCancelledMonth
         );
     }
 
@@ -324,9 +366,6 @@ public class FieldService {
         return Duration.between(start, end).toHours();
     }
 
-    private double round(double value) {
-        return Math.round(value * 10.0) / 10.0;  // un decimal
-    }
 
 
 }
