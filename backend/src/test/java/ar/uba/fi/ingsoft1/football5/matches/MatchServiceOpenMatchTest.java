@@ -374,6 +374,7 @@ class MatchServiceOpenMatchTest {
         openMatch.addPlayer(user);
         when(userDetails.username()).thenReturn("organizer");
         when(matchRepository.findById(1L)).thenReturn(Optional.of(openMatch));
+        when(openMatch.getField().getOwner()).thenReturn(organizer);
 
         matchService.cancelMatch(1L, userDetails);
 
