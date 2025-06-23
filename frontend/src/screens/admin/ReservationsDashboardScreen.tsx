@@ -1,5 +1,5 @@
 import { CommonLayout } from "@/components/CommonLayout/CommonLayout.tsx";
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useGetMatchesByField } from "@/services/FieldServices";
 import { AdminDashboardTable } from "@/components/tables/AdminDashboardTable";
 import { RawMatchDTO } from "@/services/UserServices.ts";
@@ -21,7 +21,51 @@ export const ReservationsDashboardScreen = () => {
   const [size, setSize] = useState(10);
 
   // Estadisticas de la cancha
-  const { data: stats, isLoading: isLoadingStats } = useGetFieldStats(fieldId);
+  const {
+    data: stats,
+    isLoading: isLoadingStats,
+    refetch: refetchStats
+  } = useGetFieldStats(fieldId);
+
+  // Graficos de la cancha 
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  useEffect(() => {
+    if (!stats || !canvasRef.current) return;
+    const ctx = canvasRef.current.getContext("2d");
+    if (!ctx) return;
+
+    // Limpiar
+    ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+
+    // Datos a graficar: ocupación pasada vs futura en la semana
+    const labels = ["Past wk", "Next wk"];
+    const values = [stats.pastWeeklyPct, stats.futureWeeklyPct];
+
+    // Configuración básica de barras horizontales
+    const barHeight = 20;
+    const gap = 20;
+    const maxWidth = ctx.canvas.width - 100; // deja margen para etiquetas
+    const maxValue = 100; // escalamos a 100%
+
+    values.forEach((val, i) => {
+      const y = 20 + i * (barHeight + gap);
+      const width = (val / maxValue) * maxWidth;
+
+      // barra
+      ctx.fillStyle = "#06b6d4";
+      ctx.fillRect(80, y, width, barHeight);
+
+      // etiqueta de valor al inicio de barra
+      ctx.fillStyle = "#fff";
+      ctx.font = "14px sans-serif";
+      ctx.fillText(`${val.toFixed(1)}%`, 10, y + barHeight - 4);
+
+      // label al final de barra
+      ctx.fillStyle = "#ccc";
+      ctx.fillText(labels[i], 80 + width + 8, y + barHeight - 4);
+    });
+  }, [stats]);
+
 
 
   // Filtros
@@ -64,7 +108,13 @@ export const ReservationsDashboardScreen = () => {
     },
     { accessorKey: "status", header: "Status" },
   ];
-
+  
+  const refreshAll = () => {
+    refetchPending();
+    refetchFiltered();
+    refetchStats();
+  };
+  
   return (
     <CommonLayout>
       <div className="p-6 text-white">
@@ -79,7 +129,7 @@ export const ReservationsDashboardScreen = () => {
         <section className="mb-10">
           <h2 className="text-xl font-semibold mb-2 text-center">Pending Reservations</h2>
           <AdminDashboardTable matches={pendingMatches?.content ?? []} columns={columns}
-                               refetch={refetchPending} />
+                               refetch={refreshAll} />
           <div className="flex justify-center items-center gap-4 mt-4">
             <button
               className="px-2 py-1 bg-gray-600 text-white rounded"
@@ -154,7 +204,7 @@ export const ReservationsDashboardScreen = () => {
             </button>
           </div>
           <AdminDashboardTable matches={filteredMatches?.content ?? []} columns={columns}
-                               refetch={refetchFiltered} />
+                               refetch={refreshAll} />
           <div className="flex justify-center items-center gap-4 mt-4">
             <button
               className="px-2 py-1 bg-gray-600 text-white rounded"
@@ -189,21 +239,55 @@ export const ReservationsDashboardScreen = () => {
 
       {/* Field Stats */}
       <section className="mb-10">
-        <h2 className="text-xl font-semibold mb-2 text-center">Field Stats</h2>
-      {isLoadingStats ? (
-        <p className="text-gray-400">Loading statistics...</p>
-      ) : stats ? (
-        <div className="inline-block text-left space-y-2 text-green-200">
-          <p>🔸 Weekly occupancy: <strong>{stats.weeklyPercentage}%</strong></p>
-          <p>🔸 Monthly occupancy: <strong>{stats.monthlyPercentage}%</strong></p>
-          <p>
-            🔸 Reserved vs available hours:{" "}
-            <strong>{stats.reservedHours}h / {stats.availableHours}h</strong>
-          </p>
-        </div>
-      ) : (
-        <p className="text-red-400">No statistics available for this field.</p>
-      )}
+        <h2 className="text-xl font-semibold mb-4 text-center">Field Stats</h2>
+
+        {isLoadingStats ? (
+          <p className="text-gray-400">Loading statistics...</p>
+        ) : stats ? (
+          <div className="flex flex-col md:flex-row md:space-x-8 items-start justify-center">
+            {/* — BLOQUE DE TEXTO */}
+            <div className="inline-block text-left space-y-4 text-green-200 mb-6 md:mb-0">
+              {/* — SEMANA PASADA */}
+              <h3 className="font-semibold underline">Last Week</h3>
+              <p>🔸 Occupancy: <strong>{stats.pastWeeklyPct}%</strong></p>
+              <p>🔸 Reserved vs Available: <strong>{stats.pastReservedHoursWeek}h / {stats.pastAvailableHoursWeek}h</strong></p>
+              <p>🔸 Cancelled Matches: <strong>{stats.pastCancelledWeek}</strong></p>
+
+              {/* — MES PASADO */}
+              <h3 className="font-semibold underline mt-4">Last Month</h3>
+              <p>🔸 Occupancy: <strong>{stats.pastMonthlyPct}%</strong></p>
+              <p>🔸 Reserved vs Available: <strong>{stats.pastReservedHoursMonth}h / {stats.pastAvailableHoursMonth}h</strong></p>
+              <p>🔸 Cancelled Matches: <strong>{stats.pastCancelledMonth}</strong></p>
+
+              {/* — PRÓXIMA SEMANA */}
+              <h3 className="font-semibold underline mt-4">Next Week</h3>
+              <p>🔸 Occupancy: <strong>{stats.futureWeeklyPct}%</strong></p>
+              <p>🔸 Reserved vs Available: <strong>{stats.futureReservedHoursWeek}h / {stats.futureAvailableHoursWeek}h</strong></p>
+              <p>🔸 Cancelled Matches: <strong>{stats.futureCancelledWeek}</strong></p>
+
+              {/* — PRÓXIMO MES */}
+              <h3 className="font-semibold underline mt-4">Next Month</h3>
+              <p>🔸 Occupancy: <strong>{stats.futureMonthlyPct}%</strong></p>
+              <p>🔸 Reserved vs Available: <strong>{stats.futureReservedHoursMonth}h / {stats.futureAvailableHoursMonth}h</strong></p>
+              <p>🔸 Cancelled Matches: <strong>{stats.futureCancelledMonth}</strong></p>
+            </div>
+
+            {/* — BLOQUE DEL CANVAS */}
+            <div className="w-full md:w-1/2 border border-gray-600 bg-black p-2">
+              <canvas
+                ref={canvasRef}
+                width={400}
+                height={120}
+                className="mx-auto block"
+              />
+              <p className="text-center text-sm text-gray-400 mt-2">
+                Weekly occupancy: past vs next
+              </p>
+            </div>
+          </div>
+        ) : (
+          <p className="text-red-400">No statistics available for this field.</p>
+        )}
       </section>
 
     </CommonLayout>
