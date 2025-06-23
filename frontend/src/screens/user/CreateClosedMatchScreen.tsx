@@ -16,7 +16,7 @@ export const CreateClosedMatchScreen = () => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!homeTeam || !awayTeam || homeTeam === awayTeam) return;
-    navigate(`/match/create?homeTeamId=${homeTeam}&awayTeamId=${awayTeam}&defaultMatchType=CLOSED`);
+    navigate(`/matches/create?homeTeamId=${homeTeam}&awayTeamId=${awayTeam}&defaultMatchType=CLOSED`);
   };
 
   return (

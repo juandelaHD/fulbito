@@ -80,6 +80,8 @@ public class MatchService {
         if (match.homeTeamId().equals(match.awayTeamId())) {
             throw new IllegalArgumentException("Home and away teams must be different");
         }
+        /*
+        TODO: Check if this validation is necessary...
         int homeTeamSize = homeTeam.getMembers().size();
         int awayTeamSize = awayTeam.getMembers().size();
 
@@ -108,9 +110,9 @@ public class MatchService {
                 throw new IllegalArgumentException("Teams cannot have players in common: " + member);
             }
         }
+        */
     }
 
-    // TODO: Refactor to use a notification service or similar
     private void notifyReservation(MatchCreateDTO match, User user) {
         emailSenderService.sendReservationMail(
                 user.getUsername(),
