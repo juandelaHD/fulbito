@@ -86,7 +86,7 @@ export function useGetFields(filters: GetFieldsRequest) {
         }
         if (!response.ok) {
           toast.error("Failed to fetch fields. Please try again later.");
-          throw new handleErrorResponse(response, "fetching fields");
+          throw await handleErrorResponse(response, "fetching fields");
         }
         return parsed;
       } catch (err) {
@@ -108,7 +108,7 @@ export function useAvailableFields(token: string) {
         const res = await fetch(`${BASE_API_URL}/fields`, {
           headers: { Authorization: `Bearer ${token}` },
         });
-        if (!res.ok) throw new handleErrorResponse(res, "fetching available fields");
+        if (!res.ok) throw await handleErrorResponse(res, "fetching available fields");
         const data = await res.json();
         const dict: Record<number, string> = {};
         data.content.forEach((f: any) => {
@@ -143,7 +143,7 @@ export async function getFieldSchedulesService(fieldId: number, date: string, to
       Accept: "application/json",
     },
   });
-  if (!res.ok) throw new handleErrorResponse(res, "fetching field schedules");
+  if (!res.ok) throw await handleErrorResponse(res, "fetching field schedules");
   const slots: ScheduleSlot[] = await res.json();
   return slots
 }
@@ -172,7 +172,7 @@ export async function createFieldScheduleService(
     },
     body: JSON.stringify(data),
   });
-  if (!res.ok) throw new handleErrorResponse(res, "creating field schedule");
+  if (!res.ok) throw await handleErrorResponse(res, "creating field schedule");
   return await res.json();
 }
 
@@ -192,7 +192,7 @@ export async function updateScheduleSlotStatusService(
       },
     }
   );
-  if (!res.ok) throw new handleErrorResponse(res, "updating schedule slot status");
+  if (!res.ok) throw await handleErrorResponse(res, "updating schedule slot status");
   return await res.json();
 }
 
@@ -211,7 +211,7 @@ export async function deleteFieldScheduleService(
       },
     }
   );
-  if (!res.ok) throw new handleErrorResponse(res, "deleting field schedule");
+  if (!res.ok) throw await handleErrorResponse(res, "deleting field schedule");
 }
 
 export function useGetOwnedFields() {
