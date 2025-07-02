@@ -1,133 +1,134 @@
 <p align="center">
-  <img src=docs/img/logo_3.webp width="350" alt="Logo Futbol5">
+  <img src=docs/img/logo_3.webp width="350" alt="Fulbito Logo">
 </p>
 
 ---
 
-# Futbol5
+# Fulbito
 
-**Plataforma para la gestión de canchas de fútbol 5 y organización de partidos y torneos recreativos.**
-Este sistema está pensado para facilitar la experiencia tanto de los jugadores como de los dueños de canchas, resolviendo los desafíos comunes en la coordinación de encuentros deportivos.
-
----
-
-## Índice
-
-1. [🚀 Descripción General](#descripción-general)
-2. [🧑‍💻 Funcionalidades Principales](#funcionalidades-principales)
-3. [🧱 Arquitectura del Proyecto](#arquitectura-del-proyecto)
-4. [⚙️ Tecnologías Utilizadas](#tecnologías-utilizadas)
-5. [🐳 Instrucciones para Desarrolladores](#instrucciones-para-desarrolladores)
-    * [Levantando el entorno completo con Docker](#levantando-el-entorno-completo-con-docker)
-    * [Modo Debug (desarrollo local)](#modo-debug-desarrollo-local)
-6. [🌐 URLs Principales](#-urls-principales)
+**Platform for managing 5-a-side soccer fields and organizing recreational matches and tournaments.**
+This system is designed to improve the experience for both players and venue owners, solving common challenges in coordinating sporting events.
 
 ---
 
-## Descripción General
+## Index
 
-**Futbol5** es una plataforma integral que permite a distintos perfiles de usuarios:
-
-* **Jugadores** que desean encontrar canchas, coordinar partidos, sumarse a equipos o participar en torneos.
-* **Organizadores** que buscan armar eventos deportivos más grandes o regulares.
-* **Dueños de canchas** que necesitan gestionar la disponibilidad de sus instalaciones, reservas y horarios.
-
-El sistema está diseñado para brindar una experiencia fluida, reducir la fricción en la organización de partidos y fomentar la participación en actividades deportivas recreativas.
-
----
-
-## Funcionalidades Principales
-
-### Para jugadores
-
-* Buscar canchas disponibles por zona, fecha y horario.
-* Unirse a partidos abiertos o crear partidos nuevos.
-* Formar equipos y participar en torneos.
-* Confirmar o cancelar asistencia con un clic.
-
-### Para dueños de canchas
-
-* Publicar canchas disponibles, sus horarios y precios.
-* Recibir y gestionar reservas.
-* Evitar solapamientos de horarios.
-* Ver estadísticas de uso.
-
-### Para organizadores
-* Crear y gestionar torneos.
-* Invitar jugadores y equipos.
-* Configurar reglas y formatos de torneo.
-* Visualizar resultados y estadísticas de los partidos.
+1. [🚀 Overview](#overview)
+2. [🧑‍💻 Main Features](#main-features)
+3. [🧱 Project Architecture](#project-architecture)
+4. [⚙️ Technologies Used](#technologies-used)
+5. [🐳 Developer Instructions](#developer-instructions)
+   * [Running the Complete Environment with Docker](#running-the-complete-environment-with-docker)
+   * [Debug Mode (Local Development)](#debug-mode-local-development)
+6. [🌐 Main URLs](#-main-urls)
 
 ---
 
-## Arquitectura del Proyecto
+## Overview
 
-Este proyecto está dividido en tres grandes componentes:
+**Fulbito** is a comprehensive platform that supports different user profiles:
 
-* **Backend:** API REST construida con Spring Boot.
-* **Frontend:** Aplicación web con React y Vite.
-* **Base de datos:** PostgreSQL para persistencia de datos.
+* **Players** who want to find fields, coordinate matches, join teams, or participate in tournaments.
+* **Organizers** looking to create larger or recurring sporting events.
+* **Venue owners** who need to manage field availability, reservations, and schedules.
 
-Todo el entorno de desarrollo y ejecución puede levantarse usando Docker.
-
----
-
-## Tecnologías Utilizadas
-
-| Componente    | Tecnología              |
-|---------------|-------------------------|
-| Lenguajes     | Java, TypeScript        |
-| Backend       | Spring Boot             |
-| Frontend      | React + Tailwind + Vite |
-| Base de Datos | PostgreSQL              |
-| Documentación | Swagger                 |
-| Contenedores  | Docker, Docker Compose  |
+The system is designed to deliver a smooth experience, reduce friction in organizing matches, and encourage participation in recreational sports activities.
 
 ---
 
-## Instrucciones para Desarrolladores
+## Main Features
 
-### Levantando el entorno completo con Docker
+### For Players
 
-1. Asegúrate de tener [Docker](https://www.docker.com/) y [Docker Compose](https://docs.docker.com/compose/) instalados.
-2. En la raíz del proyecto, ejecutá:
+* Search available fields by area, date, and time.
+* Join open matches or create new ones.
+* Form teams and participate in tournaments.
+* Confirm or cancel attendance with one click.
+
+### For Venue Owners
+
+* Publish available fields, schedules, and pricing.
+* Receive and manage reservations.
+* Avoid overlapping bookings.
+* View usage statistics.
+
+### For Organizers
+
+* Create and manage tournaments.
+* Invite players and teams.
+* Configure rules and tournament formats.
+* Display match results and statistics.
+
+---
+
+## Project Architecture
+
+This project is divided into three main components:
+
+* **Backend:** REST API built with Spring Boot.
+* **Frontend:** Web application using React and Vite.
+* **Database:** PostgreSQL for data persistence.
+
+The entire development and runtime environment can be launched using Docker.
+
+---
+
+## Technologies Used
+
+| Component     | Technology               |
+|---------------|--------------------------|
+| Languages     | Java, TypeScript         |
+| Backend       | Spring Boot              |
+| Frontend      | React + Tailwind + Vite  |
+| Database      | PostgreSQL               |
+| Documentation | Swagger                  |
+| Containers    | Docker, Docker Compose   |
+
+---
+
+## Developer Instructions
+
+### Running the Complete Environment with Docker
+
+1. Make sure you have [Docker](https://www.docker.com/) and [Docker Compose](https://docs.docker.com/compose/) installed.
+2. In the project root, run:
 
 ```bash
 docker compose up --build
 ```
 
-3. Para detener y eliminar los contenedores:
+3. To stop and remove the containers:
 
 ```bash
 docker compose down
 ```
 
-Esto levantará:
+This will start:
 
-* API en `localhost:30002`
-* Frontend en `localhost:30003`
-* Base de datos PostgreSQL interna
+* API at `localhost:30002`
+* Frontend at `localhost:30003`
+* Internal PostgreSQL database
 
 ---
 
-### Modo Debug (desarrollo local)
+### Debug Mode (Local Development)
 
-1. Configurar las variables de entorno necesarias en tu IDE (por ejemplo, IntelliJ IDEA):
+1. Configure the required environment variables in your IDE (e.g., IntelliJ IDEA):
 
 * `SPRING_DATASOURCE_DRIVER_CLASS_NAME`
 * `SPRING_DATASOURCE_URL`
 * `SPRING_DATASOURCE_USERNAME`
 * `SPRING_DATASOURCE_PASSWORD`
 
-2. Levantar únicamente la base de datos con:
+2. Start only the database with:
 
 ```bash
 docker compose up db
 ```
 
-3. Ejecutar el backend desde el IDE en modo debug.
+3. Run the backend from your IDE in debug mode.
 
-4. Acceder a la documentación de la API en:
+4. Access the API documentation at:
 
 ```
 http://localhost:30002/swagger-ui/index.html#
@@ -135,9 +136,9 @@ http://localhost:30002/swagger-ui/index.html#
 
 ---
 
-## URLs Principales
+## Main URLs
 
-| Recurso            | URL                                                                                              |
+| Resource           | URL                                                                                              |
 | ------------------ | ------------------------------------------------------------------------------------------------ |
 | Swagger (API Docs) | [http://localhost:30002/swagger-ui/index.html#/](http://localhost:30002/swagger-ui/index.html#/) |
 | Frontend Web App   | [http://localhost:30003/](http://localhost:30003/)                                               |
