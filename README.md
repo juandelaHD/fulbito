@@ -1,10 +1,12 @@
-<p align="center">
-  <img src=docs/img/logo_3.webp width="350" alt="Fulbito Logo">
-</p>
+<div align="center">
+  <h1 align="center">
+    Fulbito - Web Application
+    <br />
+    <br />
+      <img src=docs/img/logo_3.webp width="350" alt="Fulbito Logo">
+  </h1>
+</div> 
 
----
-
-# Fulbito
 
 **Platform for managing 5-a-side soccer fields and organizing recreational matches and tournaments.**
 This system is designed to improve the experience for both players and venue owners, solving common challenges in coordinating sporting events.
